@@ -13,8 +13,8 @@
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- jsPDF for PDF Exports -->
-    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
@@ -286,16 +286,16 @@
             const roleName = currentUser.name;
 
             let tabs = [];
-        if (currentUser.role === 'admin') {
-            tabs = [
-                { id: 'dashboard', label: 'Beranda', icon: 'fa-house' },
-                { id: 'profile', label: 'Profil Pesantren', icon: 'fa-school' },
-                { id: 'cycles', label: 'Siklus Keuangan', icon: 'fa-chart-pie' },
-                { id: 'credentials', label: 'Sandi Ruangan', icon: 'fa-key' },
-                { id: 'reset_data', label: 'Kosongkan Data', icon: 'fa-trash-arrow-up' },
-                { id: 'sql_setup', label: 'Setup SQL Supabase', icon: 'fa-database' }
-            ];
-        } else if (currentUser.role === 'pesantren') {
+            if (currentUser.role === 'admin') {
+                tabs = [
+                    { id: 'dashboard', label: 'Beranda', icon: 'fa-house' },
+                    { id: 'profile', label: 'Profil Pesantren', icon: 'fa-school' },
+                    { id: 'cycles', label: 'Siklus Keuangan', icon: 'fa-chart-pie' },
+                    { id: 'credentials', label: 'Sandi Ruangan', icon: 'fa-key' },
+                    { id: 'reset_data', label: 'Kosongkan Data', icon: 'fa-trash-arrow-up' },
+                    { id: 'sql_setup', label: 'Setup SQL Supabase', icon: 'fa-database' }
+                ];
+            } else if (currentUser.role === 'pesantren') {
                 tabs = [
                     { id: 'dashboard', label: 'Beranda', icon: 'fa-house' },
                     { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
@@ -314,7 +314,7 @@
 
             app.innerHTML = `
                 <!-- Top Navbar -->
-                <header class="bg-white backdrop-blur-md border-b border-slate-300 sticky top-0 z-30 shadow-xs">
+                <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
                         <div class="flex items-center gap-3 overflow-hidden">
                             <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-2xl flex-shrink-0 flex items-center justify-center text-white text-base sm:text-xl shadow-md shadow-emerald-500/20">
@@ -322,15 +322,15 @@
                             </div>
                             <div class="min-w-0">
                                 <h1 class="text-sm sm:text-base font-black text-slate-900 truncate">${dbState.profile?.name || ''}</h1>
-                                <p class="text-[11px] sm:text-xs font-bold text-emerald-800 flex items-center gap-1.5 truncate"><i class="fa-solid fa-shield-halved"></i> ${roleName} <span class="text-slate-600 font-semibold">(Supabase Sinkron)</span></p>
+                                <p class="text-[11px] sm:text-xs font-bold text-emerald-800 flex items-center gap-1.5 truncate"><i class="fa-solid fa-shield-halved"></i> ${roleName} <span class="text-slate-500 font-semibold">(Supabase Sinkron)</span></p>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <button onclick="downloadPdfReport()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-md active:scale-95 flex-shrink-0">
-                                <i class="fa-solid fa-file-pdf"></i> <span class="hidden sm:inline">Download PDF Laporan</span>
+                            <button onclick="downloadPdfReport()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5 active:scale-95">
+                                <i class="fa-solid fa-file-pdf"></i> <span class="hidden sm:inline">Unduh PDF</span>
                             </button>
-                            <button onclick="logout()" class="px-3.5 py-2 bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold text-xs rounded-xl transition flex items-center gap-1.5 border border-rose-300 flex-shrink-0 active:scale-95 shadow-xs">
+                            <button onclick="logout()" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5 border border-rose-200 flex-shrink-0 active:scale-95 shadow-xs">
                                 <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="hidden sm:inline">Keluar</span>
                             </button>
                         </div>
@@ -338,11 +338,11 @@
                 </header>
 
                 <!-- Navigation Tabs -->
-                <nav class="bg-slate-200 border-b border-slate-300 sticky top-16 sm:top-20 z-20 backdrop-blur-md">
+                <nav class="bg-slate-200/70 border-b border-slate-200 sticky top-16 sm:top-20 z-20 backdrop-blur-md">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
                         <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                             ${tabs.map(t => `
-                                <button onclick="switchTab('${t.id}')" class="px-3.5 py-2.5 rounded-2xl font-black text-xs sm:text-sm transition flex items-center justify-center sm:justify-start gap-2 shadow-xs ${currentTab === t.id ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-700/30' : 'bg-white text-slate-900 hover:bg-slate-50 border border-slate-300'}">
+                                <button onclick="switchTab('${t.id}')" class="px-3.5 py-2.5 rounded-2xl font-extrabold text-xs sm:text-sm transition flex items-center justify-center sm:justify-start gap-2 shadow-xs ${currentTab === t.id ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-300/80'}">
                                     <i class="fa-solid ${t.icon}"></i> ${t.label}
                                 </button>
                             `).join('')}
@@ -387,53 +387,115 @@
                     
                     return `
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                            <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm flex flex-col justify-between">
+                            <div class="bg-gradient-to-br from-white to-emerald-50/50 p-5 sm:p-6 rounded-3xl border border-emerald-200 shadow-sm flex flex-col justify-between">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[11px] sm:text-xs font-black uppercase tracking-wider text-emerald-900 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-300">Total Santri</span>
-                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-base sm:text-lg shadow-md"><i class="fa-solid fa-users"></i></div>
+                                    <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-emerald-900 bg-emerald-100 px-2.5 py-1 rounded-full">Total Santri</span>
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-base sm:text-lg shadow-lg shadow-emerald-600/30"><i class="fa-solid fa-users"></i></div>
                                 </div>
                                 <div class="mt-4">
                                     <div class="text-2xl sm:text-3xl font-black text-slate-900">${totalSantri} <span class="text-sm sm:text-base font-bold text-slate-700">Santri</span></div>
-                                    <div class="text-xs font-bold text-emerald-900 mt-1 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> ${activeSantri} Aktif | ${scholarshipSantri} Beasiswa</div>
+                                    <div class="text-[11px] sm:text-xs font-extrabold text-emerald-800 mt-1 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> ${activeSantri} Aktif | ${scholarshipSantri} Beasiswa</div>
                                 </div>
                             </div>
 
-                            <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm flex flex-col justify-between">
+                            <div class="bg-gradient-to-br from-white to-teal-50/50 p-5 sm:p-6 rounded-3xl border border-teal-200 shadow-sm flex flex-col justify-between">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[11px] sm:text-xs font-black uppercase tracking-wider text-teal-900 bg-teal-100 px-2.5 py-1 rounded-full border border-teal-300">Sudah Bayar SPP</span>
-                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-base sm:text-lg shadow-md"><i class="fa-solid fa-circle-check"></i></div>
+                                    <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-teal-900 bg-teal-100 px-2.5 py-1 rounded-full">Sudah Bayar SPP Bulan Ini</span>
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-base sm:text-lg shadow-lg shadow-teal-600/30"><i class="fa-solid fa-circle-check"></i></div>
                                 </div>
                                 <div class="mt-4">
-                                    <div class="text-2xl sm:text-3xl font-black text-slate-900">${paidThisMonthSantriIds.length} <span class="text-sm sm:text-base font-bold text-slate-700">Santri</span></div>
-                                    <div class="text-xs font-bold text-slate-700 mt-1">Periode ${currentMonth}</div>
+                                    <div class="text-2xl sm:text-3xl font-black text-teal-950">${paidThisMonthSantriIds.length} <span class="text-sm sm:text-base font-bold text-slate-700">Santri</span></div>
+                                    <div class="text-[11px] sm:text-xs font-extrabold text-slate-800 mt-1">Periode ${currentMonth}</div>
                                 </div>
                             </div>
 
-                            <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm flex flex-col justify-between">
+                            <div class="bg-gradient-to-br from-white to-indigo-50/50 p-5 sm:p-6 rounded-3xl border border-indigo-200 shadow-sm flex flex-col justify-between">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[11px] sm:text-xs font-black uppercase tracking-wider text-indigo-900 bg-indigo-100 px-2.5 py-1 rounded-full border border-indigo-300">Santri Beasiswa</span>
-                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-base sm:text-lg shadow-md"><i class="fa-solid fa-user-graduate"></i></div>
+                                    <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-indigo-900 bg-indigo-100 px-2.5 py-1 rounded-full">Santri Beasiswa</span>
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-base sm:text-lg shadow-lg shadow-indigo-600/30"><i class="fa-solid fa-user-graduate"></i></div>
                                 </div>
                                 <div class="mt-4">
-                                    <div class="text-2xl sm:text-3xl font-black text-slate-900">${scholarshipSantri} <span class="text-sm sm:text-base font-bold text-slate-700">Santri</span></div>
-                                    <div class="text-xs font-bold text-slate-700 mt-1">Bebas Biaya SPP</div>
+                                    <div class="text-2xl sm:text-3xl font-black text-indigo-950">${scholarshipSantri} <span class="text-sm sm:text-base font-bold text-slate-700">Santri</span></div>
+                                    <div class="text-[11px] sm:text-xs font-extrabold text-slate-800 mt-1">Bebas Biaya SPP</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm">
+                        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
                             <h3 class="font-extrabold text-slate-900 mb-4 flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-clock-rotate-left text-emerald-600"></i> Aktivitas Pembayaran Terbaru</h3>
                             <div class="space-y-3">
                                 ${paymentList.slice(0, 3).map(p => `
-                                    <div class="flex items-center justify-between p-3.5 sm:p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs sm:text-sm shadow-xs">
+                                    <div class="flex items-center justify-between p-3.5 sm:p-4 bg-gradient-to-r from-slate-50 to-emerald-50/40 rounded-2xl border border-slate-200 text-xs sm:text-sm shadow-xs">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-600 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-sm"><i class="fa-solid fa-receipt"></i></div>
+                                            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-sm shadow-emerald-600/30"><i class="fa-solid fa-receipt"></i></div>
                                             <div class="min-w-0">
-                                                <div class="font-extrabold text-slate-900 truncate">${p.santriName} - ${p.type}</div>
-                                                <div class="text-xs font-semibold text-slate-700 truncate">${p.month} • <span class="text-emerald-800 font-bold">${p.date}</span></div>
+                                                <div class="font-black text-slate-900 truncate">${p.santriName} - ${p.type}</div>
+                                                <div class="text-[11px] sm:text-xs font-bold text-slate-700 truncate">${p.month} • <span class="text-emerald-800">${p.date}</span></div>
                                             </div>
                                         </div>
-                                        <div class="font-black text-emerald-900 bg-emerald-100 px-3 py-1.5 rounded-xl border border-emerald-300 text-xs sm:text-sm flex-shrink-0">Rp ${p.amount.toLocaleString('id-ID')}</div>
+                                        <div class="font-black text-emerald-950 bg-emerald-100 px-2.5 py-1.5 rounded-xl border border-emerald-300 text-xs sm:text-sm flex-shrink-0">Rp ${p.amount.toLocaleString('id-ID')}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (currentUser && currentUser.role === 'treasurer') {
+                    const currentMonth = 'Agustus 2025';
+                    const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && p.month === currentMonth).map(p => p.santriId);
+                    const sppPayments = paymentList.filter(p => p.type === 'SPP');
+                    const totalSpp = sppPayments.reduce((acc, curr) => acc + curr.amount, 0);
+
+                    return `
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                            <div class="bg-gradient-to-br from-white to-emerald-50/50 p-5 sm:p-6 rounded-3xl border border-emerald-200 shadow-sm flex flex-col justify-between">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-emerald-900 bg-emerald-100 px-2.5 py-1 rounded-full">Total Santri</span>
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-base sm:text-lg shadow-lg shadow-emerald-600/30"><i class="fa-solid fa-users"></i></div>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="text-2xl sm:text-3xl font-black text-slate-900">${totalSantri} <span class="text-sm sm:text-base font-bold text-slate-700">Santri</span></div>
+                                    <div class="text-[11px] sm:text-xs font-extrabold text-emerald-800 mt-1 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> ${activeSantri} Aktif | ${scholarshipSantri} Beasiswa</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-white to-teal-50/50 p-5 sm:p-6 rounded-3xl border border-teal-200 shadow-sm flex flex-col justify-between">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-teal-900 bg-teal-100 px-2.5 py-1 rounded-full">Sudah Bayar SPP Bulan Ini</span>
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-base sm:text-lg shadow-lg shadow-teal-600/30"><i class="fa-solid fa-circle-check"></i></div>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="text-2xl sm:text-3xl font-black text-teal-950">${paidThisMonthSantriIds.length} <span class="text-sm sm:text-base font-bold text-slate-700">Santri</span></div>
+                                    <div class="text-[11px] sm:text-xs font-extrabold text-slate-800 mt-1">Periode ${currentMonth} (Total SPP: Rp ${totalSpp.toLocaleString('id-ID')})</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-white to-indigo-50/50 p-5 sm:p-6 rounded-3xl border border-indigo-200 shadow-sm flex flex-col justify-between">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-indigo-900 bg-indigo-100 px-2.5 py-1 rounded-full">Saldo Kas Bersih</span>
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-base sm:text-lg shadow-lg shadow-indigo-600/30"><i class="fa-solid fa-wallet"></i></div>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="text-xl sm:text-2xl font-black text-indigo-950 truncate">Rp ${balance.toLocaleString('id-ID')}</div>
+                                    <div class="text-[11px] sm:text-xs font-extrabold text-slate-800 mt-1">Total Pemasukan - Pengeluaran</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
+                            <h3 class="font-extrabold text-slate-900 mb-4 flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-clock-rotate-left text-emerald-600"></i> Aktivitas Pembayaran Terbaru</h3>
+                            <div class="space-y-3">
+                                ${paymentList.slice(0, 3).map(p => `
+                                    <div class="flex items-center justify-between p-3.5 sm:p-4 bg-gradient-to-r from-slate-50 to-emerald-50/40 rounded-2xl border border-slate-200 text-xs sm:text-sm shadow-xs">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-sm shadow-emerald-600/30"><i class="fa-solid fa-receipt"></i></div>
+                                            <div class="min-w-0">
+                                                <div class="font-black text-slate-900 truncate">${p.santriName} - ${p.type}</div>
+                                                <div class="text-[11px] sm:text-xs font-bold text-slate-700 truncate">${p.month} • <span class="text-emerald-800">${p.date}</span></div>
+                                            </div>
+                                        </div>
+                                        <div class="font-black text-emerald-950 bg-emerald-100 px-2.5 py-1.5 rounded-xl border border-emerald-300 text-xs sm:text-sm flex-shrink-0">Rp ${p.amount.toLocaleString('id-ID')}</div>
                                     </div>
                                 `).join('')}
                             </div>
@@ -443,46 +505,46 @@
 
                 return `
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                        <div class="bg-white p-4 sm:p-6 rounded-3xl border border-slate-300 shadow-sm flex flex-col justify-between">
+                        <div class="bg-gradient-to-br from-white to-emerald-50/50 p-4 sm:p-6 rounded-3xl border border-emerald-200 shadow-sm flex flex-col justify-between">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-900 bg-emerald-100 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-emerald-300">Total Santri</span>
-                                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-sm sm:text-lg shadow-md"><i class="fa-solid fa-users"></i></div>
+                                <span class="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-emerald-900 bg-emerald-100 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full">Total Santri</span>
+                                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-sm sm:text-lg shadow-lg shadow-emerald-600/30"><i class="fa-solid fa-users"></i></div>
                             </div>
                             <div class="mt-3 sm:mt-4">
                                 <div class="text-xl sm:text-3xl font-black text-slate-900">${totalSantri} <span class="text-xs sm:text-base font-bold text-slate-700">Santri</span></div>
-                                <div class="text-[10px] sm:text-xs font-bold text-emerald-900 mt-1 truncate"><i class="fa-solid fa-circle-check"></i> ${activeSantri} Aktif | ${scholarshipSantri} Beasiswa</div>
+                                <div class="text-[10px] sm:text-xs font-extrabold text-emerald-800 mt-1 truncate"><i class="fa-solid fa-circle-check"></i> ${activeSantri} Aktif | ${scholarshipSantri} Beasiswa</div>
                             </div>
                         </div>
 
-                        <div class="bg-white p-4 sm:p-6 rounded-3xl border border-slate-300 shadow-sm flex flex-col justify-between">
+                        <div class="bg-gradient-to-br from-white to-teal-50/50 p-4 sm:p-6 rounded-3xl border border-teal-200 shadow-sm flex flex-col justify-between">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-teal-900 bg-teal-100 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-teal-300">Total Pemasukan</span>
-                                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-sm sm:text-lg shadow-md"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                                <span class="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-teal-900 bg-teal-100 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full">Total Pemasukan</span>
+                                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-sm sm:text-lg shadow-lg shadow-teal-600/30"><i class="fa-solid fa-arrow-trend-up"></i></div>
                             </div>
                             <div class="mt-3 sm:mt-4">
-                                <div class="text-lg sm:text-2xl font-black text-slate-900 truncate">Rp ${totalIncome.toLocaleString('id-ID')}</div>
+                                <div class="text-lg sm:text-2xl font-black text-teal-950 truncate">Rp ${totalIncome.toLocaleString('id-ID')}</div>
                                 <div class="text-[10px] sm:text-xs font-bold text-slate-700 mt-1">Akumulasi kas masuk</div>
                             </div>
                         </div>
 
-                        <div class="bg-white p-4 sm:p-6 rounded-3xl border border-slate-300 shadow-sm flex flex-col justify-between">
+                        <div class="bg-gradient-to-br from-white to-rose-50/50 p-4 sm:p-6 rounded-3xl border border-rose-200 shadow-sm flex flex-col justify-between">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-rose-900 bg-rose-100 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-rose-300">Total Pengeluaran</span>
-                                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-sm sm:text-lg shadow-md"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                                <span class="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-rose-900 bg-rose-100 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full">Total Pengeluaran</span>
+                                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-sm sm:text-lg shadow-lg shadow-rose-600/30"><i class="fa-solid fa-arrow-trend-down"></i></div>
                             </div>
                             <div class="mt-3 sm:mt-4">
-                                <div class="text-lg sm:text-2xl font-black text-slate-900 truncate">Rp ${totalExpense.toLocaleString('id-ID')}</div>
+                                <div class="text-lg sm:text-2xl font-black text-rose-950 truncate">Rp ${totalExpense.toLocaleString('id-ID')}</div>
                                 <div class="text-[10px] sm:text-xs font-bold text-slate-700 mt-1">Akumulasi kas keluar</div>
                             </div>
                         </div>
 
-                        <div class="bg-white p-4 sm:p-6 rounded-3xl border border-slate-300 shadow-sm flex flex-col justify-between">
+                        <div class="bg-gradient-to-br from-white to-indigo-50/50 p-4 sm:p-6 rounded-3xl border border-indigo-200 shadow-sm flex flex-col justify-between">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-indigo-900 bg-indigo-100 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-indigo-300">Saldo Kas Bersih</span>
-                                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-sm sm:text-lg shadow-md"><i class="fa-solid fa-wallet"></i></div>
+                                <span class="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-indigo-900 bg-indigo-100 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full">Saldo Kas Bersih</span>
+                                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-sm sm:text-lg shadow-lg shadow-indigo-600/30"><i class="fa-solid fa-wallet"></i></div>
                             </div>
                             <div class="mt-3 sm:mt-4">
-                                <div class="text-lg sm:text-2xl font-black text-slate-900 truncate">Rp ${balance.toLocaleString('id-ID')}</div>
+                                <div class="text-lg sm:text-2xl font-black text-indigo-950 truncate">Rp ${balance.toLocaleString('id-ID')}</div>
                                 <div class="text-[10px] sm:text-xs font-bold text-slate-700 mt-1">Posisi Kas Terkini</div>
                             </div>
                         </div>
@@ -497,17 +559,14 @@
 -- APLIKASI KEUANGAN PESANTREN TERINTEGRASI
 -- ==========================================
 
--- 1. Buat Tabel Utama Sinkronisasi
 CREATE TABLE IF NOT EXISTS pesantren_sync (
     id INT PRIMARY KEY,
     payload JSONB NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. Aktifkan Row Level Security (RLS)
 ALTER TABLE pesantren_sync ENABLE ROW LEVEL SECURITY;
 
--- 3. Berikan Akses Publik untuk Anon Role (Select, Insert, Update)
 DROP POLICY IF EXISTS "Akses publik pesantren_sync" ON pesantren_sync;
 CREATE POLICY "Akses publik pesantren_sync" 
 ON pesantren_sync 
@@ -517,10 +576,10 @@ WITH CHECK (true);
                 `.trim();
 
                 return `
-                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm max-w-4xl mx-auto">
+                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm max-w-4xl mx-auto">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                             <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg flex items-center gap-2"><i class="fa-solid fa-database text-emerald-600"></i> Setup Skrip SQL Lengkap Supabase</h3>
+                                <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2"><i class="fa-solid fa-database text-emerald-600"></i> Setup Skrip SQL Lengkap Supabase</h3>
                                 <p class="text-xs sm:text-sm font-semibold text-slate-700">Salin skrip SQL di bawah ini dan jalankan pada <strong class="text-slate-900">Supabase SQL Editor</strong> Anda.</p>
                             </div>
                             <button onclick="copySqlScript()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 active:scale-95 flex-shrink-0">
@@ -528,12 +587,29 @@ WITH CHECK (true);
                             </button>
                         </div>
                         <div class="relative">
-                            <textarea id="sql-textarea" rows="12" readonly class="w-full p-4 bg-slate-900 text-emerald-300 font-mono text-xs rounded-2xl border border-slate-800 focus:outline-none">${sqlScript}</textarea>
+                            <textarea id="sql-textarea" rows="12" readonly class="w-full p-4 bg-slate-900 text-emerald-400 font-mono text-xs rounded-2xl border border-slate-800 focus:outline-none">${sqlScript}</textarea>
                         </div>
                         <div class="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-xs font-bold text-emerald-900 flex items-center gap-2">
-                            <i class="fa-solid fa-circle-check text-emerald-700 text-base"></i>
-                            <span>Supabase URL Terhubung: <strong class="text-emerald-950">${SUPABASE_URL}</strong></span>
+                            <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+                            <span>Supabase URL Terhubung: <strong>${SUPABASE_URL}</strong></span>
                         </div>
+                    </div>
+                `;
+            }
+
+            if (currentUser && currentUser.role === 'admin' && currentTab === 'reset_data') {
+                return `
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-rose-200 shadow-sm max-w-2xl mx-auto text-center">
+                        <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-3xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-inner">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <h3 class="font-black text-slate-900 text-lg sm:text-xl mb-2">Kosongkan Semua Data & Mulai Dari Awal</h3>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-700 mb-6 leading-relaxed">
+                            Fitur ini akan menghapus seluruh data santri, riwayat pembayaran SPP, dan catatan transaksi kas, namun <strong class="text-slate-900">tetap mempertahankan</strong> Profil Pesantren dan Sandi Akses Ruangan. Tindakan ini tidak dapat dibatalkan!
+                        </p>
+                        <button onclick="confirmResetAllData()" class="px-6 py-4 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-2xl shadow-xl shadow-rose-600/30 transition active:scale-95 text-sm inline-flex items-center gap-2">
+                            <i class="fa-solid fa-trash-arrow-up"></i> Kosongkan & Mulai Dari Awal
+                        </button>
                     </div>
                 `;
             }
@@ -542,23 +618,23 @@ WITH CHECK (true);
                 return `
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
-                            <h3 class="font-bold text-slate-900 text-base sm:text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-key text-amber-600"></i> Kelola Sandi Ruangan</h3>
-                            <p class="text-xs sm:text-sm text-slate-500 mb-6">Ubah kata sandi untuk masing-masing ruangan akses sistem.</p>
+                            <h3 class="font-black text-slate-900 text-base sm:text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-key text-amber-600"></i> Kelola Sandi Ruangan</h3>
+                            <p class="text-xs sm:text-sm font-semibold text-slate-700 mb-6">Ubah kata sandi untuk masing-masing ruangan akses sistem.</p>
 
                             <form onsubmit="updateCredentials(event)" class="space-y-4">
                                 <div>
-                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-1.5">Sandi Administrator Utama</label>
+                                    <label class="block text-xs font-black uppercase tracking-wider text-slate-900 mb-1.5">Sandi Administrator Utama</label>
                                     <input type="text" id="pass-admin" value="${dbState.credentials?.admin?.pass || 'admin123'}" required class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-1.5">Sandi Admin Pesantren</label>
+                                    <label class="block text-xs font-black uppercase tracking-wider text-slate-900 mb-1.5">Sandi Admin Pesantren</label>
                                     <input type="text" id="pass-pesantren" value="${dbState.credentials?.pesantren?.pass || 'santri123'}" required class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-1.5">Sandi Bendahara Pusat</label>
+                                    <label class="block text-xs font-black uppercase tracking-wider text-slate-900 mb-1.5">Sandi Bendahara Pusat</label>
                                     <input type="text" id="pass-treasurer" value="${dbState.credentials?.treasurer?.pass || 'pusat123'}" required class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
                                 </div>
-                                <button type="submit" class="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-lg shadow-amber-600/30 transition flex items-center justify-center gap-2 mt-2 text-sm sm:text-base active:scale-95">
+                                <button type="submit" class="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl shadow-lg shadow-amber-600/30 transition flex items-center justify-center gap-2 mt-2 text-sm sm:text-base active:scale-95">
                                     <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Sandi
                                 </button>
                             </form>
@@ -567,27 +643,10 @@ WITH CHECK (true);
                 `;
             }
 
-            if (currentUser && currentUser.role === 'admin' && currentTab === 'reset_data') {
-                return `
-                    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-rose-200 shadow-sm max-w-xl mx-auto text-center">
-                        <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-3xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-inner">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                        <h3 class="text-lg sm:text-xl font-black text-slate-900 mb-2">Kosongkan Data & Mulai dari Awal</h3>
-                        <p class="text-xs sm:text-sm font-medium text-slate-600 mb-6 leading-relaxed">
-                            Fitur ini akan menghapus seluruh data santri, riwayat pembayaran SPP, dan catatan transaksi kas keuangan. Profil pesantren dan sandi ruangan <strong>tidak akan berubah</strong>.
-                        </p>
-                        <button onclick="confirmResetAllData()" class="w-full py-4 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-2xl shadow-xl shadow-rose-600/30 transition transform active:scale-95 flex items-center justify-center gap-2 text-sm sm:text-base">
-                            <i class="fa-solid fa-trash-can"></i> Kosongkan Seluruh Data Sekarang
-                        </button>
-                    </div>
-                `;
-            }
-
             if (currentUser && currentUser.role === 'admin' && currentTab === 'profile') {
                 return `
-                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm max-w-2xl mx-auto">
-                        <h3 class="font-extrabold text-slate-900 text-base sm:text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-school text-emerald-600"></i> Pengaturan Profil Pesantren & Yayasan</h3>
+                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm max-w-2xl mx-auto">
+                        <h3 class="font-black text-slate-900 text-base sm:text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-school text-emerald-600"></i> Pengaturan Profil Pesantren & Yayasan</h3>
                         <p class="text-xs sm:text-sm font-semibold text-slate-700 mb-6">Perbarui informasi nama pesantren, yayasan, alamat, dan nomor kontak resmi.</p>
 
                         <form onsubmit="updateProfile(event)" class="space-y-4">
@@ -623,36 +682,33 @@ WITH CHECK (true);
 
             if (currentUser && currentUser.role === 'admin' && currentTab === 'cycles') {
                 return `
-                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm">
+                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg">Siklus & Rekapitulasi Keuangan Pesantren</h3>
+                                <h3 class="font-black text-slate-900 text-base sm:text-lg">Siklus & Rekapitulasi Keuangan Pesantren</h3>
                                 <p class="text-xs sm:text-sm font-semibold text-slate-700">Analisis sirkulasi kas masuk dan keluar (Terbaru di atas).</p>
                             </div>
-                            <button onclick="downloadPdfReport()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 active:scale-95">
-                                <i class="fa-solid fa-file-pdf"></i> Unduh Laporan PDF
-                            </button>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
-                            <div class="p-4 sm:p-5 bg-emerald-50 rounded-3xl border border-emerald-300 shadow-sm">
-                                <div class="text-xs font-black uppercase text-emerald-900 mb-1">Total Pemasukan</div>
+                            <div class="p-4 sm:p-5 bg-gradient-to-br from-emerald-50 to-teal-100/50 rounded-3xl border border-emerald-300 shadow-sm">
+                                <div class="text-[11px] sm:text-xs font-black uppercase text-emerald-900 mb-1">Total Pemasukan</div>
                                 <div class="text-xl sm:text-2xl font-black text-emerald-950">Rp ${totalIncome.toLocaleString('id-ID')}</div>
                             </div>
-                            <div class="p-4 sm:p-5 bg-rose-50 rounded-3xl border border-rose-300 shadow-sm">
-                                <div class="text-xs font-black uppercase text-rose-900 mb-1">Total Pengeluaran</div>
+                            <div class="p-4 sm:p-5 bg-gradient-to-br from-rose-50 to-red-100/50 rounded-3xl border border-rose-300 shadow-sm">
+                                <div class="text-[11px] sm:text-xs font-black uppercase text-rose-900 mb-1">Total Pengeluaran</div>
                                 <div class="text-xl sm:text-2xl font-black text-rose-950">Rp ${totalExpense.toLocaleString('id-ID')}</div>
                             </div>
-                            <div class="p-4 sm:p-5 bg-indigo-50 rounded-3xl border border-indigo-300 shadow-sm">
-                                <div class="text-xs font-black uppercase text-indigo-900 mb-1">Arus Kas Bersih</div>
+                            <div class="p-4 sm:p-5 bg-gradient-to-br from-indigo-50 to-blue-100/50 rounded-3xl border border-indigo-300 shadow-sm">
+                                <div class="text-[11px] sm:text-xs font-black uppercase text-indigo-900 mb-1">Arus Kas Bersih</div>
                                 <div class="text-xl sm:text-2xl font-black text-indigo-950">Rp ${balance.toLocaleString('id-ID')}</div>
                             </div>
                         </div>
 
-                        <h4 class="font-extrabold text-slate-900 mb-4 flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-list-check text-emerald-600"></i> Riwayat Seluruh Transaksi Siklus Keuangan</h4>
+                        <h4 class="font-black text-slate-900 mb-4 flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-list-check text-emerald-600"></i> Riwayat Seluruh Transaksi Siklus Keuangan</h4>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs sm:text-sm">
-                                <thead class="bg-slate-200 text-slate-900 uppercase text-[11px] sm:text-xs font-black tracking-wider">
+                                <thead class="bg-slate-100 text-slate-900 uppercase text-[11px] sm:text-xs font-black tracking-wider">
                                     <tr>
                                         <th class="p-3 sm:p-3.5 rounded-l-2xl">Tanggal</th>
                                         <th class="p-3 sm:p-3.5">Jenis</th>
@@ -661,13 +717,13 @@ WITH CHECK (true);
                                         <th class="p-3 sm:p-3.5 rounded-r-2xl text-right">Nominal</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-200">
+                                <tbody class="divide-y divide-slate-100">
                                     ${txList.map(t => `
                                         <tr class="hover:bg-slate-50 transition">
                                             <td class="p-3 sm:p-3.5 text-slate-800 font-bold whitespace-nowrap">${t.date}</td>
-                                            <td class="p-3 sm:p-3.5 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black ${t.type === 'Pemasukan' ? 'bg-emerald-100 text-emerald-950 border border-emerald-300' : 'bg-rose-100 text-rose-950 border border-rose-300'}">${t.type}</span></td>
-                                            <td class="p-3 sm:p-3.5 font-bold text-slate-900 whitespace-nowrap">${t.category}</td>
-                                            <td class="p-3 sm:p-3.5 text-slate-800 font-medium">${t.desc}</td>
+                                            <td class="p-3 sm:p-3.5 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black ${t.type === 'Pemasukan' ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-rose-100 text-rose-900 border border-rose-300'}">${t.type}</span></td>
+                                            <td class="p-3 sm:p-3.5 font-black text-slate-900 whitespace-nowrap">${t.category}</td>
+                                            <td class="p-3 sm:p-3.5 font-semibold text-slate-800">${t.desc}</td>
                                             <td class="p-3 sm:p-3.5 text-right font-black whitespace-nowrap ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-rose-800'}">Rp ${t.amount.toLocaleString('id-ID')}</td>
                                         </tr>
                                     `).join('')}
@@ -680,25 +736,20 @@ WITH CHECK (true);
 
             if (currentUser && currentUser.role === 'pesantren' && currentTab === 'santri') {
                 return `
-                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm">
+                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg">Manajemen Data Santri Pesantren</h3>
+                                <h3 class="font-black text-slate-900 text-base sm:text-lg">Manajemen Data Santri Pesantren</h3>
                                 <p class="text-xs sm:text-sm font-semibold text-slate-700">Tambah data santri baru, atur status, dan beasiswa.</p>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button onclick="downloadPdfReport()" class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2 active:scale-95">
-                                    <i class="fa-solid fa-file-pdf"></i> PDF Santri
-                                </button>
-                                <button onclick="openAddSantriModal()" class="px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-teal-600/30 transition flex items-center justify-center gap-2 active:scale-95">
-                                    <i class="fa-solid fa-user-plus"></i> Tambah Santri
-                                </button>
-                            </div>
+                            <button onclick="openAddSantriModal()" class="w-full sm:w-auto px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 active:scale-95">
+                                <i class="fa-solid fa-user-plus"></i> Tambah Santri Baru
+                            </button>
                         </div>
 
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs sm:text-sm">
-                                <thead class="bg-slate-200 text-slate-900 uppercase text-[11px] sm:text-xs font-black tracking-wider">
+                                <thead class="bg-slate-100 text-slate-900 uppercase text-[11px] sm:text-xs font-black tracking-wider">
                                     <tr>
                                         <th class="p-3 sm:p-3.5 rounded-l-2xl">ID & Nama Santri</th>
                                         <th class="p-3 sm:p-3.5">Kelas</th>
@@ -707,22 +758,22 @@ WITH CHECK (true);
                                         <th class="p-3 sm:p-3.5 rounded-r-2xl text-center">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-200">
+                                <tbody class="divide-y divide-slate-100">
                                     ${santriList.map(s => `
                                         <tr class="hover:bg-slate-50 transition">
                                             <td class="p-3 sm:p-3.5">
                                                 <div class="font-black text-slate-900">${s.name}</div>
-                                                <div class="text-xs font-bold text-slate-600">ID: ${s.id} | Telp: ${s.phone}</div>
+                                                <div class="text-[11px] font-bold text-slate-600">ID: ${s.id} | Telp: ${s.phone}</div>
                                             </td>
                                             <td class="p-3 sm:p-3.5 text-slate-900 font-bold whitespace-nowrap">${s.class}</td>
-                                            <td class="p-3 sm:p-3.5 text-emerald-900 font-black whitespace-nowrap">Rp ${(s.customSpp !== undefined ? s.customSpp : (dbState.profile?.defaultSpp || 250000)).toLocaleString('id-ID')}</td>
+                                            <td class="p-3 sm:p-3.5 text-emerald-800 font-black whitespace-nowrap">Rp ${(s.customSpp !== undefined ? s.customSpp : (dbState.profile?.defaultSpp || 250000)).toLocaleString('id-ID')}</td>
                                             <td class="p-3 sm:p-3.5 whitespace-nowrap">
-                                                <span class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black ${s.scholarship === 'Ya' ? 'bg-purple-100 text-purple-950 border border-purple-300' : 'bg-slate-200 text-slate-950 border border-slate-300'}">
+                                                <span class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black ${s.scholarship === 'Ya' ? 'bg-purple-100 text-purple-900 border border-purple-300' : 'bg-slate-100 text-slate-900 border border-slate-300'}">
                                                     ${s.scholarship === 'Ya' ? 'Beasiswa (Gratis)' : 'Reguler'}
                                                 </span>
                                             </td>
                                             <td class="p-3 sm:p-3.5 text-center whitespace-nowrap">
-                                                <button onclick="deleteSantri('${s.id}')" class="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-950 text-xs font-bold rounded-xl transition active:scale-95 border border-rose-300">
+                                                <button onclick="deleteSantri('${s.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-black rounded-xl transition active:scale-95">
                                                     <i class="fa-solid fa-trash-can mr-1"></i> Hapus
                                                 </button>
                                             </td>
@@ -737,29 +788,29 @@ WITH CHECK (true);
 
             if (currentUser && currentUser.role === 'pesantren' && currentTab === 'spp_setting') {
                 return `
-                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm max-w-3xl mx-auto">
-                        <h3 class="font-extrabold text-slate-900 text-base sm:text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-sliders text-emerald-600"></i> Pengaturan Nominal SPP & Status Beasiswa Santri</h3>
+                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm max-w-3xl mx-auto">
+                        <h3 class="font-black text-slate-900 text-base sm:text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-sliders text-emerald-600"></i> Pengaturan Nominal SPP & Status Beasiswa Santri</h3>
                         <p class="text-xs sm:text-sm font-semibold text-slate-700 mb-6">Atur nominal SPP bulanan dan ubah status beasiswa santri kapan saja.</p>
 
                         <div class="space-y-4">
                             ${santriList.map(s => `
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-300">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200">
                                     <div>
                                         <div class="font-black text-slate-900 text-sm sm:text-base">${s.name}</div>
-                                        <div class="text-xs font-semibold text-slate-700">${s.class} | Telp: ${s.phone}</div>
+                                        <div class="text-[11px] sm:text-xs font-bold text-slate-700">${s.class} | Telp: ${s.phone}</div>
                                     </div>
                                     <div class="flex flex-wrap items-center gap-2.5">
                                         <div class="flex items-center gap-1.5 flex-1 sm:flex-none">
-                                            <select id="spp-scholarship-${s.id}" class="w-full sm:w-auto px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
+                                            <select id="spp-scholarship-${s.id}" class="w-full sm:w-auto px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-black text-slate-900 focus:ring-2 focus:ring-emerald-500">
                                                 <option value="Tidak" ${s.scholarship === 'Tidak' ? 'selected' : ''}>Reguler</option>
                                                 <option value="Ya" ${s.scholarship === 'Ya' ? 'selected' : ''}>Beasiswa</option>
                                             </select>
                                         </div>
                                         <div class="flex items-center gap-1 flex-1 sm:flex-none">
-                                            <span class="text-xs font-bold text-slate-600">Rp</span>
-                                            <input type="number" id="spp-santri-${s.id}" value="${s.customSpp !== undefined ? s.customSpp : (dbState.profile?.defaultSpp || 250000)}" class="w-full sm:w-32 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-black text-emerald-900 focus:ring-2 focus:ring-emerald-500">
+                                            <span class="text-xs font-black text-slate-700">Rp</span>
+                                            <input type="number" id="spp-santri-${s.id}" value="${s.customSpp !== undefined ? s.customSpp : (dbState.profile?.defaultSpp || 250000)}" class="w-full sm:w-32 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-emerald-500">
                                         </div>
-                                        <button onclick="saveSantriSppAndScholarship('${s.id}')" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1 active:scale-95">
+                                        <button onclick="saveSantriSppAndScholarship('${s.id}')" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition flex items-center justify-center gap-1 active:scale-95">
                                             <i class="fa-solid fa-floppy-disk"></i> Simpan
                                         </button>
                                     </div>
@@ -772,27 +823,24 @@ WITH CHECK (true);
 
             if (currentUser && currentUser.role === 'pesantren' && currentTab === 'payments') {
                 return `
-                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm">
+                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg">Pencatatan Pembayaran & Rekam Jejak SPP</h3>
+                                <h3 class="font-black text-slate-900 text-base sm:text-lg">Pencatatan Pembayaran & Rekam Jejak SPP</h3>
                                 <p class="text-xs sm:text-sm font-semibold text-slate-700">Catat pembayaran Daftar Ulang & SPP santri.</p>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button onclick="downloadPdfReport()" class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2 active:scale-95">
-                                    <i class="fa-solid fa-file-pdf"></i> Unduh PDF Pembayaran
-                                </button>
-                                <button onclick="openPaymentModal()" class="px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 active:scale-95">
+                            <div class="flex items-center gap-3">
+                                <button onclick="openPaymentModal()" class="w-full sm:w-auto px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 active:scale-95">
                                     <i class="fa-solid fa-receipt"></i> Catat Pembayaran Baru
                                 </button>
                             </div>
                         </div>
 
                         <div class="mb-8">
-                            <h4 class="font-extrabold text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-600"></i> Riwayat Pembayaran Terbaru</h4>
+                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-600"></i> Riwayat Pembayaran Terbaru</h4>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left text-xs sm:text-sm">
-                                    <thead class="bg-slate-200 text-slate-900 uppercase text-[11px] sm:text-xs font-black tracking-wider">
+                                    <thead class="bg-gradient-to-r from-slate-100 to-emerald-50 text-slate-900 uppercase text-[11px] sm:text-xs font-black tracking-wider">
                                         <tr>
                                             <th class="p-3 sm:p-3.5 rounded-l-2xl">Tanggal</th>
                                             <th class="p-3 sm:p-3.5">Nama Santri</th>
@@ -802,7 +850,7 @@ WITH CHECK (true);
                                             <th class="p-3 sm:p-3.5 rounded-r-2xl text-right">Nominal</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-200">
+                                    <tbody class="divide-y divide-slate-100">
                                         ${paymentList.map(p => `
                                             <tr class="hover:bg-slate-50 transition">
                                                 <td class="p-3 sm:p-3.5 text-slate-800 font-bold whitespace-nowrap">${p.date}</td>
@@ -810,7 +858,7 @@ WITH CHECK (true);
                                                 <td class="p-3 sm:p-3.5 whitespace-nowrap"><span class="px-2.5 py-1 bg-teal-100 text-teal-950 rounded-full text-[10px] sm:text-xs font-black border border-teal-300">${p.type}</span></td>
                                                 <td class="p-3 sm:p-3.5 text-slate-800 font-bold whitespace-nowrap">${p.month}</td>
                                                 <td class="p-3 sm:p-3.5 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-950 rounded-full text-[10px] sm:text-xs font-black border border-emerald-300">${p.status}</span></td>
-                                                <td class="p-3 sm:p-3.5 text-right font-black text-emerald-900 whitespace-nowrap">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                <td class="p-3 sm:p-3.5 text-right font-black text-emerald-800 whitespace-nowrap">Rp ${p.amount.toLocaleString('id-ID')}</td>
                                             </tr>
                                         `).join('')}
                                     </tbody>
@@ -829,13 +877,8 @@ WITH CHECK (true);
 
                 return `
                     <div class="space-y-6">
-                        <div class="flex justify-end">
-                            <button onclick="downloadPdfReport()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 active:scale-95">
-                                <i class="fa-solid fa-file-pdf"></i> Unduh Laporan PDF Tunggakan
-                            </button>
-                        </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                            <div class="bg-emerald-50 p-5 sm:p-6 rounded-3xl border border-emerald-300 shadow-sm">
+                            <div class="bg-gradient-to-br from-emerald-50 to-teal-100/50 p-5 sm:p-6 rounded-3xl border border-emerald-300 shadow-sm">
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-[11px] sm:text-xs font-black uppercase text-emerald-950 bg-emerald-200 px-2.5 py-1 rounded-full">Sudah Bayar Bulan Ini</span>
                                     <i class="fa-solid fa-circle-check text-emerald-700 text-lg sm:text-xl"></i>
@@ -844,7 +887,7 @@ WITH CHECK (true);
                                 <p class="text-xs font-bold text-emerald-900 mt-1">Pembayaran SPP ${currentMonth} telah dilunasi.</p>
                             </div>
 
-                            <div class="bg-rose-50 p-5 sm:p-6 rounded-3xl border border-rose-300 shadow-sm">
+                            <div class="bg-gradient-to-br from-rose-50 to-orange-100/50 p-5 sm:p-6 rounded-3xl border border-rose-300 shadow-sm">
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-[11px] sm:text-xs font-black uppercase text-rose-950 bg-rose-200 px-2.5 py-1 rounded-full">Belum Bayar / Tunggakan</span>
                                     <i class="fa-solid fa-triangle-exclamation text-rose-700 text-lg sm:text-xl"></i>
@@ -858,24 +901,60 @@ WITH CHECK (true);
             }
 
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'spp_monitor') {
+                const currentMonth = 'Agustus 2025';
+                const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && p.month === currentMonth).map(p => p.santriId);
                 const sppPayments = paymentList.filter(p => p.type === 'SPP');
                 const totalSpp = sppPayments.reduce((acc, curr) => acc + curr.amount, 0);
 
                 return `
-                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                            <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg">Monitoring SPP Masuk</h3>
-                                <p class="text-xs sm:text-sm font-semibold text-slate-700">Pemantauan setoran SPP bulanan seluruh santri.</p>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <button onclick="downloadPdfReport()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 active:scale-95">
-                                    <i class="fa-solid fa-file-pdf"></i> Unduh PDF SPP
-                                </button>
-                                <div class="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-300 text-left sm:text-right shadow-xs">
+                    <div class="space-y-6">
+                        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                                <div>
+                                    <h3 class="font-black text-slate-900 text-base sm:text-lg">Monitoring SPP Masuk & Aktivitas Pembayaran</h3>
+                                    <p class="text-xs sm:text-sm font-semibold text-slate-700">Pemantauan setoran SPP bulanan dan daftar pembayaran terbaru.</p>
+                                </div>
+                                <div class="p-3.5 bg-gradient-to-br from-emerald-50 to-teal-100/50 rounded-2xl border border-emerald-300 text-left sm:text-right shadow-xs w-full sm:w-auto">
                                     <div class="text-[10px] sm:text-xs font-black uppercase text-emerald-950">Total SPP Masuk</div>
                                     <div class="text-lg sm:text-xl font-black text-emerald-950">Rp ${totalSpp.toLocaleString('id-ID')}</div>
                                 </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                                <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-300">
+                                    <div class="text-xs font-black text-emerald-950 uppercase">Sudah Bayar (${currentMonth})</div>
+                                    <div class="text-2xl font-black text-emerald-900 mt-1">${paidThisMonthSantriIds.length} Santri</div>
+                                </div>
+                                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-300">
+                                    <div class="text-xs font-black text-slate-900 uppercase">Total Transaksi SPP Tercatat</div>
+                                    <div class="text-2xl font-black text-slate-950 mt-1">${sppPayments.length} Transaksi</div>
+                                </div>
+                            </div>
+
+                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm"><i class="fa-solid fa-receipt text-emerald-600 mr-2"></i> Riwayat Pembayaran SPP Terbaru</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs sm:text-sm">
+                                    <thead class="bg-slate-100 text-slate-900 uppercase text-[11px] sm:text-xs font-black tracking-wider">
+                                        <tr>
+                                            <th class="p-3 rounded-l-xl">Tanggal</th>
+                                            <th class="p-3">Nama Santri</th>
+                                            <th class="p-3">Periode</th>
+                                            <th class="p-3">Status</th>
+                                            <th class="p-3 rounded-r-xl text-right">Nominal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        ${sppPayments.map(p => `
+                                            <tr class="hover:bg-slate-50 transition">
+                                                <td class="p-3 text-slate-800 font-bold whitespace-nowrap">${p.date}</td>
+                                                <td class="p-3 font-black text-slate-900 whitespace-nowrap">${p.santriName}</td>
+                                                <td class="p-3 text-slate-800 font-bold whitespace-nowrap">${p.month}</td>
+                                                <td class="p-3 whitespace-nowrap"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-950 font-black text-[10px] rounded-full border border-emerald-300">${p.status}</span></td>
+                                                <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -884,23 +963,23 @@ WITH CHECK (true);
 
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'transactions') {
                 return `
-                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm">
+                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
                         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
                             <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg">Pencatatan Pemasukan & Pengeluaran Kas</h3>
+                                <h3 class="font-black text-slate-900 text-base sm:text-lg">Pencatatan Pemasukan & Pengeluaran Kas</h3>
                                 <p class="text-xs sm:text-sm font-semibold text-slate-700">Kelola arus kas masuk dan pengeluaran operasional.</p>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                <div class="bg-emerald-50 p-3 px-4 rounded-2xl border border-emerald-300 shadow-xs flex flex-col justify-center">
+                                <div class="bg-gradient-to-br from-emerald-50 to-teal-50/60 p-3 px-4 rounded-2xl border border-emerald-300 shadow-xs flex flex-col justify-center">
                                     <span class="text-[10px] font-black uppercase tracking-wider text-emerald-950">Seluruh Pemasukan</span>
                                     <span class="text-sm sm:text-base font-black text-emerald-950">Rp ${totalIncome.toLocaleString('id-ID')}</span>
                                 </div>
-                                <div class="bg-rose-50 p-3 px-4 rounded-2xl border border-rose-300 shadow-xs flex flex-col justify-center">
+                                <div class="bg-gradient-to-br from-rose-50 to-red-50/60 p-3 px-4 rounded-2xl border border-rose-300 shadow-xs flex flex-col justify-center">
                                     <span class="text-[10px] font-black uppercase tracking-wider text-rose-950">Seluruh Pengeluaran</span>
                                     <span class="text-sm sm:text-base font-black text-rose-950">Rp ${totalExpense.toLocaleString('id-ID')}</span>
                                 </div>
-                                <div class="bg-indigo-50 p-3 px-4 rounded-2xl border border-indigo-300 shadow-xs flex flex-col justify-center">
+                                <div class="bg-gradient-to-br from-indigo-50 to-blue-50/60 p-3 px-4 rounded-2xl border border-indigo-300 shadow-xs flex flex-col justify-center">
                                     <span class="text-[10px] font-black uppercase tracking-wider text-indigo-950">Saldo Kas Bersih</span>
                                     <span class="text-sm sm:text-base font-black text-indigo-950">Rp ${balance.toLocaleString('id-ID')}</span>
                                 </div>
@@ -908,14 +987,34 @@ WITH CHECK (true);
                         </div>
 
                         <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-2">
-                                <button onclick="downloadPdfReport()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2 active:scale-95">
-                                    <i class="fa-solid fa-file-pdf"></i> PDF Kas Keuangan
-                                </button>
-                                <button onclick="openTransactionModal()" class="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-teal-600/30 transition flex items-center gap-2 active:scale-95">
-                                    <i class="fa-solid fa-plus-circle"></i> Tambah Transaksi Kas
-                                </button>
-                            </div>
+                            <button onclick="openTransactionModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center gap-2 active:scale-95">
+                                <i class="fa-solid fa-plus-circle"></i> Tambah Transaksi Kas
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto mt-4">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-slate-100 text-slate-900 uppercase text-[11px] sm:text-xs font-black tracking-wider">
+                                    <tr>
+                                        <th class="p-3 rounded-l-xl">Tanggal</th>
+                                        <th class="p-3">Jenis</th>
+                                        <th class="p-3">Kategori</th>
+                                        <th class="p-3">Keterangan</th>
+                                        <th class="p-3 rounded-r-xl text-right">Nominal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    ${txList.map(t => `
+                                        <tr class="hover:bg-slate-50 transition">
+                                            <td class="p-3 text-slate-800 font-bold whitespace-nowrap">${t.date}</td>
+                                            <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${t.type === 'Pemasukan' ? 'bg-emerald-100 text-emerald-950 border border-emerald-300' : 'bg-rose-100 text-rose-950 border border-rose-300'}">${t.type}</span></td>
+                                            <td class="p-3 font-black text-slate-900 whitespace-nowrap">${t.category}</td>
+                                            <td class="p-3 font-semibold text-slate-800">${t.desc}</td>
+                                            <td class="p-3 text-right font-black whitespace-nowrap ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-rose-800'}">Rp ${t.amount.toLocaleString('id-ID')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 `;
@@ -923,15 +1022,47 @@ WITH CHECK (true);
 
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'reports') {
                 return `
-                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-300 shadow-sm">
-                        <div class="flex justify-between items-center mb-4">
+                    <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div>
-                                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg mb-1">Data Santri Aktif & Penerima Beasiswa</h3>
-                                <p class="text-xs sm:text-sm font-semibold text-slate-700">Daftar lengkap santri untuk keperluan audit.</p>
+                                <h3 class="font-black text-slate-900 text-base sm:text-lg">Data Santri Terdaftar & Nominal SPP</h3>
+                                <p class="text-xs sm:text-sm font-semibold text-slate-700">Daftar nama santri beserta besaran SPP dan status beasiswa untuk keperluan audit bendahara.</p>
                             </div>
-                            <button onclick="downloadPdfReport()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 active:scale-95">
-                                <i class="fa-solid fa-file-pdf"></i> Unduh Laporan PDF
+                            <button onclick="downloadPdfReport()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md transition flex items-center gap-2 active:scale-95">
+                                <i class="fa-solid fa-file-pdf"></i> Unduh PDF Laporan Santri
                             </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-slate-100 text-slate-900 uppercase text-[11px] sm:text-xs font-black tracking-wider">
+                                    <tr>
+                                        <th class="p-3 sm:p-3.5 rounded-l-2xl">ID & Nama Santri</th>
+                                        <th class="p-3 sm:p-3.5">Kelas</th>
+                                        <th class="p-3 sm:p-3.5">Nominal SPP</th>
+                                        <th class="p-3 sm:p-3.5">Status Beasiswa</th>
+                                        <th class="p-3 sm:p-3.5 rounded-r-2xl text-right">No Telepon</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    ${santriList.map(s => `
+                                        <tr class="hover:bg-slate-50 transition">
+                                            <td class="p-3 sm:p-3.5">
+                                                <div class="font-black text-slate-900">${s.name}</div>
+                                                <div class="text-[11px] font-bold text-slate-600">ID: ${s.id}</div>
+                                            </td>
+                                            <td class="p-3 sm:p-3.5 text-slate-900 font-bold whitespace-nowrap">${s.class}</td>
+                                            <td class="p-3 sm:p-3.5 text-emerald-800 font-black whitespace-nowrap">Rp ${(s.customSpp !== undefined ? s.customSpp : (dbState.profile?.defaultSpp || 250000)).toLocaleString('id-ID')}</td>
+                                            <td class="p-3 sm:p-3.5 whitespace-nowrap">
+                                                <span class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black ${s.scholarship === 'Ya' ? 'bg-purple-100 text-purple-900 border border-purple-300' : 'bg-slate-100 text-slate-900 border border-slate-300'}">
+                                                    ${s.scholarship === 'Ya' ? 'Beasiswa (Gratis)' : 'Reguler'}
+                                                </span>
+                                            </td>
+                                            <td class="p-3 sm:p-3.5 text-right text-slate-800 font-bold whitespace-nowrap">${s.phone}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 `;
@@ -940,88 +1071,19 @@ WITH CHECK (true);
             return '';
         }
 
-        // PDF Export Function using jsPDF
-        function downloadPdfReport() {
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                
-                const profile = dbState.profile || {};
-                const santriList = dbState.santri || [];
-                const txList = dbState.transactions || [];
-                const paymentList = dbState.payments || [];
-
-                // Header
-                doc.setFont("inter", "bold");
-                doc.setFontSize(16);
-                doc.text(profile.name || "Pesantren Darul Ulum", 14, 20);
-                
-                doc.setFontSize(10);
-                doc.setFont("inter", "normal");
-                doc.text(`Yayasan: ${profile.foundation || '-'}`, 14, 27);
-                doc.text(`Alamat: ${profile.address || '-'} | Telp: ${profile.phone || '-'}`, 14, 33);
-                doc.text(`Tahun Ajaran: ${profile.currentYear || '-'}`, 14, 39);
-
-                doc.setLineWidth(0.5);
-                doc.line(14, 44, 196, 44);
-
-                // Section 1: Data Santri
-                doc.setFont("inter", "bold");
-                doc.setFontSize(12);
-                doc.text("DAFTAR SANTRI DAN STATUS BEASISWA", 14, 52);
-
-                const santriRows = santriList.map(s => [
-                    s.id,
-                    s.name,
-                    s.class,
-                    `Rp ${(s.customSpp !== undefined ? s.customSpp : 250000).toLocaleString('id-ID')}`,
-                    s.scholarship === 'Ya' ? 'Beasiswa (Gratis)' : 'Reguler',
-                    s.phone
-                ]);
-
-                doc.autoTable({
-                    startY: 56,
-                    head: [['ID', 'Nama Lengkap', 'Kelas', 'Nominal SPP', 'Status Beasiswa', 'Telepon']],
-                    body: santriRows,
-                    theme: 'grid',
-                    headStyles: { fillColor: [16, 138, 95] },
-                    styles: { fontSize: 9, font: 'inter' }
-                });
-
-                // Section 2: Transaksi Keuangan
-                let finalY = doc.lastAutoTable.finalY + 15;
-                if (finalY > 250) {
-                    doc.addPage();
-                    finalY = 20;
-                }
-
-                doc.setFont("inter", "bold");
-                doc.setFontSize(12);
-                doc.text("REKAPITULASI ARUS KAS KEUANGAN", 14, finalY);
-
-                const txRows = txList.map(t => [
-                    t.date,
-                    t.type,
-                    t.category,
-                    t.desc,
-                    `Rp ${t.amount.toLocaleString('id-ID')}`
-                ]);
-
-                doc.autoTable({
-                    startY: finalY + 4,
-                    head: [['Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Nominal']],
-                    body: txRows,
-                    theme: 'grid',
-                    headStyles: { fillColor: [16, 138, 95] },
-                    styles: { fontSize: 9, font: 'inter' }
-                });
-
-                doc.save(`Laporan_Keuangan_Pesantren_${new Date().toISOString().split('T')[0]}.pdf`);
-                showModal('Berhasil Unduh PDF', 'File laporan PDF berhasil diunduh ke perangkat Anda.', 'success');
-            } catch (err) {
-                console.error("Gagal membuat PDF:", err);
-                showModal('Gagal PDF', 'Terjadi kesalahan saat mengunduh laporan PDF.', 'error');
-            }
+        function confirmResetAllData() {
+            showModal('Konfirmasi Kosongkan Data', 'Apakah Anda yakin ingin mengosongkan seluruh data santri, pembayaran, dan transaksi kas? Tindakan ini tidak dapat dibatalkan.', 'error', [
+                { text: 'Batal', class: 'bg-slate-200 text-slate-800 hover:bg-slate-300 flex-1 py-3 font-bold', onClick: closeModal },
+                { text: 'Ya, Kosongkan', class: 'bg-rose-600 text-white hover:bg-rose-700 flex-1 py-3 shadow-md shadow-rose-600/30 font-black', onClick: () => {
+                    dbState.santri = [];
+                    dbState.payments = [];
+                    dbState.transactions = [];
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil Dikosongkan', 'Seluruh data santri, pembayaran, dan transaksi telah dibersihkan. Sistem siap digunakan dari awal.', 'success');
+                }}
+            ]);
         }
 
         function updateCredentials(e) {
@@ -1032,21 +1094,6 @@ WITH CHECK (true);
             dbState.credentials.treasurer.pass = document.getElementById('pass-treasurer').value;
             saveDb();
             showModal('Berhasil', 'Kata sandi seluruh ruangan berhasil diperbarui.', 'success');
-        }
-
-        function confirmResetAllData() {
-            showModal('Konfirmasi Kosongkan Data', 'Apakah Anda yakin ingin mengosongkan seluruh data santri, pembayaran, dan transaksi kas? Tindakan ini tidak dapat dibatalkan.', 'info', [
-                { text: 'Batal', class: 'bg-slate-200 text-slate-700 hover:bg-slate-300 flex-1 py-3 font-bold', onClick: closeModal },
-                { text: 'Ya, Kosongkan', class: 'bg-rose-600 text-white hover:bg-rose-700 flex-1 py-3 shadow-md shadow-rose-600/30 font-bold', onClick: () => {
-                    dbState.santri = [];
-                    dbState.payments = [];
-                    dbState.transactions = [];
-                    saveDb();
-                    closeModal();
-                    renderDashboard();
-                    showModal('Berhasil Dikosongkan', 'Seluruh data santri dan keuangan telah dikosongkan. Anda dapat mulai menginput data baru dari awal.', 'success');
-                }}
-            ]);
         }
 
         function updateProfile(e) {
@@ -1079,7 +1126,7 @@ WITH CHECK (true);
             const defaultSpp = dbState.profile?.defaultSpp || 250000;
             showModal('Tambah Santri Baru', 'Formulir input data santri:', 'info', [
                 { text: 'Batal', class: 'bg-slate-200 text-slate-800 hover:bg-slate-300 flex-1 py-3 font-bold', onClick: closeModal },
-                { text: 'Simpan', class: 'bg-emerald-600 text-white hover:bg-emerald-700 flex-1 py-3 shadow-md shadow-emerald-600/30 font-bold', onClick: () => {
+                { text: 'Simpan', class: 'bg-emerald-600 text-white hover:bg-emerald-700 flex-1 py-3 shadow-md shadow-emerald-600/30 font-black', onClick: () => {
                     const name = document.getElementById('modal-santri-name').value;
                     const santriClass = document.getElementById('modal-santri-class').value;
                     const customSpp = parseInt(document.getElementById('modal-santri-spp').value) || defaultSpp;
@@ -1101,26 +1148,26 @@ WITH CHECK (true);
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3.5 text-left mt-2">
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Nama Lengkap Santri</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nama Lengkap Santri</label>
                         <input type="text" id="modal-santri-name" placeholder="cth: Ahmad Dani" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Kelas</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Kelas</label>
                         <input type="text" id="modal-santri-class" placeholder="cth: VII-A (Tsanawiyah)" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Nominal SPP Bulanan (Rp)</label>
-                        <input type="number" id="modal-santri-spp" value="${defaultSpp}" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-black text-emerald-900 focus:ring-2 focus:ring-emerald-500">
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nominal SPP Bulanan (Rp)</label>
+                        <input type="number" id="modal-santri-spp" value="${defaultSpp}" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-black text-emerald-800 focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Status Beasiswa</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Status Beasiswa</label>
                         <select id="modal-santri-scholarship" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
                             <option value="Tidak">Reguler (Tidak Beasiswa)</option>
                             <option value="Ya">Penerima Beasiswa (Gratis SPP)</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Nomor Telepon Wali</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nomor Telepon Wali</label>
                         <input type="text" id="modal-santri-phone" placeholder="cth: 08123456789" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
                     </div>
                 </div>
@@ -1143,7 +1190,7 @@ WITH CHECK (true);
 
             showModal('Catat Pembayaran Santri', 'Formulir transaksi pembayaran:', 'info', [
                 { text: 'Batal', class: 'bg-slate-200 text-slate-800 hover:bg-slate-300 flex-1 py-3 font-bold', onClick: closeModal },
-                { text: 'Catat Pembayaran', class: 'bg-emerald-600 text-white hover:bg-emerald-700 flex-1 py-3 shadow-md shadow-emerald-600/30 font-bold', onClick: () => {
+                { text: 'Catat Pembayaran', class: 'bg-emerald-600 text-white hover:bg-emerald-700 flex-1 py-3 shadow-md shadow-emerald-600/30 font-black', onClick: () => {
                     const paymentDate = document.getElementById('pay-date').value || todayStr;
                     const santriId = document.getElementById('pay-santri').value;
                     const type = document.getElementById('pay-type').value;
@@ -1190,29 +1237,29 @@ WITH CHECK (true);
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3.5 text-left mt-2">
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Tanggal Pembayaran</label>
-                        <input type="date" id="pay-date" value="${todayStr}" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Tanggal Pembayaran</label>
+                        <input type="date" id="pay-date" value="${todayStr}" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Pilih Santri</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Pilih Santri</label>
                         <select id="pay-santri" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
                             ${santriOptions}
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Jenis Pembayaran</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Jenis Pembayaran</label>
                         <select id="pay-type" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
                             <option value="SPP">SPP Bulanan</option>
                             <option value="Daftar Ulang">Daftar Ulang</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Bulan / Keterangan Periode</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Bulan / Keterangan Periode</label>
                         <input type="text" id="pay-month" value="Agustus 2025" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Nominal (Rp)</label>
-                        <input type="number" id="pay-amount" value="${defaultSppVal}" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-black text-emerald-900 focus:ring-2 focus:ring-emerald-500">
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
+                        <input type="number" id="pay-amount" value="${defaultSppVal}" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-black text-emerald-800 focus:ring-2 focus:ring-emerald-500">
                     </div>
                 </div>
             `;
@@ -1222,7 +1269,7 @@ WITH CHECK (true);
             const todayStr = new Date().toISOString().split('T')[0];
             showModal('Catat Kas Pemasukan / Pengeluaran', 'Formulir transaksi kas:', 'info', [
                 { text: 'Batal', class: 'bg-slate-200 text-slate-800 hover:bg-slate-300 flex-1 py-3 font-bold', onClick: closeModal },
-                { text: 'Simpan Transaksi', class: 'bg-emerald-600 text-white hover:bg-emerald-700 flex-1 py-3 shadow-md shadow-emerald-600/30 font-bold', onClick: () => {
+                { text: 'Simpan Transaksi', class: 'bg-emerald-600 text-white hover:bg-emerald-700 flex-1 py-3 shadow-md shadow-emerald-600/30 font-black', onClick: () => {
                     const type = document.getElementById('trx-type').value;
                     const category = document.getElementById('trx-cat').value;
                     const amount = parseInt(document.getElementById('trx-amount').value) || 0;
@@ -1250,26 +1297,66 @@ WITH CHECK (true);
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3.5 text-left mt-2">
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Jenis Arus Kas</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Jenis Arus Kas</label>
                         <select id="trx-type" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
                             <option value="Pemasukan">Pemasukan Kas</option>
                             <option value="Pengeluaran">Pengeluaran Kas</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Kategori Transaksi</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Kategori Transaksi</label>
                         <input type="text" id="trx-cat" placeholder="cth: Operasional / Donasi / Honor" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Nominal (Rp)</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
                         <input type="number" id="trx-amount" placeholder="500000" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-slate-900 mb-1">Keterangan / Deskripsi</label>
+                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Keterangan / Deskripsi</label>
                         <textarea id="trx-desc" rows="2" placeholder="Catatan atau rincian transaksi..." class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500"></textarea>
                     </div>
                 </div>
             `;
+        }
+
+        function downloadPdfReport() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.text(dbState.profile?.name || "Pesantren Darul Ulum", 14, 18);
+                
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                doc.text(dbState.profile?.foundation || "", 14, 24);
+                doc.text(dbState.profile?.address || "", 14, 30);
+                doc.text("Laporan Resmi Keuangan & Data Santri", 14, 38);
+
+                const santriRows = (dbState.santri || []).map((s, idx) => [
+                    idx + 1,
+                    s.name,
+                    s.class,
+                    s.scholarship === 'Ya' ? 'Beasiswa' : 'Reguler',
+                    'Rp ' + (s.customSpp !== undefined ? s.customSpp : 250000).toLocaleString('id-ID'),
+                    s.phone
+                ]);
+
+                doc.autoTable({
+                    startY: 45,
+                    head: [['No', 'Nama Santri', 'Kelas', 'Status', 'Nominal SPP', 'Telepon']],
+                    body: santriRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [16, 185, 129] }
+                });
+
+                doc.save("Laporan-Keuangan-Pesantren.pdf");
+                showModal('Berhasil Unduh PDF', 'File laporan PDF berhasil diunduh.', 'success');
+            } catch (err) {
+                console.error("Gagal export PDF:", err);
+                showModal('Gagal', 'Terjadi kesalahan saat menghasilkan PDF.', 'error');
+            }
         }
 
         function copySqlScript() {
@@ -1293,13 +1380,13 @@ WITH CHECK (true);
             msgEl.innerHTML = message;
 
             if (type === 'success') {
-                icon.className = 'w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl mb-4 mx-auto shadow-inner';
+                icon.className = 'w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mb-4 mx-auto shadow-inner';
                 icon.innerHTML = '<i class="fa-solid fa-check"></i>';
             } else if (type === 'error') {
-                icon.className = 'w-14 h-14 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center text-2xl mb-4 mx-auto shadow-inner';
+                icon.className = 'w-14 h-14 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mb-4 mx-auto shadow-inner';
                 icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
             } else {
-                icon.className = 'w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl mb-4 mx-auto shadow-inner';
+                icon.className = 'w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mb-4 mx-auto shadow-inner';
                 icon.innerHTML = '<i class="fa-solid fa-info"></i>';
             }
 
@@ -1307,7 +1394,7 @@ WITH CHECK (true);
                 actEl.innerHTML = `<button onclick="closeModal()" class="w-full py-3.5 bg-emerald-600 text-white font-black rounded-xl text-sm hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/30 active:scale-95">Tutup</button>`;
             } else {
                 actEl.innerHTML = actions.map((a, idx) => `
-                    <button id="modal-act-${idx}" class="px-4 py-3 font-bold rounded-xl text-sm transition active:scale-95 ${a.class}">${a.text}</button>
+                    <button id="modal-act-${idx}" class="px-4 py-3 font-black rounded-xl text-sm transition active:scale-95 ${a.class}">${a.text}</button>
                 `).join('');
 
                 actions.forEach((a, idx) => {
