@@ -196,11 +196,8 @@
                             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-3xl mx-auto flex items-center justify-center text-white text-2xl sm:text-3xl shadow-xl shadow-emerald-500/30 mb-4 transform hover:scale-105 transition duration-300">
                                 <i class="fa-solid fa-mosque"></i>
                             </div>
-                            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Keuangan Pesantren</h1>
+                            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">SPP & Keuangan Pesantren</h1>
                             <p class="text-xs font-bold text-slate-600 mt-1">${dbState.profile?.name || 'Pesantren Darul Ulum'}</p>
-                            <div class="mt-3 inline-block bg-emerald-100 text-emerald-900 text-xs font-black px-3.5 py-1.5 rounded-full border border-emerald-300 shadow-xs">
-                                <i class="fa-solid fa-cloud-arrow-up mr-1 text-emerald-700"></i> Supabase Cloud & Realtime Terintegrasi
-                            </div>
                         </div>
 
                         <form onsubmit="handleLogin(event)" class="space-y-4 sm:space-y-5">
