@@ -196,8 +196,9 @@
                             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-3xl mx-auto flex items-center justify-center text-white text-2xl sm:text-3xl shadow-xl shadow-emerald-500/30 mb-4 transform hover:scale-105 transition duration-300">
                                 <i class="fa-solid fa-mosque"></i>
                             </div>
-                            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">SPP & Keuangan Pesantren</h1>
+                            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Keuangan Pesantren</h1>
                             <p class="text-xs font-bold text-slate-600 mt-1">${dbState.profile?.name || 'Pesantren Darul Ulum'}</p>
+                            
                         </div>
 
                         <form onsubmit="handleLogin(event)" class="space-y-4 sm:space-y-5">
@@ -445,7 +446,7 @@
                     const totalSpp = sppPayments.reduce((acc, curr) => acc + curr.amount, 0);
 
                     return `
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                             <div class="bg-gradient-to-br from-white to-emerald-50/50 p-5 sm:p-6 rounded-3xl border border-emerald-200 shadow-sm flex flex-col justify-between">
                                 <div class="flex items-center justify-between">
                                     <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-emerald-900 bg-emerald-100 px-2.5 py-1 rounded-full">Total Santri</span>
@@ -459,12 +460,23 @@
 
                             <div class="bg-gradient-to-br from-white to-teal-50/50 p-5 sm:p-6 rounded-3xl border border-teal-200 shadow-sm flex flex-col justify-between">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-teal-900 bg-teal-100 px-2.5 py-1 rounded-full">Sudah Bayar SPP Bulan Ini</span>
-                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-base sm:text-lg shadow-lg shadow-teal-600/30"><i class="fa-solid fa-circle-check"></i></div>
+                                    <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-teal-900 bg-teal-100 px-2.5 py-1 rounded-full">Total Pemasukan</span>
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-base sm:text-lg shadow-lg shadow-teal-600/30"><i class="fa-solid fa-arrow-trend-up"></i></div>
                                 </div>
                                 <div class="mt-4">
-                                    <div class="text-2xl sm:text-3xl font-black text-teal-950">${paidThisMonthSantriIds.length} <span class="text-sm sm:text-base font-bold text-slate-700">Santri</span></div>
-                                    <div class="text-[11px] sm:text-xs font-extrabold text-slate-800 mt-1">Periode ${currentMonth} (Total SPP: Rp ${totalSpp.toLocaleString('id-ID')})</div>
+                                    <div class="text-lg sm:text-2xl font-black text-teal-950 truncate">Rp ${totalIncome.toLocaleString('id-ID')}</div>
+                                    <div class="text-[11px] sm:text-xs font-extrabold text-slate-800 mt-1">Akumulasi kas masuk</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-white to-rose-50/50 p-5 sm:p-6 rounded-3xl border border-rose-200 shadow-sm flex flex-col justify-between">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-rose-900 bg-rose-100 px-2.5 py-1 rounded-full">Total Pengeluaran</span>
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-base sm:text-lg shadow-lg shadow-rose-600/30"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="text-lg sm:text-2xl font-black text-rose-950 truncate">Rp ${totalExpense.toLocaleString('id-ID')}</div>
+                                    <div class="text-[11px] sm:text-xs font-extrabold text-slate-800 mt-1">Akumulasi kas keluar</div>
                                 </div>
                             </div>
 
@@ -474,8 +486,8 @@
                                     <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-base sm:text-lg shadow-lg shadow-indigo-600/30"><i class="fa-solid fa-wallet"></i></div>
                                 </div>
                                 <div class="mt-4">
-                                    <div class="text-xl sm:text-2xl font-black text-indigo-950 truncate">Rp ${balance.toLocaleString('id-ID')}</div>
-                                    <div class="text-[11px] sm:text-xs font-extrabold text-slate-800 mt-1">Total Pemasukan - Pengeluaran</div>
+                                    <div class="text-lg sm:text-2xl font-black text-indigo-950 truncate">Rp ${balance.toLocaleString('id-ID')}</div>
+                                    <div class="text-[11px] sm:text-xs font-extrabold text-slate-800 mt-1">Posisi Kas Terkini</div>
                                 </div>
                             </div>
                         </div>
@@ -905,6 +917,21 @@ WITH CHECK (true);
 
                 return `
                     <div class="space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                            <div class="bg-gradient-to-br from-white to-emerald-50/50 p-5 rounded-3xl border border-emerald-200 shadow-sm">
+                                <div class="text-[11px] font-black uppercase text-emerald-900 mb-1">Total Pemasukan Kas</div>
+                                <div class="text-xl sm:text-2xl font-black text-emerald-950">Rp ${totalIncome.toLocaleString('id-ID')}</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-white to-rose-50/50 p-5 rounded-3xl border border-rose-200 shadow-sm">
+                                <div class="text-[11px] font-black uppercase text-rose-900 mb-1">Total Pengeluaran Kas</div>
+                                <div class="text-xl sm:text-2xl font-black text-rose-950">Rp ${totalExpense.toLocaleString('id-ID')}</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-white to-indigo-50/50 p-5 rounded-3xl border border-indigo-200 shadow-sm">
+                                <div class="text-[11px] font-black uppercase text-indigo-900 mb-1">Saldo Kas Bersih</div>
+                                <div class="text-xl sm:text-2xl font-black text-indigo-950">Rp ${balance.toLocaleString('id-ID')}</div>
+                            </div>
+                        </div>
+
                         <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                                 <div>
