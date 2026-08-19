@@ -430,7 +430,7 @@
             const totalIncome = txList.filter(t => t.type === 'Pemasukan').reduce((acc, curr) => acc + curr.amount, 0);
             const totalExpense = txList.filter(t => t.type === 'Pengeluaran').reduce((acc, curr) => acc + curr.amount, 0);
             const balance = totalIncome - totalExpense;
-            const currentMonth = 'Agustus 2025';
+            const currentMonth = 'Agustus 2026';
 
             const renderUnpaidSantriTable = () => {
                 const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && p.month === currentMonth).map(p => p.santriId);
@@ -1448,7 +1448,7 @@ WITH CHECK (true);
                         month,
                         amount: santri.scholarship === 'Ya' && type === 'SPP' ? 0 : amount,
                         date: paymentDate,
-                        status: santri.scholarship === 'Ya' && type === 'SPP' ? 'Beasiswa (Gratis)' : 'Lunas'
+                        status: santri.scholarship === 'Ya' && type === 'SPP' ? 'Beasiswa ' : 'Lunas'
                     };
 
                     dbState.payments.push(newPayment);
@@ -1492,7 +1492,7 @@ WITH CHECK (true);
                     </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Bulan / Keterangan Periode</label>
-                        <input type="text" id="pay-month" value="Agustus 2025" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                        <input type="text" id="pay-month" value="Agustus 2026" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
                     </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
