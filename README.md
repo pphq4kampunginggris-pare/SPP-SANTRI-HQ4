@@ -498,7 +498,6 @@
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'unpaid_treasurer') return renderUnpaidSantriTable();
 
             if (currentUser && currentUser.role === 'admin' && currentTab === 'cycles') {
-                // Urutkan transaksi strictly kronologis dari yang terlama ke terbaru (atas ke bawah)
                 let sortedChronological = [...txList].sort((a, b) => new Date(a.date) - new Date(b.date));
                 let running = 0;
                 let txWithRunningBalance = sortedChronological.map(t => {
@@ -515,7 +514,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div>
                                 <h3 class="font-black text-slate-900 text-sm sm:text-base">Siklus & Rekapitulasi Keuangan Pesantren</h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Riwayat dan saldo kas mengalir dari atas (terlama) ke bawah (terbaru).</p>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Riwayat rekam jejak tanggal transaksi dan saldo kas mengalir dari atas (terlama) ke bawah (terbaru).</p>
                             </div>
                         </div>
 
@@ -540,12 +539,12 @@
                             </div>
                         </div>
 
-                        <h4 class="font-black text-slate-900 mb-4 flex items-center gap-2 text-xs sm:text-sm"><i class="fa-solid fa-list-check text-emerald-700"></i> Riwayat Transaksi & Saldo Kas Kumulatif (Urutan Tanggal ke Bawah)</h4>
+                        <h4 class="font-black text-slate-900 mb-4 flex items-center gap-2 text-xs sm:text-sm"><i class="fa-solid fa-list-check text-emerald-700"></i> Rekam Jejak Transaksi Berdasarkan Tanggal (Urutan Kronologis)</h4>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs sm:text-sm">
                                 <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
                                     <tr>
-                                        <th class="p-3 rounded-l-2xl">Tanggal</th>
+                                        <th class="p-3 rounded-l-2xl">Tanggal Transaksi</th>
                                         <th class="p-3">Jenis</th>
                                         <th class="p-3">Kategori</th>
                                         <th class="p-3">Keterangan</th>
@@ -556,7 +555,7 @@
                                 <tbody class="divide-y-2 divide-slate-200">
                                     ${txWithRunningBalance.map(t => `
                                         <tr class="hover:bg-slate-100 transition">
-                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${t.date}</td>
+                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${t.date}</td>
                                             <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${t.type === 'Pemasukan' ? 'bg-emerald-700 text-white border border-emerald-900' : 'bg-red-700 text-white border border-red-900'}">${t.type}</span></td>
                                             <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${t.category}</td>
                                             <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
@@ -572,7 +571,6 @@
             }
 
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'transactions') {
-                // Urutkan transaksi strictly kronologis dari yang terlama ke terbaru (atas ke bawah) untuk Bendahara Pusat
                 let sortedChronological = [...txList].sort((a, b) => new Date(a.date) - new Date(b.date));
                 let running = 0;
                 let txWithRunningBalance = sortedChronological.map(t => {
@@ -589,9 +587,9 @@
                         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                             <div>
                                 <h3 class="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2">
-                                    <i class="fa-solid fa-book text-amber-700"></i> Buku Kas & Histori Transaksi Keuangan
+                                    <i class="fa-solid fa-book text-amber-700"></i> Buku Kas & Rekam Jejak Tanggal Transaksi
                                 </h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Urutan transaksi dan saldo kas mengalir ke bawah dari tanggal terlama ke terbaru.</p>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Setiap transaksi dilengkapi form tanggal untuk memantau rekam jejak kronologis secara akurat.</p>
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3">
@@ -623,11 +621,11 @@
                             <table class="w-full text-left text-xs sm:text-sm border-collapse">
                                 <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
                                     <tr>
-                                        <th class="p-3 rounded-l-xl">Tanggal</th>
+                                        <th class="p-3 rounded-l-xl">Tanggal Transaksi</th>
                                         <th class="p-3">Jenis</th>
                                         <th class="p-3">Kategori</th>
                                         <th class="p-3">Uraian / Keterangan</th>
-                                        <th class="p-3 text-right">Nominal (Masuk/Keluar)</th>
+                                        <th class="p-3 text-right">Nominal</th>
                                         <th class="p-3 rounded-r-xl text-right">Saldo Kas Buku</th>
                                     </tr>
                                 </thead>
@@ -638,7 +636,7 @@
                                         </tr>
                                     ` : txWithRunningBalance.map(t => `
                                         <tr class="hover:bg-slate-100 transition">
-                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${t.date}</td>
+                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-amber-700 mr-1.5"></i> ${t.date}</td>
                                             <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${t.type === 'Pemasukan' ? 'bg-emerald-700 text-white border border-emerald-950' : 'bg-red-700 text-white border border-emerald-950'}">${t.type}</span></td>
                                             <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${t.category}</td>
                                             <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
@@ -726,7 +724,7 @@
                         paymentsHtml = `
                             <div class="mb-6">
                                 <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center justify-between">
-                                    <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran Terbaru</span>
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran & Rekam Jejak Tanggal</span>
                                     <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${paymentList.length}</span>
                                 </h4>
                                 <div class="space-y-3">
@@ -736,7 +734,7 @@
                                                 <div class="w-9 h-9 rounded-xl bg-emerald-700 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-md border border-emerald-950"><i class="fa-solid fa-receipt"></i></div>
                                                 <div class="min-w-0">
                                                     <div class="font-black text-slate-900 truncate text-xs sm:text-sm">${p.santriName} - ${p.type}</div>
-                                                    <div class="text-[10px] sm:text-[11px] font-bold text-slate-800 truncate">Periode: <span class="text-emerald-800 font-black">${p.month}</span> • <span>${p.date}</span></div>
+                                                    <div class="text-[10px] sm:text-[11px] font-bold text-slate-800 truncate">Periode: <span class="text-emerald-800 font-black">${p.month}</span> • <span class="text-emerald-700"><i class="fa-regular fa-calendar"></i> ${p.date}</span></div>
                                                 </div>
                                             </div>
                                             <div class="font-black text-white bg-emerald-700 px-2.5 py-1.5 rounded-xl border border-emerald-950 text-xs flex-shrink-0 ml-2">Rp ${p.amount.toLocaleString('id-ID')}</div>
@@ -792,7 +790,7 @@
                                                 <div class="w-9 h-9 rounded-xl bg-amber-700 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-md border border-emerald-950"><i class="fa-solid fa-receipt"></i></div>
                                                 <div class="min-w-0">
                                                     <div class="font-black text-slate-900 truncate text-xs">${p.santriName} - ${p.type}</div>
-                                                    <div class="text-[10px] font-bold text-slate-800 truncate">Tanggal: <span class="text-emerald-800 font-black">${p.date}</span></div>
+                                                    <div class="text-[10px] font-bold text-slate-800 truncate">Tanggal: <span class="text-amber-800 font-black">${p.date}</span></div>
                                                 </div>
                                             </div>
                                             <div class="font-black text-white bg-amber-700 px-2.5 py-1.5 rounded-xl border border-amber-950 text-xs flex-shrink-0 ml-2">Rp ${p.amount.toLocaleString('id-ID')}</div>
@@ -862,7 +860,7 @@
                                 <div>
                                     <h3 class="text-lg sm:text-xl font-black mb-2">Selamat Bertugas, Pengurus Pesantren! 👋</h3>
                                     <p class="text-xs text-slate-300 font-bold leading-relaxed mb-6">
-                                        Gunakan menu di sebelah kiri untuk mengelola data santri, mencatat setoran SPP bulanan, dan memantau daftar santri yang belum bayar secara terstruktur.
+                                        Gunakan menu di sebelah kiri untuk mengelola data santri, mencatat setoran SPP dengan form tanggal, dan memantau rekam jejak keuangan secara transparan.
                                     </p>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3 pt-4 border-t-2 border-slate-800">
@@ -954,7 +952,7 @@
                                 <div>
                                     <h3 class="text-lg sm:text-xl font-black mb-2">Administrator Utama 👋</h3>
                                     <p class="text-xs text-slate-300 font-bold leading-relaxed mb-6">
-                                        Anda memiliki hak akses penuh untuk memantau siklus keuangan, mengelola sandi ruangan, dan memperbarui profil pesantren.
+                                        Anda memiliki hak akses penuh untuk memantau siklus keuangan dengan rekam jejak tanggal, mengelola sandi ruangan, dan memperbarui profil pesantren.
                                     </p>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3 pt-4 border-t-2 border-slate-800">
@@ -1139,8 +1137,8 @@ WITH CHECK (true);
                     <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div>
-                                <h3 class="font-black text-slate-900 text-sm sm:text-base">Pencatatan Pembayaran & Rekam Jejak SPP</h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Catat pembayaran Daftar Ulang & SPP santri.</p>
+                                <h3 class="font-black text-slate-900 text-sm sm:text-base">Pencatatan Pembayaran & Rekam Jejak Tanggal SPP</h3>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Catat pembayaran Daftar Ulang & SPP santri lengkap dengan form tanggal transaksi.</p>
                             </div>
                             <div class="flex items-center gap-3">
                                 <button onclick="openPaymentModal()" class="w-full sm:w-auto px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-700/40 transition flex items-center justify-center gap-2 active:scale-95 border-2 border-emerald-950">
@@ -1150,12 +1148,12 @@ WITH CHECK (true);
                         </div>
 
                         <div class="mb-8">
-                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Riwayat Pembayaran Terbaru</h4>
+                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Riwayat Pembayaran & Tanggal Rekam Jejak Terbaru</h4>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left text-xs sm:text-sm">
                                     <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
                                         <tr>
-                                            <th class="p-3 rounded-l-2xl">Tanggal</th>
+                                            <th class="p-3 rounded-l-2xl">Tanggal Transaksi</th>
                                             <th class="p-3">Nama Santri</th>
                                             <th class="p-3">Jenis Pembayaran</th>
                                             <th class="p-3">Periode / Bulan</th>
@@ -1166,7 +1164,7 @@ WITH CHECK (true);
                                     <tbody class="divide-y-2 divide-slate-200">
                                         ${paymentList.map(p => `
                                             <tr class="hover:bg-slate-100 transition">
-                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.date}</td>
+                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
                                                 <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
                                                 <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-teal-800 text-white rounded-full text-[10px] sm:text-xs font-black border border-teal-950">${p.type}</span></td>
                                                 <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
@@ -1207,8 +1205,8 @@ WITH CHECK (true);
                         <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                                 <div>
-                                    <h3 class="font-black text-slate-900 text-sm sm:text-base">Monitoring SPP Masuk & Aktivitas Pembayaran</h3>
-                                    <p class="text-[11px] sm:text-xs font-bold text-slate-800">Pemantauan setoran SPP bulanan dan daftar pembayaran terbaru.</p>
+                                    <h3 class="font-black text-slate-900 text-sm sm:text-base">Monitoring SPP Masuk & Rekam Jejak Tanggal</h3>
+                                    <p class="text-[11px] sm:text-xs font-bold text-slate-800">Pemantauan setoran SPP bulanan lengkap dengan tanggal transaksi pencatatan.</p>
                                 </div>
                                 <div class="p-3 bg-emerald-700 text-white rounded-2xl shadow-md text-left sm:text-right w-full sm:w-auto border-2 border-emerald-950">
                                     <div class="text-[10px] font-black uppercase text-emerald-100">Total SPP Masuk</div>
@@ -1232,7 +1230,7 @@ WITH CHECK (true);
                                 <table class="w-full text-left text-xs sm:text-sm">
                                     <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
                                         <tr>
-                                            <th class="p-3 rounded-l-xl">Tanggal</th>
+                                            <th class="p-3 rounded-l-xl">Tanggal Transaksi</th>
                                             <th class="p-3">Nama Santri</th>
                                             <th class="p-3">Periode</th>
                                             <th class="p-3">Status</th>
@@ -1242,7 +1240,7 @@ WITH CHECK (true);
                                     <tbody class="divide-y-2 divide-slate-200">
                                         ${sppPayments.map(p => `
                                             <tr class="hover:bg-slate-100 transition">
-                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.date}</td>
+                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
                                                 <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
                                                 <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
                                                 <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white font-black text-[10px] rounded-full border border-emerald-950">${p.status}</span></td>
@@ -1425,7 +1423,7 @@ WITH CHECK (true);
             const todayStr = new Date().toISOString().split('T')[0];
             const defaultSppVal = santriList[0]?.customSpp !== undefined ? santriList[0].customSpp : (dbState.profile?.defaultSpp || 250000);
 
-            showModal('Catat Pembayaran Santri', 'Formulir transaksi pembayaran:', 'info', [
+            showModal('Catat Pembayaran Santri', 'Formulir transaksi pembayaran dengan tanggal rekam jejak:', 'info', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
                 { text: 'Catat Pembayaran', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
                     const paymentDate = document.getElementById('pay-date').value || todayStr;
@@ -1467,14 +1465,14 @@ WITH CHECK (true);
                     saveDb();
                     closeModal();
                     renderDashboard();
-                    showModal('Berhasil', 'Pembayaran berhasil dicatat dan masuk ke buku kas umum.', 'success');
+                    showModal('Berhasil', 'Pembayaran berhasil dicatat dengan tanggal rekam jejak dan masuk ke buku kas umum.', 'success');
                 }}
             ]);
 
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3 text-left mt-2">
                     <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Pembayaran</label>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi (Form Rekam Jejak)</label>
                         <input type="date" id="pay-date" value="${todayStr}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
                     </div>
                     <div>
@@ -1504,9 +1502,10 @@ WITH CHECK (true);
 
         function openTransactionModal() {
             const todayStr = new Date().toISOString().split('T')[0];
-            showModal('Catat Kas Pemasukan / Pengeluaran', 'Formulir transaksi kas:', 'info', [
+            showModal('Catat Kas Pemasukan / Pengeluaran', 'Formulir transaksi kas dengan tanggal rekam jejak:', 'info', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
                 { text: 'Simpan Transaksi', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
+                    const trxDate = document.getElementById('trx-date').value || todayStr;
                     const type = document.getElementById('trx-type').value;
                     const category = document.getElementById('trx-cat').value;
                     const amount = parseInt(document.getElementById('trx-amount').value) || 0;
@@ -1517,7 +1516,7 @@ WITH CHECK (true);
                     if (!dbState.transactions) dbState.transactions = [];
                     dbState.transactions.push({
                         id: 'T00' + (dbState.transactions.length + 1) + Math.floor(Math.random()*100),
-                        date: todayStr,
+                        date: trxDate,
                         type,
                         category,
                         amount,
@@ -1527,12 +1526,16 @@ WITH CHECK (true);
                     saveDb();
                     closeModal();
                     renderDashboard();
-                    showModal('Berhasil', 'Transaksi kas berhasil dicatat.', 'success');
+                    showModal('Berhasil', 'Transaksi kas berhasil dicatat dengan tanggal rekam jejak.', 'success');
                 }}
             ]);
 
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi (Form Rekam Jejak)</label>
+                        <input type="date" id="trx-date" value="${todayStr}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Jenis Arus Kas</label>
                         <select id="trx-type" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
@@ -1639,7 +1642,7 @@ WITH CHECK (true);
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(11);
                 doc.setTextColor(15, 23, 42);
-                doc.text("BUKU KAS UMUM & HISTORI TRANSAKSI KEUANGAN", pageWidth / 2, 40, { align: "center" });
+                doc.text("BUKU KAS UMUM & REKAM JEJAK TANGGAL TRANSAKSI", pageWidth / 2, 40, { align: "center" });
 
                 let sortedChronological = [...(dbState.transactions || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
                 let running = 0;
@@ -1670,8 +1673,8 @@ WITH CHECK (true);
                     columnStyles: { 0: { halign: 'center', cellWidth: 10 }, 1: { halign: 'center' }, 2: { halign: 'center' }, 5: { halign: 'right' }, 6: { halign: 'right' } }
                 });
 
-                doc.save("Buku-Kas-Umum.pdf");
-                showModal('Berhasil Unduh PDF', 'File buku kas PDF berhasil diunduh dengan kop terpusat.', 'success');
+                doc.save("Buku-Kas-Rekam-Jejak-Tanggal.pdf");
+                showModal('Berhasil Unduh PDF', 'File buku kas PDF dengan rekam jejak tanggal berhasil diunduh.', 'success');
             } catch (err) {
                 console.error("Gagal export PDF transaksi:", err);
                 showModal('Gagal', 'Terjadi kesalahan saat menghasilkan PDF buku kas.', 'error');
