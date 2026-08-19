@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Keuangan Pesantren Terintegrasi Supabase</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -87,9 +86,9 @@
                 { id: "P003", santriId: "S003", santriName: "Muhammad Alif", type: "Daftar Ulang", month: "Tahun Ajaran Baru", amount: 750000, date: "2025-07-10", status: "Lunas" }
             ],
             transactions: [
-                { id: "T001", date: "2025-08-06", type: "Pemasukan", category: "SPP Bulanan", amount: 250000, desc: "SPP Ahmad Fauzi (Agustus 2025)" },
-                { id: "T002", date: "2025-07-10", type: "Pemasukan", category: "Daftar Ulang", amount: 750000, desc: "Daftar Ulang Muhammad Alif" },
-                { id: "T003", date: "2025-08-01", type: "Pengeluaran", category: "Operasional", amount: 350000, desc: "Pembelian ATK dan Buku Administrasi" }
+                { id: "T001", date: "2025-07-10", type: "Pemasukan", category: "Daftar Ulang", amount: 900000, desc: "Pembayaran Daftar Ulang Santri" },
+                { id: "T002", date: "2025-07-15", type: "Pengeluaran", category: "Operasional", amount: 500000, desc: "Servis Mobil Operasional Pesantren" },
+                { id: "T003", date: "2025-08-01", type: "Pemasukan", category: "Donasi / Hibah", amount: 1000000, desc: "Dana Hibah Yayasan" }
             ]
         };
 
@@ -262,6 +261,8 @@
                 currentUser = { role, name: creds.name };
                 if (role === 'admin') {
                     currentTab = 'cycles'; 
+                } else if (role === 'treasurer') {
+                    currentTab = 'transactions';
                 } else {
                     currentTab = 'dashboard';
                 }
@@ -297,10 +298,9 @@
                 ];
             } else if (currentUser.role === 'treasurer') {
                 tabs = [
-                    { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
+                    { id: 'transactions', label: 'Buku Kas & Histori Transaksi', icon: 'fa-book' },
                     { id: 'spp_monitor', label: 'Monitoring SPP', icon: 'fa-money-bill-wave' },
                     { id: 'unpaid_treasurer', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
-                    { id: 'transactions', label: 'Kas Masuk/Keluar', icon: 'fa-wallet' },
                     { id: 'reports', label: 'Santri & Beasiswa', icon: 'fa-user-graduate' }
                 ];
             }
@@ -431,7 +431,6 @@
             const balance = totalIncome - totalExpense;
             const currentMonth = 'Agustus 2025';
 
-            // Komponen Helper untuk menampilkan daftar santri yang belum bayar dengan warna tajam & responsive
             const renderUnpaidSantriTable = () => {
                 const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && p.month === currentMonth).map(p => p.santriId);
                 const regularSantri = santriList.filter(s => s.scholarship !== 'Ya' && s.status === 'Aktif');
@@ -493,38 +492,45 @@
                 `;
             };
 
-            // Halaman Tab Khusus Belum Bayar
             if (currentUser && currentUser.role === 'admin' && currentTab === 'unpaid_admin') return renderUnpaidSantriTable();
             if (currentUser && currentUser.role === 'pesantren' && currentTab === 'arrears') return renderUnpaidSantriTable();
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'unpaid_treasurer') return renderUnpaidSantriTable();
 
-            // Admin default tab 'cycles' renderer
             if (currentUser && currentUser.role === 'admin' && currentTab === 'cycles') {
+                // Urutkan strictly kronologis dari tanggal terlama ke terbaru (atas ke bawah)
+                let sortedChronological = [...txList].sort((a, b) => new Date(a.date) - new Date(b.date));
+                let running = 0;
+                let txWithRunningBalance = sortedChronological.map(t => {
+                    if (t.type === 'Pemasukan') {
+                        running += t.amount;
+                    } else if (t.type === 'Pengeluaran') {
+                        running -= t.amount;
+                    }
+                    return { ...t, saldoKas: running };
+                });
+
                 return `
                     <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div>
                                 <h3 class="font-black text-slate-900 text-sm sm:text-base">Siklus & Rekapitulasi Keuangan Pesantren</h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Analisis sirkulasi kas masuk dan keluar secara komprehensif.</p>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Riwayat dan saldo kas mengalir dari atas (terlama) ke bawah (terbaru).</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-8">
-                            <!-- Pemasukan Box: Hijau Tajam -->
                             <div class="p-4 sm:p-5 bg-emerald-700 rounded-3xl border-2 border-emerald-900 shadow-lg text-white">
                                 <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-100 mb-1 flex items-center gap-1.5">
                                     <i class="fa-solid fa-arrow-trend-up"></i> Total Pemasukan
                                 </div>
                                 <div class="text-xl sm:text-2xl font-black truncate">Rp ${totalIncome.toLocaleString('id-ID')}</div>
                             </div>
-                            <!-- Pengeluaran Box: Merah Tajam -->
                             <div class="p-4 sm:p-5 bg-red-700 rounded-3xl border-2 border-red-900 shadow-lg text-white">
                                 <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-100 mb-1 flex items-center gap-1.5">
                                     <i class="fa-solid fa-arrow-trend-down"></i> Total Pengeluaran
                                 </div>
                                 <div class="text-xl sm:text-2xl font-black truncate">Rp ${totalExpense.toLocaleString('id-ID')}</div>
                             </div>
-                            <!-- Arus Kas Bersih: Indigo Tajam -->
                             <div class="p-4 sm:p-5 bg-indigo-700 rounded-3xl border-2 border-indigo-900 shadow-lg text-white">
                                 <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-indigo-100 mb-1 flex items-center gap-1.5">
                                     <i class="fa-solid fa-wallet"></i> Arus Kas Bersih
@@ -533,7 +539,7 @@
                             </div>
                         </div>
 
-                        <h4 class="font-black text-slate-900 mb-4 flex items-center gap-2 text-xs sm:text-sm"><i class="fa-solid fa-list-check text-emerald-700"></i> Riwayat Seluruh Transaksi Siklus Keuangan</h4>
+                        <h4 class="font-black text-slate-900 mb-4 flex items-center gap-2 text-xs sm:text-sm"><i class="fa-solid fa-list-check text-emerald-700"></i> Riwayat Transaksi & Saldo Kas Kumulatif (Urutan Tanggal ke Bawah)</h4>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs sm:text-sm">
                                 <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
@@ -542,17 +548,101 @@
                                         <th class="p-3">Jenis</th>
                                         <th class="p-3">Kategori</th>
                                         <th class="p-3">Keterangan</th>
-                                        <th class="p-3 rounded-r-2xl text-right">Nominal</th>
+                                        <th class="p-3 text-right">Nominal</th>
+                                        <th class="p-3 rounded-r-2xl text-right">Saldo Kas Buku</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y-2 divide-slate-200">
-                                    ${txList.map(t => `
+                                    ${txWithRunningBalance.map(t => `
                                         <tr class="hover:bg-slate-100 transition">
                                             <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${t.date}</td>
                                             <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${t.type === 'Pemasukan' ? 'bg-emerald-700 text-white border border-emerald-900' : 'bg-red-700 text-white border border-red-900'}">${t.type}</span></td>
                                             <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${t.category}</td>
                                             <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
-                                            <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">Rp ${t.amount.toLocaleString('id-ID')}</td>
+                                            <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">${t.type === 'Pemasukan' ? '+ ' : '- '} Rp ${t.amount.toLocaleString('id-ID')}</td>
+                                            <td class="p-3 text-right font-black text-indigo-900 whitespace-nowrap text-xs">Rp ${t.saldoKas.toLocaleString('id-ID')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (currentUser && currentUser.role === 'treasurer' && currentTab === 'transactions') {
+                // Urutkan strictly kronologis dari tanggal terlama ke terbaru (atas ke bawah) untuk Bendahara Pusat
+                let sortedChronological = [...txList].sort((a, b) => new Date(a.date) - new Date(b.date));
+                let running = 0;
+                let txWithRunningBalance = sortedChronological.map(t => {
+                    if (t.type === 'Pemasukan') {
+                        running += t.amount;
+                    } else if (t.type === 'Pengeluaran') {
+                        running -= t.amount;
+                    }
+                    return { ...t, saldoKas: running };
+                });
+
+                return `
+                    <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md space-y-6">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                            <div>
+                                <h3 class="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                                    <i class="fa-solid fa-book text-amber-700"></i> Buku Kas & Histori Transaksi Keuangan
+                                </h3>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Urutan transaksi dan saldo kas mengalir ke bawah dari tanggal terlama ke terbaru.</p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button onclick="openTransactionModal()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2 active:scale-95 border-2 border-emerald-950">
+                                    <i class="fa-solid fa-plus-circle"></i> Tambah Transaksi Kas
+                                </button>
+                                <button onclick="downloadTransactionPdf()" class="px-4 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2 active:scale-95 border-2 border-indigo-950">
+                                    <i class="fa-solid fa-file-pdf"></i> Download PDF Buku Kas
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="bg-emerald-700 p-3.5 px-4 rounded-2xl shadow-md text-white flex flex-col justify-center border-2 border-emerald-950">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-emerald-100">Total Pemasukan Kas</span>
+                                <span class="text-xs sm:text-sm font-black truncate">Rp ${totalIncome.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="bg-red-700 p-3.5 px-4 rounded-2xl shadow-md text-white flex flex-col justify-center border-2 border-red-950">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-red-100">Total Pengeluaran Kas</span>
+                                <span class="text-xs sm:text-sm font-black truncate">Rp ${totalExpense.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="bg-indigo-700 p-3.5 px-4 rounded-2xl shadow-md text-white flex flex-col justify-center border-2 border-indigo-950">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-indigo-100">Saldo Kas Bersih</span>
+                                <span class="text-xs sm:text-sm font-black truncate">Rp ${balance.toLocaleString('id-ID')}</span>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm border-collapse">
+                                <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                    <tr>
+                                        <th class="p-3 rounded-l-xl">Tanggal</th>
+                                        <th class="p-3">Jenis</th>
+                                        <th class="p-3">Kategori</th>
+                                        <th class="p-3">Uraian / Keterangan</th>
+                                        <th class="p-3 text-right">Nominal (Masuk/Keluar)</th>
+                                        <th class="p-3 rounded-r-xl text-right">Saldo Kas Buku</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y-2 divide-slate-200">
+                                    ${txWithRunningBalance.length === 0 ? `
+                                        <tr>
+                                            <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan transaksi buku kas.</td>
+                                        </tr>
+                                    ` : txWithRunningBalance.map(t => `
+                                        <tr class="hover:bg-slate-100 transition">
+                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${t.date}</td>
+                                            <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${t.type === 'Pemasukan' ? 'bg-emerald-700 text-white border border-emerald-950' : 'bg-red-700 text-white border border-emerald-950'}">${t.type}</span></td>
+                                            <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${t.category}</td>
+                                            <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
+                                            <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">${t.type === 'Pemasukan' ? '+ ' : '- '} Rp ${t.amount.toLocaleString('id-ID')}</td>
+                                            <td class="p-3 text-right font-black text-indigo-900 whitespace-nowrap text-xs">Rp ${t.saldoKas.toLocaleString('id-ID')}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -563,7 +653,7 @@
             }
 
             if (currentTab === 'dashboard') {
-                if (currentUser && (currentUser.role === 'pesantren' || currentUser.role === 'admin' || currentUser.role === 'treasurer')) {
+                if (currentUser && currentUser.role === 'pesantren') {
                     const paymentsByMonth = {};
                     paymentList.forEach(p => {
                         const mKey = p.month || 'Lainnya';
@@ -646,7 +736,7 @@
                                     ${folderPayments.length === 0 ? '<p class="text-xs font-black text-slate-700 italic">Tidak ada pembayaran di folder ini.</p>' : folderPayments.map(p => `
                                         <div class="flex items-center justify-between p-3 bg-white rounded-2xl border-2 border-slate-300 text-xs shadow-xs">
                                             <div class="flex items-center gap-3 min-w-0">
-                                                <div class="w-9 h-9 rounded-xl bg-amber-700 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-md border border-amber-950"><i class="fa-solid fa-receipt"></i></div>
+                                                <div class="w-9 h-9 rounded-xl bg-amber-700 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-md border border-emerald-950"><i class="fa-solid fa-receipt"></i></div>
                                                 <div class="min-w-0">
                                                     <div class="font-black text-slate-900 truncate text-xs">${p.santriName} - ${p.type}</div>
                                                     <div class="text-[10px] font-bold text-slate-800 truncate">Tanggal: <span class="text-emerald-800 font-black">${p.date}</span></div>
@@ -661,9 +751,7 @@
                     }
 
                     return `
-                        <!-- 4 Highly Colorful Stat Cards with Balanced Padding & Text Sizing -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <!-- Total Santri Aktif: Emerald Tajam -->
                             <div class="bg-emerald-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white flex flex-col justify-between border-2 border-emerald-900">
                                 <div class="flex items-center justify-between">
                                     <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-100 truncate">Total Santri Aktif</span>
@@ -675,7 +763,6 @@
                                 </div>
                             </div>
 
-                            <!-- Sudah Bayar: Biru Laut Tajam -->
                             <div class="bg-blue-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white flex flex-col justify-between border-2 border-blue-900">
                                 <div class="flex items-center justify-between">
                                     <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-blue-100 truncate">Sudah Bayar</span>
@@ -687,7 +774,6 @@
                                 </div>
                             </div>
 
-                            <!-- Santri Beasiswa: Ungu Tajam -->
                             <div class="bg-purple-800 p-4 sm:p-5 rounded-3xl shadow-lg text-white flex flex-col justify-between border-2 border-purple-950">
                                 <div class="flex items-center justify-between">
                                     <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-purple-100 truncate">Santri Beasiswa</span>
@@ -699,7 +785,6 @@
                                 </div>
                             </div>
 
-                            <!-- Belum Bayar: Merah Tajam -->
                             <div class="bg-red-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white flex flex-col justify-between border-2 border-red-950">
                                 <div class="flex items-center justify-between">
                                     <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-100 truncate">Belum Bayar</span>
@@ -712,13 +797,11 @@
                             </div>
                         </div>
 
-                        <!-- Banner & Recent Payments -->
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div class="lg:col-span-2 bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
                                 ${paymentsHtml}
                             </div>
 
-                            <!-- Greeting Banner -->
                             <div class="bg-slate-900 p-5 sm:p-6 rounded-3xl text-white shadow-xl flex flex-col justify-between relative overflow-hidden border-2 border-slate-700">
                                 <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-8 translate-y-8 text-9xl pointer-events-none">
                                     <i class="fa-solid fa-mosque"></i>
@@ -734,7 +817,102 @@
                                         <div class="text-base sm:text-lg font-black text-white truncate">${totalSantri}</div>
                                         <div class="text-[10px] font-bold text-slate-400 truncate">Total Santri</div>
                                     </div>
-                    
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (currentUser && currentUser.role === 'admin') {
+                    return `
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-emerald-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white flex flex-col justify-between border-2 border-emerald-900">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-100 truncate">Total Santri Aktif</span>
+                                    <div class="w-10 h-10 rounded-2xl bg-emerald-900 text-white flex items-center justify-center text-base border border-emerald-500 flex-shrink-0"><i class="fa-solid fa-users"></i></div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="text-xl sm:text-2xl font-black truncate">${totalSantri} <span class="text-xs font-bold text-emerald-100">Santri</span></div>
+                                    <div class="text-[11px] font-black text-emerald-100 mt-0.5 flex items-center gap-1 truncate"><i class="fa-solid fa-circle-check"></i> ${activeSantri} Aktif</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-blue-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white flex flex-col justify-between border-2 border-blue-900">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-blue-100 truncate">Total Pemasukan</span>
+                                    <div class="w-10 h-10 rounded-2xl bg-blue-900 text-white flex items-center justify-center text-base border border-blue-400 flex-shrink-0"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="text-lg sm:text-xl font-black truncate">Rp ${totalIncome.toLocaleString('id-ID')}</div>
+                                    <div class="text-[11px] font-black text-blue-100 mt-0.5 truncate">Akumulasi Kas Masuk</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-purple-800 p-4 sm:p-5 rounded-3xl shadow-lg text-white flex flex-col justify-between border-2 border-purple-950">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-purple-100 truncate">Total Pengeluaran</span>
+                                    <div class="w-10 h-10 rounded-2xl bg-purple-950 text-white flex items-center justify-center text-base border border-purple-500 flex-shrink-0"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="text-lg sm:text-xl font-black truncate">Rp ${totalExpense.toLocaleString('id-ID')}</div>
+                                    <div class="text-[11px] font-black text-purple-100 mt-0.5 truncate">Akumulasi Kas Keluar</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-indigo-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white flex flex-col justify-between border-2 border-indigo-900">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-indigo-100 truncate">Saldo Kas Bersih</span>
+                                    <div class="w-10 h-10 rounded-2xl bg-indigo-900 text-white flex items-center justify-center text-base border border-indigo-500 flex-shrink-0"><i class="fa-solid fa-wallet"></i></div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="text-lg sm:text-xl font-black truncate">Rp ${balance.toLocaleString('id-ID')}</div>
+                                    <div class="text-[11px] font-black text-indigo-100 mt-0.5 truncate">Sisa Saldo Kas Utama</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="lg:col-span-2 bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
+                                <h3 class="font-black text-slate-900 text-sm sm:text-base mb-4 flex items-center gap-2">
+                                    <i class="fa-solid fa-school text-emerald-700"></i> Informasi & Profil Pesantren Utama
+                                </h3>
+                                <div class="space-y-3 text-xs sm:text-sm font-black text-slate-800">
+                                    <div class="p-3.5 bg-slate-50 rounded-2xl border-2 border-slate-200 flex justify-between items-center">
+                                        <span class="text-slate-600">Nama Pesantren:</span>
+                                        <span class="text-slate-900">${dbState.profile?.name || '-'}</span>
+                                    </div>
+                                    <div class="p-3.5 bg-slate-50 rounded-2xl border-2 border-slate-200 flex justify-between items-center">
+                                        <span class="text-slate-600">Yayasan Pengelola:</span>
+                                        <span class="text-slate-900">${dbState.profile?.foundation || '-'}</span>
+                                    </div>
+                                    <div class="p-3.5 bg-slate-50 rounded-2xl border-2 border-slate-200 flex justify-between items-center">
+                                        <span class="text-slate-600">Tahun Ajaran Aktif:</span>
+                                        <span class="text-emerald-700">${dbState.profile?.currentYear || '-'}</span>
+                                    </div>
+                                    <div class="p-3.5 bg-slate-50 rounded-2xl border-2 border-slate-200 flex justify-between items-center">
+                                        <span class="text-slate-600">Alamat:</span>
+                                        <span class="text-slate-900 text-right">${dbState.profile?.address || '-'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-900 p-5 sm:p-6 rounded-3xl text-white shadow-xl flex flex-col justify-between relative overflow-hidden border-2 border-slate-700">
+                                <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-8 translate-y-8 text-9xl pointer-events-none">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg sm:text-xl font-black mb-2">Administrator Utama 👋</h3>
+                                    <p class="text-xs text-slate-300 font-bold leading-relaxed mb-6">
+                                        Anda memiliki hak akses penuh untuk memantau siklus keuangan, mengelola sandi ruangan, dan memperbarui profil pesantren.
+                                    </p>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 pt-4 border-t-2 border-slate-800">
+                                    <div class="bg-slate-800 p-3 rounded-2xl border border-slate-700 min-w-0">
+                                        <div class="text-base sm:text-lg font-black text-white truncate">${totalSantri}</div>
+                                        <div class="text-[10px] font-bold text-slate-400 truncate">Total Santri</div>
+                                    </div>
+                                    <div class="bg-slate-800 p-3 rounded-2xl border border-slate-700 min-w-0">
+                                        <div class="text-base sm:text-lg font-black text-white truncate">3</div>
+                                        <div class="text-[10px] font-bold text-slate-400 truncate">Ruangan Akses</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1011,17 +1189,14 @@ WITH CHECK (true);
                 return `
                     <div class="space-y-6">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6">
-                            <!-- Pemasukan: Hijau Tajam -->
                             <div class="bg-emerald-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-emerald-900">
                                 <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-100 mb-1">Total Pemasukan Kas</div>
                                 <div class="text-lg sm:text-2xl font-black truncate">Rp ${totalIncome.toLocaleString('id-ID')}</div>
                             </div>
-                            <!-- Pengeluaran: Merah Tajam -->
                             <div class="bg-red-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-red-900">
                                 <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-100 mb-1">Total Pengeluaran Kas</div>
                                 <div class="text-lg sm:text-2xl font-black truncate">Rp ${totalExpense.toLocaleString('id-ID')}</div>
                             </div>
-                            <!-- Saldo Kas: Biru Tajam -->
                             <div class="bg-indigo-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-indigo-900">
                                 <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-indigo-100 mb-1">Saldo Kas Bersih</div>
                                 <div class="text-lg sm:text-2xl font-black truncate">Rp ${balance.toLocaleString('id-ID')}</div>
@@ -1076,65 +1251,6 @@ WITH CHECK (true);
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (currentUser && currentUser.role === 'treasurer' && currentTab === 'transactions') {
-                return `
-                    <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
-                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
-                            <div>
-                                <h3 class="font-black text-slate-900 text-sm sm:text-base">Pencatatan Pemasukan & Pengeluaran Kas</h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Kelola arus kas masuk dan pengeluaran operasional.</p>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                <div class="bg-emerald-700 p-3 px-4 rounded-2xl shadow-md text-white flex flex-col justify-center border-2 border-emerald-950">
-                                    <span class="text-[10px] font-black uppercase tracking-wider text-emerald-100">Seluruh Pemasukan</span>
-                                    <span class="text-xs sm:text-sm font-black truncate">Rp ${totalIncome.toLocaleString('id-ID')}</span>
-                                </div>
-                                <div class="bg-red-700 p-3 px-4 rounded-2xl shadow-md text-white flex flex-col justify-center border-2 border-red-950">
-                                    <span class="text-[10px] font-black uppercase tracking-wider text-red-100">Seluruh Pengeluaran</span>
-                                    <span class="text-xs sm:text-sm font-black truncate">Rp ${totalExpense.toLocaleString('id-ID')}</span>
-                                </div>
-                                <div class="bg-indigo-700 p-3 px-4 rounded-2xl shadow-md text-white flex flex-col justify-center border-2 border-indigo-950">
-                                    <span class="text-[10px] font-black uppercase tracking-wider text-indigo-100">Saldo Kas Bersih</span>
-                                    <span class="text-xs sm:text-sm font-black truncate">Rp ${balance.toLocaleString('id-ID')}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between mb-4">
-                            <button onclick="openTransactionModal()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-700/40 transition flex items-center gap-2 active:scale-95 border-2 border-emerald-950">
-                                <i class="fa-solid fa-plus-circle"></i> Tambah Transaksi Kas
-                            </button>
-                        </div>
-
-                        <div class="overflow-x-auto mt-4">
-                            <table class="w-full text-left text-xs sm:text-sm">
-                                <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
-                                    <tr>
-                                        <th class="p-3 rounded-l-xl">Tanggal</th>
-                                        <th class="p-3">Jenis</th>
-                                        <th class="p-3">Kategori</th>
-                                        <th class="p-3">Keterangan</th>
-                                        <th class="p-3 rounded-r-xl text-right">Nominal</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y-2 divide-slate-200">
-                                    ${txList.map(t => `
-                                        <tr class="hover:bg-slate-100 transition">
-                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${t.date}</td>
-                                            <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${t.type === 'Pemasukan' ? 'bg-emerald-700 text-white border border-emerald-950' : 'bg-red-700 text-white border border-red-950'}">${t.type}</span></td>
-                                            <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${t.category}</td>
-                                            <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
-                                            <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">Rp ${t.amount.toLocaleString('id-ID')}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 `;
@@ -1257,7 +1373,7 @@ WITH CHECK (true);
 
                     if (!dbState.santri) dbState.santri = [];
                     const newId = 'S00' + (dbState.santri.length + 1);
-                    dbState.santri.unshift({ id: newId, name, class: santriClass, customSpp, status: 'Aktif', scholarship, phone });
+                    dbState.santri.push({ id: newId, name, class: santriClass, customSpp, status: 'Aktif', scholarship, phone });
                     saveDb();
                     closeModal();
                     renderDashboard();
@@ -1334,10 +1450,10 @@ WITH CHECK (true);
                         status: santri.scholarship === 'Ya' && type === 'SPP' ? 'Beasiswa (Gratis)' : 'Lunas'
                     };
 
-                    dbState.payments.unshift(newPayment);
+                    dbState.payments.push(newPayment);
 
                     if (newPayment.amount > 0) {
-                        dbState.transactions.unshift({
+                        dbState.transactions.push({
                             id: 'T00' + (dbState.transactions.length + 1) + Math.floor(Math.random()*100),
                             date: paymentDate,
                             type: 'Pemasukan',
@@ -1350,7 +1466,7 @@ WITH CHECK (true);
                     saveDb();
                     closeModal();
                     renderDashboard();
-                    showModal('Berhasil', 'Pembayaran berhasil dicatat dan masuk ke folder arsip bulan terkait.', 'success');
+                    showModal('Berhasil', 'Pembayaran berhasil dicatat dan masuk ke buku kas umum.', 'success');
                 }}
             ]);
 
@@ -1398,7 +1514,7 @@ WITH CHECK (true);
                     if (!category || !amount) return;
 
                     if (!dbState.transactions) dbState.transactions = [];
-                    dbState.transactions.unshift({
+                    dbState.transactions.push({
                         id: 'T00' + (dbState.transactions.length + 1) + Math.floor(Math.random()*100),
                         date: todayStr,
                         type,
@@ -1479,6 +1595,55 @@ WITH CHECK (true);
             }
         }
 
+        function downloadTransactionPdf() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.text(dbState.profile?.name || "Pesantren Darul Ulum", 14, 18);
+                
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                doc.text(dbState.profile?.foundation || "", 14, 24);
+                doc.text("Buku Kas Umum & Histori Transaksi Keuangan", 14, 32);
+
+                let sortedChronological = [...(dbState.transactions || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
+                let running = 0;
+                const txRows = sortedChronological.map((t, idx) => {
+                    if (t.type === 'Pemasukan') {
+                        running += t.amount;
+                    } else if (t.type === 'Pengeluaran') {
+                        running -= t.amount;
+                    }
+                    return [
+                        idx + 1,
+                        t.date,
+                        t.type,
+                        t.category,
+                        t.desc,
+                        (t.type === 'Pemasukan' ? '+ ' : '- ') + 'Rp ' + t.amount.toLocaleString('id-ID'),
+                        'Rp ' + running.toLocaleString('id-ID')
+                    ];
+                });
+
+                doc.autoTable({
+                    startY: 38,
+                    head: [['No', 'Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Nominal', 'Saldo Kas Buku']],
+                    body: txRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [4, 120, 87] }
+                });
+
+                doc.save("Buku-Kas-Umum.pdf");
+                showModal('Berhasil Unduh PDF', 'File buku kas PDF berhasil diunduh.', 'success');
+            } catch (err) {
+                console.error("Gagal export PDF transaksi:", err);
+                showModal('Gagal', 'Terjadi kesalahan saat menghasilkan PDF buku kas.', 'error');
+            }
+        }
+
         function copySqlScript() {
             const textarea = document.getElementById('sql-textarea');
             if (!textarea) return;
@@ -1541,12 +1706,12 @@ WITH CHECK (true);
             }, 300);
         }
 
-        window.onload = async function() {
+        window.onload = function() {
             try {
-                await fetchCloudData();
+                fetchCloudData().catch(err => console.warn("Cloud sync warning:", err));
                 initRealtimeUpdates();
             } catch (err) {
-                console.warn("Gagal fetch cloud data saat startup:", err);
+                console.warn("Startup initialization warning:", err);
             }
             renderAuthPortal();
         };
