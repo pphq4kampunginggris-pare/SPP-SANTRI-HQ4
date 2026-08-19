@@ -281,6 +281,7 @@
             if (currentUser.role === 'admin') {
                 tabs = [
                     { id: 'cycles', label: 'Siklus Keuangan', icon: 'fa-chart-pie' },
+                    { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
                     { id: 'unpaid_admin', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
                     { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
                     { id: 'profile', label: 'Profil Pesantren', icon: 'fa-school' },
@@ -497,7 +498,7 @@
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'unpaid_treasurer') return renderUnpaidSantriTable();
 
             if (currentUser && currentUser.role === 'admin' && currentTab === 'cycles') {
-                // Urutkan strictly kronologis dari tanggal terlama ke terbaru (atas ke bawah)
+                // Urutkan transaksi strictly kronologis dari yang terlama ke terbaru (atas ke bawah)
                 let sortedChronological = [...txList].sort((a, b) => new Date(a.date) - new Date(b.date));
                 let running = 0;
                 let txWithRunningBalance = sortedChronological.map(t => {
@@ -571,7 +572,7 @@
             }
 
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'transactions') {
-                // Urutkan strictly kronologis dari tanggal terlama ke terbaru (atas ke bawah) untuk Bendahara Pusat
+                // Urutkan transaksi strictly kronologis dari yang terlama ke terbaru (atas ke bawah) untuk Bendahara Pusat
                 let sortedChronological = [...txList].sort((a, b) => new Date(a.date) - new Date(b.date));
                 let running = 0;
                 let txWithRunningBalance = sortedChronological.map(t => {
@@ -643,6 +644,58 @@
                                             <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
                                             <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">${t.type === 'Pemasukan' ? '+ ' : '- '} Rp ${t.amount.toLocaleString('id-ID')}</td>
                                             <td class="p-3 text-right font-black text-indigo-900 whitespace-nowrap text-xs">Rp ${t.saldoKas.toLocaleString('id-ID')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if ((currentUser && currentUser.role === 'pesantren' && currentTab === 'santri') || (currentUser && currentUser.role === 'admin' && currentTab === 'santri')) {
+                return `
+                    <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                            <div>
+                                <h3 class="font-black text-slate-900 text-sm sm:text-base">Manajemen Data Santri Pesantren</h3>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Tambah data santri baru, atur status, dan beasiswa.</p>
+                            </div>
+                            <button onclick="openAddSantriModal()" class="w-full sm:w-auto px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-700/40 transition flex items-center justify-center gap-2 active:scale-95 border-2 border-emerald-950">
+                                <i class="fa-solid fa-user-plus"></i> Tambah Santri Baru
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                    <tr>
+                                        <th class="p-3 rounded-l-2xl">ID & Nama Santri</th>
+                                        <th class="p-3">Kelas</th>
+                                        <th class="p-3">Nominal SPP</th>
+                                        <th class="p-3">Status Beasiswa</th>
+                                        <th class="p-3 rounded-r-2xl text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y-2 divide-slate-200">
+                                    ${santriList.map(s => `
+                                        <tr class="hover:bg-slate-100 transition">
+                                            <td class="p-3">
+                                                <div class="font-black text-slate-900 text-xs sm:text-sm">${s.name}</div>
+                                                <div class="text-[10px] font-bold text-slate-700">ID: ${s.id} | Telp: ${s.phone}</div>
+                                            </td>
+                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${s.class}</td>
+                                            <td class="p-3 text-emerald-800 font-black whitespace-nowrap text-xs">Rp ${(s.customSpp !== undefined ? s.customSpp : (dbState.profile?.defaultSpp || 250000)).toLocaleString('id-ID')}</td>
+                                            <td class="p-3 whitespace-nowrap">
+                                                <span class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black ${s.scholarship === 'Ya' ? 'bg-purple-800 text-white border border-purple-950' : 'bg-slate-800 text-white border border-slate-950'}">
+                                                    ${s.scholarship === 'Ya' ? 'Beasiswa (Gratis)' : 'Reguler'}
+                                                </span>
+                                            </td>
+                                            <td class="p-3 text-center whitespace-nowrap">
+                                                <button onclick="deleteSantri('${s.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                    <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                </button>
+                                            </td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -1042,58 +1095,6 @@ WITH CHECK (true);
                                 <i class="fa-solid fa-floppy-disk"></i> Simpan Profil Pesantren
                             </button>
                         </form>
-                    </div>
-                `;
-            }
-
-            if (currentUser && currentUser.role === 'pesantren' && currentTab === 'santri') {
-                return `
-                    <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                            <div>
-                                <h3 class="font-black text-slate-900 text-sm sm:text-base">Manajemen Data Santri Pesantren</h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Tambah data santri baru, atur status, dan beasiswa.</p>
-                            </div>
-                            <button onclick="openAddSantriModal()" class="w-full sm:w-auto px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-700/40 transition flex items-center justify-center gap-2 active:scale-95 border-2 border-emerald-950">
-                                <i class="fa-solid fa-user-plus"></i> Tambah Santri Baru
-                            </button>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs sm:text-sm">
-                                <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
-                                    <tr>
-                                        <th class="p-3 rounded-l-2xl">ID & Nama Santri</th>
-                                        <th class="p-3">Kelas</th>
-                                        <th class="p-3">Nominal SPP</th>
-                                        <th class="p-3">Status Beasiswa</th>
-                                        <th class="p-3 rounded-r-2xl text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y-2 divide-slate-200">
-                                    ${santriList.map(s => `
-                                        <tr class="hover:bg-slate-100 transition">
-                                            <td class="p-3">
-                                                <div class="font-black text-slate-900 text-xs sm:text-sm">${s.name}</div>
-                                                <div class="text-[10px] font-bold text-slate-700">ID: ${s.id} | Telp: ${s.phone}</div>
-                                            </td>
-                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${s.class}</td>
-                                            <td class="p-3 text-emerald-800 font-black whitespace-nowrap text-xs">Rp ${(s.customSpp !== undefined ? s.customSpp : (dbState.profile?.defaultSpp || 250000)).toLocaleString('id-ID')}</td>
-                                            <td class="p-3 whitespace-nowrap">
-                                                <span class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black ${s.scholarship === 'Ya' ? 'bg-purple-800 text-white border border-purple-950' : 'bg-slate-800 text-white border border-slate-950'}">
-                                                    ${s.scholarship === 'Ya' ? 'Beasiswa (Gratis)' : 'Reguler'}
-                                                </span>
-                                            </td>
-                                            <td class="p-3 text-center whitespace-nowrap">
-                                                <button onclick="deleteSantri('${s.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
-                                                    <i class="fa-solid fa-trash-can mr-1"></i> Hapus
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 `;
             }
@@ -1559,16 +1560,30 @@ WITH CHECK (true);
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
+                const pageWidth = doc.internal.pageSize.getWidth();
 
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(16);
-                doc.text(dbState.profile?.name || "Pesantren Darul Ulum", 14, 18);
+                doc.setFontSize(14);
+                doc.setTextColor(15, 23, 42);
+                doc.text((dbState.profile?.name || "Pesantren Darul Ulum").toUpperCase(), pageWidth / 2, 16, { align: "center" });
                 
                 doc.setFontSize(10);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(51, 65, 85);
+                doc.text((dbState.profile?.foundation || "").toUpperCase(), pageWidth / 2, 22, { align: "center" });
+
                 doc.setFont("helvetica", "normal");
-                doc.text(dbState.profile?.foundation || "", 14, 24);
-                doc.text(dbState.profile?.address || "", 14, 30);
-                doc.text("Laporan Resmi Keuangan & Data Santri", 14, 38);
+                doc.setFontSize(9);
+                doc.setTextColor(71, 85, 105);
+                doc.text(dbState.profile?.address || "", pageWidth / 2, 28, { align: "center" });
+
+                doc.setLineWidth(0.5);
+                doc.line(14, 32, pageWidth - 14, 32);
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(11);
+                doc.setTextColor(15, 23, 42);
+                doc.text("LAPORAN RESMI KEUANGAN & DATA SANTRI", pageWidth / 2, 40, { align: "center" });
 
                 const santriRows = (dbState.santri || []).map((s, idx) => [
                     idx + 1,
@@ -1580,15 +1595,17 @@ WITH CHECK (true);
                 ]);
 
                 doc.autoTable({
-                    startY: 45,
+                    startY: 46,
                     head: [['No', 'Nama Santri', 'Kelas', 'Status', 'Nominal SPP', 'Telepon']],
                     body: santriRows,
                     theme: 'grid',
-                    headStyles: { fillColor: [4, 120, 87] }
+                    headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+                    bodyStyles: { textColor: [15, 23, 42], fontStyle: 'bold' },
+                    columnStyles: { 0: { halign: 'center', cellWidth: 12 }, 4: { halign: 'right' }, 5: { halign: 'center' } }
                 });
 
                 doc.save("Laporan-Keuangan-Pesantren.pdf");
-                showModal('Berhasil Unduh PDF', 'File laporan PDF berhasil diunduh.', 'success');
+                showModal('Berhasil Unduh PDF', 'File laporan PDF berhasil diunduh dengan kop terpusat.', 'success');
             } catch (err) {
                 console.error("Gagal export PDF:", err);
                 showModal('Gagal', 'Terjadi kesalahan saat menghasilkan PDF.', 'error');
@@ -1599,15 +1616,30 @@ WITH CHECK (true);
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
+                const pageWidth = doc.internal.pageSize.getWidth();
 
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(16);
-                doc.text(dbState.profile?.name || "Pesantren Darul Ulum", 14, 18);
+                doc.setFontSize(14);
+                doc.setTextColor(15, 23, 42);
+                doc.text((dbState.profile?.name || "Pesantren Darul Ulum").toUpperCase(), pageWidth / 2, 16, { align: "center" });
                 
                 doc.setFontSize(10);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(51, 65, 85);
+                doc.text((dbState.profile?.foundation || "").toUpperCase(), pageWidth / 2, 22, { align: "center" });
+
                 doc.setFont("helvetica", "normal");
-                doc.text(dbState.profile?.foundation || "", 14, 24);
-                doc.text("Buku Kas Umum & Histori Transaksi Keuangan", 14, 32);
+                doc.setFontSize(9);
+                doc.setTextColor(71, 85, 105);
+                doc.text(dbState.profile?.address || "", pageWidth / 2, 28, { align: "center" });
+
+                doc.setLineWidth(0.5);
+                doc.line(14, 32, pageWidth - 14, 32);
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(11);
+                doc.setTextColor(15, 23, 42);
+                doc.text("BUKU KAS UMUM & HISTORI TRANSAKSI KEUANGAN", pageWidth / 2, 40, { align: "center" });
 
                 let sortedChronological = [...(dbState.transactions || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
                 let running = 0;
@@ -1629,15 +1661,17 @@ WITH CHECK (true);
                 });
 
                 doc.autoTable({
-                    startY: 38,
-                    head: [['No', 'Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Nominal', 'Saldo Kas Buku']],
+                    startY: 46,
+                    head: [['No', 'Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Nominal', 'Saldo Kas Akhir']],
                     body: txRows,
                     theme: 'grid',
-                    headStyles: { fillColor: [4, 120, 87] }
+                    headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+                    bodyStyles: { textColor: [15, 23, 42], fontStyle: 'bold' },
+                    columnStyles: { 0: { halign: 'center', cellWidth: 10 }, 1: { halign: 'center' }, 2: { halign: 'center' }, 5: { halign: 'right' }, 6: { halign: 'right' } }
                 });
 
                 doc.save("Buku-Kas-Umum.pdf");
-                showModal('Berhasil Unduh PDF', 'File buku kas PDF berhasil diunduh.', 'success');
+                showModal('Berhasil Unduh PDF', 'File buku kas PDF berhasil diunduh dengan kop terpusat.', 'success');
             } catch (err) {
                 console.error("Gagal export PDF transaksi:", err);
                 showModal('Gagal', 'Terjadi kesalahan saat menghasilkan PDF buku kas.', 'error');
