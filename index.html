@@ -1562,7 +1562,7 @@ WITH CHECK (true);
         function downloadPdfReport() {
             try {
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
+                const doc = new jsPDF({ orientation: 'landscape' });
                 const pageWidth = doc.internal.pageSize.getWidth();
 
                 doc.setFont("helvetica", "bold");
@@ -1608,7 +1608,7 @@ WITH CHECK (true);
                 });
 
                 doc.save("Laporan-Keuangan-Pesantren.pdf");
-                showModal('Berhasil Unduh PDF', 'File laporan PDF berhasil diunduh dengan kop terpusat.', 'success');
+                showModal('Berhasil Unduh PDF', 'File laporan PDF lanskap berhasil diunduh dengan kop terpusat.', 'success');
             } catch (err) {
                 console.error("Gagal export PDF:", err);
                 showModal('Gagal', 'Terjadi kesalahan saat menghasilkan PDF.', 'error');
@@ -1618,7 +1618,7 @@ WITH CHECK (true);
         function downloadTransactionPdf() {
             try {
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
+                const doc = new jsPDF({ orientation: 'landscape' });
                 const pageWidth = doc.internal.pageSize.getWidth();
 
                 doc.setFont("helvetica", "bold");
@@ -1674,7 +1674,7 @@ WITH CHECK (true);
                 });
 
                 doc.save("Buku-Kas-Rekam-Jejak-Tanggal.pdf");
-                showModal('Berhasil Unduh PDF', 'File buku kas PDF dengan rekam jejak tanggal berhasil diunduh.', 'success');
+                showModal('Berhasil Unduh PDF', 'File buku kas PDF lanskap dengan rekam jejak tanggal berhasil diunduh.', 'success');
             } catch (err) {
                 console.error("Gagal export PDF transaksi:", err);
                 showModal('Gagal', 'Terjadi kesalahan saat menghasilkan PDF buku kas.', 'error');
