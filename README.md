@@ -539,7 +539,9 @@
                             </div>
                         </div>
 
-                        <h4 class="font-black text-slate-900 mb-4 flex items-center gap-2 text-xs sm:text-sm"><i class="fa-solid fa-list-check text-emerald-700"></i> Rekam Jejak Transaksi Berdasarkan Tanggal (Urutan Kronologis)</h4>
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-black text-slate-900 flex items-center gap-2 text-xs sm:text-sm"><i class="fa-solid fa-list-check text-emerald-700"></i> Rekam Jejak Transaksi Berdasarkan Tanggal (Urutan Kronologis)</h4>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs sm:text-sm">
                                 <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
@@ -549,7 +551,8 @@
                                         <th class="p-3">Kategori</th>
                                         <th class="p-3">Keterangan</th>
                                         <th class="p-3 text-right">Nominal</th>
-                                        <th class="p-3 rounded-r-2xl text-right">Saldo Kas Buku</th>
+                                        <th class="p-3 text-right">Saldo Kas Buku</th>
+                                        <th class="p-3 rounded-r-2xl text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y-2 divide-slate-200">
@@ -561,6 +564,14 @@
                                             <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
                                             <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">${t.type === 'Pemasukan' ? '+ ' : '- '} Rp ${t.amount.toLocaleString('id-ID')}</td>
                                             <td class="p-3 text-right font-black text-indigo-900 whitespace-nowrap text-xs">Rp ${t.saldoKas.toLocaleString('id-ID')}</td>
+                                            <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                <button onclick="openEditTransactionModal('${t.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                </button>
+                                                <button onclick="deleteTransaction('${t.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                    <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                </button>
+                                            </td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -626,13 +637,14 @@
                                         <th class="p-3">Kategori</th>
                                         <th class="p-3">Uraian / Keterangan</th>
                                         <th class="p-3 text-right">Nominal</th>
-                                        <th class="p-3 rounded-r-xl text-right">Saldo Kas Buku</th>
+                                        <th class="p-3 text-right">Saldo Kas Buku</th>
+                                        <th class="p-3 rounded-r-xl text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y-2 divide-slate-200">
                                     ${txWithRunningBalance.length === 0 ? `
                                         <tr>
-                                            <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan transaksi buku kas.</td>
+                                            <td colspan="7" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan transaksi buku kas.</td>
                                         </tr>
                                     ` : txWithRunningBalance.map(t => `
                                         <tr class="hover:bg-slate-100 transition">
@@ -642,6 +654,14 @@
                                             <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
                                             <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">${t.type === 'Pemasukan' ? '+ ' : '- '} Rp ${t.amount.toLocaleString('id-ID')}</td>
                                             <td class="p-3 text-right font-black text-indigo-900 whitespace-nowrap text-xs">Rp ${t.saldoKas.toLocaleString('id-ID')}</td>
+                                            <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                <button onclick="openEditTransactionModal('${t.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                </button>
+                                                <button onclick="deleteTransaction('${t.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                    <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                </button>
+                                            </td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -729,7 +749,7 @@
                                 </h4>
                                 <div class="space-y-3">
                                     ${paymentList.map(p => `
-                                        <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border-2 border-slate-300 text-xs shadow-xs">
+                                        <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border-2 border-slate-300 text-xs shadow-xs gap-3">
                                             <div class="flex items-center gap-3 min-w-0">
                                                 <div class="w-9 h-9 rounded-xl bg-emerald-700 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-md border border-emerald-950"><i class="fa-solid fa-receipt"></i></div>
                                                 <div class="min-w-0">
@@ -737,7 +757,15 @@
                                                     <div class="text-[10px] sm:text-[11px] font-bold text-slate-800 truncate">Periode: <span class="text-emerald-800 font-black">${p.month}</span> • <span class="text-emerald-700"><i class="fa-regular fa-calendar"></i> ${p.date}</span></div>
                                                 </div>
                                             </div>
-                                            <div class="font-black text-white bg-emerald-700 px-2.5 py-1.5 rounded-xl border border-emerald-950 text-xs flex-shrink-0 ml-2">Rp ${p.amount.toLocaleString('id-ID')}</div>
+                                            <div class="flex items-center gap-2 flex-shrink-0">
+                                                <div class="font-black text-white bg-emerald-700 px-2.5 py-1.5 rounded-xl border border-emerald-950 text-xs">Rp ${p.amount.toLocaleString('id-ID')}</div>
+                                                <button onclick="openEditPaymentModal('${p.id}')" class="px-2.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs" title="Edit Transaksi Pembayaran">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </button>
+                                                <button onclick="deletePayment('${p.id}')" class="px-2.5 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs" title="Hapus Transaksi Pembayaran">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -785,7 +813,7 @@
                                 </h4>
                                 <div class="space-y-3">
                                     ${folderPayments.length === 0 ? '<p class="text-xs font-black text-slate-700 italic">Tidak ada pembayaran di folder ini.</p>' : folderPayments.map(p => `
-                                        <div class="flex items-center justify-between p-3 bg-white rounded-2xl border-2 border-slate-300 text-xs shadow-xs">
+                                        <div class="flex items-center justify-between p-3 bg-white rounded-2xl border-2 border-slate-300 text-xs shadow-xs gap-3">
                                             <div class="flex items-center gap-3 min-w-0">
                                                 <div class="w-9 h-9 rounded-xl bg-amber-700 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-md border border-emerald-950"><i class="fa-solid fa-receipt"></i></div>
                                                 <div class="min-w-0">
@@ -793,7 +821,15 @@
                                                     <div class="text-[10px] font-bold text-slate-800 truncate">Tanggal: <span class="text-amber-800 font-black">${p.date}</span></div>
                                                 </div>
                                             </div>
-                                            <div class="font-black text-white bg-amber-700 px-2.5 py-1.5 rounded-xl border border-amber-950 text-xs flex-shrink-0 ml-2">Rp ${p.amount.toLocaleString('id-ID')}</div>
+                                            <div class="flex items-center gap-2 flex-shrink-0">
+                                                <div class="font-black text-white bg-amber-700 px-2.5 py-1.5 rounded-xl border border-amber-950 text-xs">Rp ${p.amount.toLocaleString('id-ID')}</div>
+                                                <button onclick="openEditPaymentModal('${p.id}')" class="px-2.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs" title="Edit Transaksi Pembayaran">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </button>
+                                                <button onclick="deletePayment('${p.id}')" class="px-2.5 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs" title="Hapus Transaksi Pembayaran">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -1158,7 +1194,8 @@ WITH CHECK (true);
                                             <th class="p-3">Jenis Pembayaran</th>
                                             <th class="p-3">Periode / Bulan</th>
                                             <th class="p-3">Status</th>
-                                            <th class="p-3 rounded-r-2xl text-right">Nominal</th>
+                                            <th class="p-3 text-right">Nominal</th>
+                                            <th class="p-3 rounded-r-2xl text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y-2 divide-slate-200">
@@ -1170,6 +1207,14 @@ WITH CHECK (true);
                                                 <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
                                                 <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-emerald-950">${p.status}</span></td>
                                                 <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                    <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                        <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                    </button>
+                                                    <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                        <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                    </button>
+                                                </td>
                                             </tr>
                                         `).join('')}
                                     </tbody>
@@ -1234,7 +1279,8 @@ WITH CHECK (true);
                                             <th class="p-3">Nama Santri</th>
                                             <th class="p-3">Periode</th>
                                             <th class="p-3">Status</th>
-                                            <th class="p-3 rounded-r-xl text-right">Nominal</th>
+                                            <th class="p-3 text-right">Nominal</th>
+                                            <th class="p-3 rounded-r-xl text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y-2 divide-slate-200">
@@ -1245,6 +1291,14 @@ WITH CHECK (true);
                                                 <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
                                                 <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white font-black text-[10px] rounded-full border border-emerald-950">${p.status}</span></td>
                                                 <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                    <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                        <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                    </button>
+                                                    <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                        <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                    </button>
+                                                </td>
                                             </tr>
                                         `).join('')}
                                     </tbody>
@@ -1304,6 +1358,147 @@ WITH CHECK (true);
             }
 
             return '';
+        }
+
+        function deleteTransaction(trxId) {
+            showModal('Konfirmasi Hapus Transaksi', 'Apakah Anda yakin ingin menghapus catatan transaksi kas ini?', 'error', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Ya, Hapus', class: 'bg-red-700 text-white hover:bg-red-800 flex-1 py-3 shadow-md shadow-red-700/40 font-black border-2 border-red-950 text-xs sm:text-sm', onClick: () => {
+                    if (!dbState.transactions) return;
+                    dbState.transactions = dbState.transactions.filter(t => t.id !== trxId);
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Transaksi kas berhasil dihapus.', 'success');
+                }}
+            ]);
+        }
+
+        function deletePayment(payId) {
+            showModal('Konfirmasi Hapus Pembayaran', 'Apakah Anda yakin ingin menghapus catatan pembayaran santri ini?', 'error', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Ya, Hapus', class: 'bg-red-700 text-white hover:bg-red-800 flex-1 py-3 shadow-md shadow-red-700/40 font-black border-2 border-red-950 text-xs sm:text-sm', onClick: () => {
+                    if (!dbState.payments) return;
+                    dbState.payments = dbState.payments.filter(p => p.id !== payId);
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Catatan pembayaran santri berhasil dihapus.', 'success');
+                }}
+            ]);
+        }
+
+        function openEditTransactionModal(trxId) {
+            const txList = dbState.transactions || [];
+            const trx = txList.find(t => t.id === trxId);
+            if (!trx) return;
+
+            showModal('Edit Transaksi Kas', 'Formulir koreksi data transaksi keuangan:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
+                    const date = document.getElementById('edit-trx-date').value || trx.date;
+                    const type = document.getElementById('edit-trx-type').value;
+                    const category = document.getElementById('edit-trx-cat').value;
+                    const amount = parseInt(document.getElementById('edit-trx-amount').value) || 0;
+                    const desc = document.getElementById('edit-trx-desc').value;
+
+                    if (!category || !amount) return;
+
+                    trx.date = date;
+                    trx.type = type;
+                    trx.category = category;
+                    trx.amount = amount;
+                    trx.desc = desc;
+
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Data transaksi kas berhasil diperbarui.', 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi</label>
+                        <input type="date" id="edit-trx-date" value="${trx.date}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Jenis Arus Kas</label>
+                        <select id="edit-trx-type" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                            <option value="Pemasukan" ${trx.type === 'Pemasukan' ? 'selected' : ''}>Pemasukan Kas</option>
+                            <option value="Pengeluaran" ${trx.type === 'Pengeluaran' ? 'selected' : ''}>Pengeluaran Kas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Kategori Transaksi</label>
+                        <input type="text" id="edit-trx-cat" value="${trx.category}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
+                        <input type="number" id="edit-trx-amount" value="${trx.amount}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Keterangan / Deskripsi</label>
+                        <textarea id="edit-trx-desc" rows="2" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">${trx.desc}</textarea>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openEditPaymentModal(payId) {
+            const paymentList = dbState.payments || [];
+            const pay = paymentList.find(p => p.id === payId);
+            if (!pay) return;
+
+            showModal('Edit Pembayaran Santri', 'Formulir koreksi data pembayaran santri:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
+                    const date = document.getElementById('edit-pay-date').value || pay.date;
+                    const type = document.getElementById('edit-pay-type').value;
+                    const month = document.getElementById('edit-pay-month').value;
+                    const amount = parseInt(document.getElementById('edit-pay-amount').value) || 0;
+
+                    pay.date = date;
+                    pay.type = type;
+                    pay.month = month;
+                    pay.amount = amount;
+                    pay.status = amount === 0 ? 'Beasiswa (Gratis)' : 'Lunas';
+
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Data pembayaran santri berhasil diperbarui.', 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Santri</label>
+                        <input type="text" value="${pay.santriName}" disabled class="w-full px-3 py-2.5 bg-slate-200 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-600 cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi</label>
+                        <input type="date" id="edit-pay-date" value="${pay.date}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Jenis Pembayaran</label>
+                        <select id="edit-pay-type" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                            <option value="SPP" ${pay.type === 'SPP' ? 'selected' : ''}>SPP Bulanan</option>
+                            <option value="Daftar Ulang" ${pay.type === 'Daftar Ulang' ? 'selected' : ''}>Daftar Ulang</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Bulan / Periode</label>
+                        <input type="text" id="edit-pay-month" value="${pay.month}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
+                        <input type="number" id="edit-pay-amount" value="${pay.amount}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                </div>
+            `;
         }
 
         function confirmResetAllData() {
@@ -1446,7 +1641,7 @@ WITH CHECK (true);
                         month,
                         amount: santri.scholarship === 'Ya' && type === 'SPP' ? 0 : amount,
                         date: paymentDate,
-                        status: santri.scholarship === 'Ya' && type === 'SPP' ? 'Beasiswa ' : 'Lunas'
+                        status: santri.scholarship === 'Ya' && type === 'SPP' ? 'Beasiswa (Gratis)' : 'Lunas'
                     };
 
                     dbState.payments.push(newPayment);
