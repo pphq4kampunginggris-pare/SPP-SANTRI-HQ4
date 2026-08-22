@@ -1405,11 +1405,20 @@ WITH CHECK (true);
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
                 { text: 'Ya, Hapus', class: 'bg-red-700 text-white hover:bg-red-800 flex-1 py-3 shadow-md shadow-red-700/40 font-black border-2 border-red-950 text-xs sm:text-sm', onClick: () => {
                     if (!dbState.payments) return;
+                    const payObj = dbState.payments.find(p => p.id === payId);
                     dbState.payments = dbState.payments.filter(p => p.id !== payId);
+                    
+                    // Also remove corresponding transaction if it exists
+                    if (payObj) {
+                        dbState.transactions = (dbState.transactions || []).filter(t => {
+                            return !(t.date === payObj.date && t.amount === payObj.amount && t.desc.includes(payObj.santriName));
+                        });
+                    }
+
                     saveDb();
                     closeModal();
                     renderDashboard();
-                    showModal('Berhasil', 'Catatan pembayaran santri berhasil dihapus.', 'success');
+                    showModal('Berhasil', 'Catatan pembayaran santri berhasil dihapus dan nama santri dikembalikan ke daftar belum bayar.', 'success');
                 }}
             ]);
         }
