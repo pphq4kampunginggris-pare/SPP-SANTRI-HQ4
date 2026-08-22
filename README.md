@@ -747,27 +747,42 @@
                                     <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran & Rekam Jejak Tanggal</span>
                                     <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${paymentList.length}</span>
                                 </h4>
-                                <div class="space-y-3">
-                                    ${paymentList.map(p => `
-                                        <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border-2 border-slate-300 text-xs shadow-xs gap-3">
-                                            <div class="flex items-center gap-3 min-w-0">
-                                                <div class="w-9 h-9 rounded-xl bg-emerald-700 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-md border border-emerald-950"><i class="fa-solid fa-receipt"></i></div>
-                                                <div class="min-w-0">
-                                                    <div class="font-black text-slate-900 truncate text-xs sm:text-sm">${p.santriName} - ${p.type}</div>
-                                                    <div class="text-[10px] sm:text-[11px] font-bold text-slate-800 truncate">Periode: <span class="text-emerald-800 font-black">${p.month}</span> • <span class="text-emerald-700"><i class="fa-regular fa-calendar"></i> ${p.date}</span></div>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center gap-2 flex-shrink-0">
-                                                <div class="font-black text-white bg-emerald-700 px-2.5 py-1.5 rounded-xl border border-emerald-950 text-xs">Rp ${p.amount.toLocaleString('id-ID')}</div>
-                                                <button onclick="openEditPaymentModal('${p.id}')" class="px-2.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs" title="Edit Transaksi Pembayaran">
-                                                    <i class="fa-solid fa-pen-to-square"></i>
-                                                </button>
-                                                <button onclick="deletePayment('${p.id}')" class="px-2.5 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs" title="Hapus Transaksi Pembayaran">
-                                                    <i class="fa-solid fa-trash-can"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    `).join('')}
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs sm:text-sm">
+                                        <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                            <tr>
+                                                <th class="p-3 rounded-l-2xl">Tanggal</th>
+                                                <th class="p-3">Nama Santri</th>
+                                                <th class="p-3">Bulan / Periode</th>
+                                                <th class="p-3">Uang / Nominal</th>
+                                                <th class="p-3">Status</th>
+                                                <th class="p-3 rounded-r-2xl text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y-2 divide-slate-200">
+                                            ${paymentList.length === 0 ? `
+                                                <tr>
+                                                    <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran.</td>
+                                                </tr>
+                                            ` : paymentList.map(p => `
+                                                <tr class="hover:bg-slate-100 transition">
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
+                                                    <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
+                                                    <td class="p-3 font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-emerald-950">${p.status}</span></td>
+                                                    <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                        <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                        </button>
+                                                        <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                            <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
@@ -811,27 +826,38 @@
                                 <h4 class="font-black text-slate-900 mb-4 text-xs sm:text-sm flex items-center gap-2 truncate">
                                     <i class="fa-solid fa-folder-open text-amber-700"></i> Arsip Bulan: ${currentActiveFolderMonth}
                                 </h4>
-                                <div class="space-y-3">
-                                    ${folderPayments.length === 0 ? '<p class="text-xs font-black text-slate-700 italic">Tidak ada pembayaran di folder ini.</p>' : folderPayments.map(p => `
-                                        <div class="flex items-center justify-between p-3 bg-white rounded-2xl border-2 border-slate-300 text-xs shadow-xs gap-3">
-                                            <div class="flex items-center gap-3 min-w-0">
-                                                <div class="w-9 h-9 rounded-xl bg-amber-700 text-white flex-shrink-0 flex items-center justify-center font-bold shadow-md border border-emerald-950"><i class="fa-solid fa-receipt"></i></div>
-                                                <div class="min-w-0">
-                                                    <div class="font-black text-slate-900 truncate text-xs">${p.santriName} - ${p.type}</div>
-                                                    <div class="text-[10px] font-bold text-slate-800 truncate">Tanggal: <span class="text-amber-800 font-black">${p.date}</span></div>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center gap-2 flex-shrink-0">
-                                                <div class="font-black text-white bg-amber-700 px-2.5 py-1.5 rounded-xl border border-amber-950 text-xs">Rp ${p.amount.toLocaleString('id-ID')}</div>
-                                                <button onclick="openEditPaymentModal('${p.id}')" class="px-2.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs" title="Edit Transaksi Pembayaran">
-                                                    <i class="fa-solid fa-pen-to-square"></i>
-                                                </button>
-                                                <button onclick="deletePayment('${p.id}')" class="px-2.5 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs" title="Hapus Transaksi Pembayaran">
-                                                    <i class="fa-solid fa-trash-can"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    `).join('')}
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs sm:text-sm">
+                                        <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                            <tr>
+                                                <th class="p-3 rounded-l-xl">Tanggal</th>
+                                                <th class="p-3">Nama Santri</th>
+                                                <th class="p-3">Bulan / Periode</th>
+                                                <th class="p-3">Uang / Nominal</th>
+                                                <th class="p-3">Status</th>
+                                                <th class="p-3 rounded-r-xl text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y-2 divide-slate-200">
+                                            ${folderPayments.length === 0 ? '<tr><td colspan="6" class="p-4 text-xs font-black text-slate-700 italic text-center">Tidak ada pembayaran di folder ini.</td></tr>' : folderPayments.map(p => `
+                                                <tr class="hover:bg-white transition">
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-amber-700 mr-1.5"></i> ${p.date}</td>
+                                                    <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
+                                                    <td class="p-3 font-black text-amber-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-amber-700 text-white rounded-full text-[10px] font-black border border-amber-950">${p.status}</span></td>
+                                                    <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                        <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                        </button>
+                                                        <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                            <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         `;
