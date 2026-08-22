@@ -445,7 +445,7 @@
                                     <i class="fa-solid fa-triangle-exclamation text-red-700 text-lg"></i>
                                     Daftar Santri Belum Bayar SPP (${currentMonth})
                                 </h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Berikut adalah daftar santri reguler yang belum melakukan setoran SPP periode ini.</p>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Berikut adalah daftar santri reguler yang belum melakukan setoran SPP periode ini. Nama santri yang sudah dibayar akan otomatis hilang dari daftar ini.</p>
                             </div>
                             <div class="px-3 py-2 bg-red-700 text-white font-black text-[11px] sm:text-xs rounded-xl border-2 border-red-950 shadow-md text-center">
                                 Total Belum Bayar: ${unpaidSantri.length} Santri
