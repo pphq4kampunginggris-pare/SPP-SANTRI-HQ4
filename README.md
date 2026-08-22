@@ -688,8 +688,9 @@
                             <table class="w-full text-left text-xs sm:text-sm">
                                 <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
                                     <tr>
-                                        <th class="p-3 rounded-l-2xl">ID & Nama Santri</th>
+                                        <th class="p-3 rounded-l-2xl">Nama Santri</th>
                                         <th class="p-3">Kelas</th>
+                                        <th class="p-3">No HP Ortu</th>
                                         <th class="p-3">Nominal SPP</th>
                                         <th class="p-3">Status Beasiswa</th>
                                         <th class="p-3 rounded-r-2xl text-center">Aksi</th>
@@ -698,18 +699,22 @@
                                 <tbody class="divide-y-2 divide-slate-200">
                                     ${santriList.map(s => `
                                         <tr class="hover:bg-slate-100 transition">
-                                            <td class="p-3">
+                                            <td class="p-3 whitespace-nowrap">
                                                 <div class="font-black text-slate-900 text-xs sm:text-sm">${s.name}</div>
-                                                <div class="text-[10px] font-bold text-slate-700">ID: ${s.id} | Telp: ${s.phone}</div>
+                                                <div class="text-[10px] font-bold text-slate-700">ID: ${s.id}</div>
                                             </td>
                                             <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${s.class}</td>
+                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${s.phone}</td>
                                             <td class="p-3 text-emerald-800 font-black whitespace-nowrap text-xs">Rp ${(s.customSpp !== undefined ? s.customSpp : (dbState.profile?.defaultSpp || 250000)).toLocaleString('id-ID')}</td>
                                             <td class="p-3 whitespace-nowrap">
                                                 <span class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black ${s.scholarship === 'Ya' ? 'bg-purple-800 text-white border border-purple-950' : 'bg-slate-800 text-white border border-slate-950'}">
                                                     ${s.scholarship === 'Ya' ? 'Beasiswa (Gratis)' : 'Reguler'}
                                                 </span>
                                             </td>
-                                            <td class="p-3 text-center whitespace-nowrap">
+                                            <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                <button onclick="openEditSantriModal('${s.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                </button>
                                                 <button onclick="deleteSantri('${s.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
                                                     <i class="fa-solid fa-trash-can mr-1"></i> Hapus
                                                 </button>
@@ -1640,11 +1645,87 @@ WITH CHECK (true);
         }
 
         function deleteSantri(id) {
-            if (!dbState.santri) return;
-            dbState.santri = dbState.santri.filter(s => s.id !== id);
-            saveDb();
-            renderDashboard();
-            showModal('Berhasil', 'Data santri berhasil dihapus.', 'success');
+            showModal('Konfirmasi Hapus Santri', 'Apakah Anda yakin ingin menghapus data santri ini beserta riwayat terkait?', 'error', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Ya, Hapus', class: 'bg-red-700 text-white hover:bg-red-800 flex-1 py-3 shadow-md shadow-red-700/40 font-black border-2 border-red-950 text-xs sm:text-sm', onClick: () => {
+                    if (!dbState.santri) return;
+                    dbState.santri = dbState.santri.filter(s => s.id !== id);
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Data santri berhasil dihapus.', 'success');
+                }}
+            ]);
+        }
+
+        function openEditSantriModal(santriId) {
+            const santriList = dbState.santri || [];
+            const santri = santriList.find(s => s.id === santriId);
+            if (!santri) return;
+
+            const defaultSpp = dbState.profile?.defaultSpp || 250000;
+            const currentCustomSpp = santri.customSpp !== undefined ? santri.customSpp : defaultSpp;
+
+            showModal('Edit Data Santri', 'Formulir koreksi biodata santri:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
+                    const name = document.getElementById('edit-santri-name').value;
+                    const santriClass = document.getElementById('edit-santri-class').value;
+                    const customSpp = parseInt(document.getElementById('edit-santri-spp').value) || defaultSpp;
+                    const scholarship = document.getElementById('edit-santri-scholarship').value;
+                    const phone = document.getElementById('edit-santri-phone').value;
+
+                    if (!name) return;
+
+                    santri.name = name;
+                    santri.class = santriClass;
+                    santri.customSpp = customSpp;
+                    santri.scholarship = scholarship;
+                    santri.phone = phone;
+
+                    // Also update santriName in payments if changed
+                    if (dbState.payments) {
+                        dbState.payments.forEach(p => {
+                            if (p.santriId === santriId) {
+                                p.santriName = name;
+                            }
+                        });
+                    }
+
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Biodata santri berhasil diperbarui.', 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Lengkap Santri</label>
+                        <input type="text" id="edit-santri-name" value="${santri.name}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Kelas</label>
+                        <input type="text" id="edit-santri-class" value="${santri.class}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal SPP Bulanan (Rp)</label>
+                        <input type="number" id="edit-santri-spp" value="${currentCustomSpp}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Status Beasiswa</label>
+                        <select id="edit-santri-scholarship" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                            <option value="Tidak" ${santri.scholarship === 'Tidak' ? 'selected' : ''}>Reguler (Tidak Beasiswa)</option>
+                            <option value="Ya" ${santri.scholarship === 'Ya' ? 'selected' : ''}>Penerima Beasiswa (Gratis SPP)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor Telepon Wali</label>
+                        <input type="text" id="edit-santri-phone" value="${santri.phone}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                </div>
+            `;
         }
 
         function openPaymentModal() {
