@@ -736,7 +736,6 @@
 
             if (currentTab === 'dashboard') {
                 if (currentUser && currentUser.role === 'pesantren') {
-                    // Group payments by month, or bundle multi-month periods into a folder name representation
                     const paymentsByMonth = {};
                     paymentList.forEach(p => {
                         const mKey = p.month || 'Lainnya';
@@ -811,7 +810,7 @@
                                                 </div>
                                                 <div class="min-w-0">
                                                     <h5 class="font-black text-slate-900 text-xs sm:text-sm truncate">${m}</h5>
-                                                    <p class="text-[10px] sm:text-xs font-black text-slate-800 mt-0.5 truncate">${paymentsByMonth[m].length} Riwayat ${m.includes(',') ? '(Multi-Periode)' : ''}</p>
+                                                    <p class="text-[10px] sm:text-xs font-black text-slate-800 mt-0.5 truncate">${paymentsByMonth[m].length} Riwayat</p>
                                                 </div>
                                             </div>
                                             <div class="w-7 h-7 rounded-full bg-amber-700 text-white flex items-center justify-center text-xs font-black group-hover:scale-110 transition flex-shrink-0 ml-2">
@@ -827,7 +826,7 @@
                         paymentsHtml = `
                             <div class="mb-4 flex items-center justify-between">
                                 <button onclick="backToMainFolders()" class="px-3.5 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-black text-xs rounded-xl transition flex items-center gap-2 active:scale-95 border-2 border-slate-500">
-                                    <i class="fa-solid fa-arrow-left"></i> Kembali
+                                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Folder Utama
                                 </button>
                                 <span class="px-3 py-1 bg-amber-700 text-white font-black text-xs rounded-xl border border-amber-950 truncate max-w-[250px]">
                                     <i class="fa-solid fa-folder-open mr-1"></i> ${currentActiveFolderMonth}
@@ -934,7 +933,7 @@
                                 <div>
                                     <h3 class="text-lg sm:text-xl font-black mb-2">Selamat Bertugas, Pengurus Pesantren! 👋</h3>
                                     <p class="text-xs text-slate-300 font-bold leading-relaxed mb-6">
-                                        Gunakan menu di sebelah kiri untuk mengelola data santri, mencatat setoran SPP dengan list periode bulan (otomatis masuk folder arsip jika lebih dari 1 periode), dan memantau rekam jejak keuangan.
+                                        Gunakan menu di sebelah kiri untuk mengelola data santri, mencatat setoran SPP, dan memantau rekam jejak keuangan.
                                     </p>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3 pt-4 border-t-2 border-slate-800">
@@ -1399,14 +1398,14 @@ WITH CHECK (true);
         }
 
         function updateModalPaymentAmount() {
-            const checkboxes = document.querySelectorAll('.pay-month-checkbox:checked');
+            const countSelect = document.getElementById('pay-month-count');
             const santriSelect = document.getElementById('pay-santri');
-            if (!santriSelect) return;
+            if (!countSelect || !santriSelect) return;
             const santriId = santriSelect.value;
             const santri = (dbState.santri || []).find(s => s.id === santriId);
             const defaultSpp = santri?.customSpp !== undefined ? santri.customSpp : (dbState.profile?.defaultSpp || 250000);
             
-            const count = checkboxes.length > 0 ? checkboxes.length : 1;
+            const count = parseInt(countSelect.value) || 1;
             const total = count * defaultSpp;
             const amountInput = document.getElementById('pay-amount');
             if (amountInput) {
@@ -1755,24 +1754,33 @@ WITH CHECK (true);
             const todayStr = new Date().toISOString().split('T')[0];
             const defaultSppVal = santriList[0]?.customSpp !== undefined ? santriList[0].customSpp : (dbState.profile?.defaultSpp || 250000);
 
-            showModal('Catat Pembayaran Santri', 'Formulir transaksi pembayaran dengan list periode bulan:', 'info', [
+            showModal('Catat Pembayaran Santri', 'Formulir transaksi pembayaran dengan pilihan jumlah bulan:', 'info', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
                 { text: 'Catat Pembayaran', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
                     const paymentDate = document.getElementById('pay-date').value || todayStr;
                     const santriId = document.getElementById('pay-santri').value;
                     const type = document.getElementById('pay-type').value;
-                    
-                    const checkedMonths = Array.from(document.querySelectorAll('.pay-month-checkbox:checked')).map(cb => cb.value);
-                    if (checkedMonths.length === 0) {
-                        showModal('Peringatan', 'Pilih minimal satu periode bulan pembayaran.', 'error');
-                        return;
-                    }
-                    const monthStr = checkedMonths.join(', ');
-
+                    const startMonth = document.getElementById('pay-start-month').value;
+                    const countMonths = parseInt(document.getElementById('pay-month-count').value) || 1;
                     const amount = parseInt(document.getElementById('pay-amount').value) || 0;
 
                     const santri = santriList.find(s => s.id === santriId);
                     if (!santri) return;
+
+                    let monthStr = startMonth;
+                    if (countMonths > 1) {
+                        const startIdx = MONTH_OPTIONS.indexOf(startMonth);
+                        if (startIdx !== -1) {
+                            let selectedMonthsList = [];
+                            for (let i = 0; i < countMonths; i++) {
+                                const targetIdx = (startIdx + i) % MONTH_OPTIONS.length;
+                                selectedMonthsList.push(MONTH_OPTIONS[targetIdx]);
+                            }
+                            monthStr = selectedMonthsList.join(', ');
+                        } else {
+                            monthStr = `${startMonth} (+${countMonths - 1} Bulan)`;
+                        }
+                    }
 
                     if (!dbState.payments) dbState.payments = [];
                     if (!dbState.transactions) dbState.transactions = [];
@@ -1806,16 +1814,11 @@ WITH CHECK (true);
                     saveDb();
                     closeModal();
                     renderDashboard();
-                    showModal('Berhasil', 'Pembayaran berhasil dicatat. Periode multi-bulan otomatis dikelompokkan ke folder arsip yang sesuai.', 'success');
+                    showModal('Berhasil', 'Pembayaran berhasil dicatat. Arsip folder secara otomatis mengelompokkan periode tersebut.', 'success');
                 }}
             ]);
 
-            const monthCheckboxesHtml = MONTH_OPTIONS.map((m, idx) => `
-                <label class="flex items-center gap-2 p-2 bg-white rounded-xl border border-slate-300 text-xs font-black text-slate-800 cursor-pointer hover:bg-slate-50 transition">
-                    <input type="checkbox" value="${m}" ${idx === 1 ? 'checked' : ''} onchange="updateModalPaymentAmount()" class="pay-month-checkbox w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700">
-                    <span class="truncate">${m}</span>
-                </label>
-            `).join('');
+            const monthOptionsHtml = MONTH_OPTIONS.map(m => `<option value="${m}">${m}</option>`).join('');
 
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3 text-left mt-2">
@@ -1836,12 +1839,23 @@ WITH CHECK (true);
                             <option value="Daftar Ulang">Daftar Ulang</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">List Periode Bulan (Centang 1 atau Lebih)</label>
-                        <div class="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto p-2 bg-slate-100 border-2 border-slate-300 rounded-xl">
-                            ${monthCheckboxesHtml}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Mulai Bulan</label>
+                            <select id="pay-start-month" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                                ${monthOptionsHtml}
+                            </select>
                         </div>
-                        <p class="text-[10px] text-slate-500 font-bold mt-1">Jika lebih dari 1 periode dipilih, otomatis masuk ke folder arsip gabungan.</p>
+                        <div>
+                            <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Jumlah Periode / Bulan</label>
+                            <select id="pay-month-count" onchange="updateModalPaymentAmount()" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                                <option value="1">1 Bulan</option>
+                                <option value="2">2 Bulan Sekaligus</option>
+                                <option value="3">3 Bulan (Triwulan)</option>
+                                <option value="6">6 Bulan (Semester)</option>
+                                <option value="12">12 Bulan (1 Tahun)</option>
+                            </select>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Total Nominal Otomatis (Rp)</label>
