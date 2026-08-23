@@ -60,6 +60,12 @@
             console.error("Gagal menginisialisasi Supabase client:", e);
         }
 
+        const MONTH_OPTIONS = [
+            "Juli 2026", "Agustus 2026", "September 2026", "Oktober 2026", 
+            "November 2026", "Desember 2026", "Januari 2027", "Februari 2027", 
+            "Maret 2027", "April 2027", "Mei 2027", "Juni 2027"
+        ];
+
         const DEFAULT_STATE = {
             profile: {
                 name: "Pesantren Darul Ulum Al-Islamy",
@@ -81,14 +87,14 @@
                 { id: "S003", name: "Muhammad Alif", class: "X-IPA (Aliyah)", customSpp: 300000, status: "Aktif", scholarship: "Tidak", phone: "081567890123" }
             ],
             payments: [
-                { id: "P001", santriId: "S001", santriName: "Ahmad Fauzi", type: "SPP", month: "Agustus 2025", amount: 250000, date: "2025-08-05", status: "Lunas" },
-                { id: "P002", santriId: "S002", santriName: "Siti Aminah", type: "SPP", month: "Agustus 2025", amount: 0, date: "2025-08-06", status: "Beasiswa (Gratis)" },
-                { id: "P003", santriId: "S003", santriName: "Muhammad Alif", type: "Daftar Ulang", month: "Tahun Ajaran Baru", amount: 750000, date: "2025-07-10", status: "Lunas" }
+                { id: "P001", santriId: "S001", santriName: "Ahmad Fauzi", type: "SPP", month: "Agustus 2026", amount: 250000, date: "2026-08-05", status: "Lunas" },
+                { id: "P002", santriId: "S002", santriName: "Siti Aminah", type: "SPP", month: "Agustus 2026", amount: 0, date: "2026-08-06", status: "Beasiswa (Gratis)" },
+                { id: "P003", santriId: "S003", santriName: "Muhammad Alif", type: "Daftar Ulang", month: "Juli 2026", amount: 750000, date: "2026-07-10", status: "Lunas" }
             ],
             transactions: [
-                { id: "T001", date: "2025-07-10", type: "Pemasukan", category: "Daftar Ulang", amount: 900000, desc: "Pembayaran Daftar Ulang Santri" },
-                { id: "T002", date: "2025-07-15", type: "Pengeluaran", category: "Operasional", amount: 500000, desc: "Servis Mobil Operasional Pesantren" },
-                { id: "T003", date: "2025-08-01", type: "Pemasukan", category: "Donasi / Hibah", amount: 1000000, desc: "Dana Hibah Yayasan" }
+                { id: "T001", date: "2026-07-10", type: "Pemasukan", category: "Daftar Ulang", amount: 900000, desc: "Pembayaran Daftar Ulang Santri" },
+                { id: "T002", date: "2026-07-15", type: "Pengeluaran", category: "Operasional", amount: 500000, desc: "Servis Mobil Operasional Pesantren" },
+                { id: "T003", date: "2026-08-01", type: "Pemasukan", category: "Donasi / Hibah", amount: 1000000, desc: "Dana Hibah Yayasan" }
             ]
         };
 
@@ -433,7 +439,7 @@
             const currentMonth = 'Agustus 2026';
 
             const renderUnpaidSantriTable = () => {
-                const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && p.month === currentMonth).map(p => p.santriId);
+                const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && (p.month === currentMonth || (p.month && p.month.includes(currentMonth)))).map(p => p.santriId);
                 const regularSantri = santriList.filter(s => s.scholarship !== 'Ya' && s.status === 'Aktif');
                 const unpaidSantri = regularSantri.filter(s => !paidThisMonthSantriIds.includes(s.id));
 
@@ -730,6 +736,7 @@
 
             if (currentTab === 'dashboard') {
                 if (currentUser && currentUser.role === 'pesantren') {
+                    // Group payments by month, or bundle multi-month periods into a folder name representation
                     const paymentsByMonth = {};
                     paymentList.forEach(p => {
                         const mKey = p.month || 'Lainnya';
@@ -740,7 +747,7 @@
                     });
 
                     const monthKeys = Object.keys(paymentsByMonth);
-                    const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && p.month === currentMonth).map(p => p.santriId);
+                    const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && (p.month === currentMonth || (p.month && p.month.includes(currentMonth)))).map(p => p.santriId);
                     const regularSantri = santriList.filter(s => s.scholarship !== 'Ya' && s.status === 'Aktif');
                     const unpaidSantriCount = regularSantri.filter(s => !paidThisMonthSantriIds.includes(s.id)).length;
 
@@ -758,7 +765,7 @@
                                             <tr>
                                                 <th class="p-3 rounded-l-2xl">Tanggal</th>
                                                 <th class="p-3">Nama Santri</th>
-                                                <th class="p-3">Bulan / Periode</th>
+                                                <th class="p-3">Periode Bulan</th>
                                                 <th class="p-3">Uang / Nominal</th>
                                                 <th class="p-3">Status</th>
                                                 <th class="p-3 rounded-r-2xl text-center">Aksi</th>
@@ -793,7 +800,7 @@
 
                             <div class="mt-8">
                                 <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran Per Bulan
+                                    <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran (Termasuk Periode Multi-Bulan)
                                 </h4>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                     ${monthKeys.map(m => `
@@ -804,7 +811,7 @@
                                                 </div>
                                                 <div class="min-w-0">
                                                     <h5 class="font-black text-slate-900 text-xs sm:text-sm truncate">${m}</h5>
-                                                    <p class="text-[10px] sm:text-xs font-black text-slate-800 mt-0.5 truncate">${paymentsByMonth[m].length} Riwayat</p>
+                                                    <p class="text-[10px] sm:text-xs font-black text-slate-800 mt-0.5 truncate">${paymentsByMonth[m].length} Riwayat ${m.includes(',') ? '(Multi-Periode)' : ''}</p>
                                                 </div>
                                             </div>
                                             <div class="w-7 h-7 rounded-full bg-amber-700 text-white flex items-center justify-center text-xs font-black group-hover:scale-110 transition flex-shrink-0 ml-2">
@@ -822,14 +829,14 @@
                                 <button onclick="backToMainFolders()" class="px-3.5 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-black text-xs rounded-xl transition flex items-center gap-2 active:scale-95 border-2 border-slate-500">
                                     <i class="fa-solid fa-arrow-left"></i> Kembali
                                 </button>
-                                <span class="px-3 py-1 bg-amber-700 text-white font-black text-xs rounded-xl border border-amber-950 truncate max-w-[200px]">
+                                <span class="px-3 py-1 bg-amber-700 text-white font-black text-xs rounded-xl border border-amber-950 truncate max-w-[250px]">
                                     <i class="fa-solid fa-folder-open mr-1"></i> ${currentActiveFolderMonth}
                                 </span>
                             </div>
 
                             <div class="bg-amber-50 p-4 sm:p-5 rounded-3xl border-2 border-amber-300">
                                 <h4 class="font-black text-slate-900 mb-4 text-xs sm:text-sm flex items-center gap-2 truncate">
-                                    <i class="fa-solid fa-folder-open text-amber-700"></i> Arsip Bulan: ${currentActiveFolderMonth}
+                                    <i class="fa-solid fa-folder-open text-amber-700"></i> Arsip Folder Periode: ${currentActiveFolderMonth}
                                 </h4>
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-left text-xs sm:text-sm">
@@ -837,7 +844,7 @@
                                             <tr>
                                                 <th class="p-3 rounded-l-xl">Tanggal</th>
                                                 <th class="p-3">Nama Santri</th>
-                                                <th class="p-3">Bulan / Periode</th>
+                                                <th class="p-3">Periode Bulan</th>
                                                 <th class="p-3">Uang / Nominal</th>
                                                 <th class="p-3">Status</th>
                                                 <th class="p-3 rounded-r-xl text-center">Aksi</th>
@@ -927,7 +934,7 @@
                                 <div>
                                     <h3 class="text-lg sm:text-xl font-black mb-2">Selamat Bertugas, Pengurus Pesantren! 👋</h3>
                                     <p class="text-xs text-slate-300 font-bold leading-relaxed mb-6">
-                                        Gunakan menu di sebelah kiri untuk mengelola data santri, mencatat setoran SPP dengan form tanggal, dan memantau rekam jejak keuangan secara transparan.
+                                        Gunakan menu di sebelah kiri untuk mengelola data santri, mencatat setoran SPP dengan list periode bulan (otomatis masuk folder arsip jika lebih dari 1 periode), dan memantau rekam jejak keuangan.
                                     </p>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3 pt-4 border-t-2 border-slate-800">
@@ -1205,7 +1212,7 @@ WITH CHECK (true);
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div>
                                 <h3 class="font-black text-slate-900 text-sm sm:text-base">Pencatatan Pembayaran & Rekam Jejak Tanggal SPP</h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Catat pembayaran Daftar Ulang & SPP santri lengkap dengan form tanggal transaksi.</p>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Catat pembayaran Daftar Ulang & SPP santri dengan memilih periode bulan (bisa lebih dari satu periode bulan).</p>
                             </div>
                             <div class="flex items-center gap-3">
                                 <button onclick="openPaymentModal()" class="w-full sm:w-auto px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-700/40 transition flex items-center justify-center gap-2 active:scale-95 border-2 border-emerald-950">
@@ -1223,7 +1230,7 @@ WITH CHECK (true);
                                             <th class="p-3 rounded-l-2xl">Tanggal Transaksi</th>
                                             <th class="p-3">Nama Santri</th>
                                             <th class="p-3">Jenis Pembayaran</th>
-                                            <th class="p-3">Periode / Bulan</th>
+                                            <th class="p-3">Periode Bulan</th>
                                             <th class="p-3">Status</th>
                                             <th class="p-3 text-right">Nominal</th>
                                             <th class="p-3 rounded-r-2xl text-center">Aksi</th>
@@ -1235,7 +1242,7 @@ WITH CHECK (true);
                                                 <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
                                                 <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
                                                 <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-teal-800 text-white rounded-full text-[10px] sm:text-xs font-black border border-teal-950">${p.type}</span></td>
-                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
+                                                <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
                                                 <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-emerald-950">${p.status}</span></td>
                                                 <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
                                                 <td class="p-3 text-center whitespace-nowrap space-x-1">
@@ -1257,7 +1264,7 @@ WITH CHECK (true);
             }
 
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'spp_monitor') {
-                const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && p.month === currentMonth).map(p => p.santriId);
+                const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && (p.month === currentMonth || (p.month && p.month.includes(currentMonth)))).map(p => p.santriId);
                 const sppPayments = paymentList.filter(p => p.type === 'SPP');
                 const totalSpp = sppPayments.reduce((acc, curr) => acc + curr.amount, 0);
 
@@ -1308,7 +1315,7 @@ WITH CHECK (true);
                                         <tr>
                                             <th class="p-3 rounded-l-xl">Tanggal Transaksi</th>
                                             <th class="p-3">Nama Santri</th>
-                                            <th class="p-3">Periode</th>
+                                            <th class="p-3">Periode Bulan</th>
                                             <th class="p-3">Status</th>
                                             <th class="p-3 text-right">Nominal</th>
                                             <th class="p-3 rounded-r-xl text-center">Aksi</th>
@@ -1319,7 +1326,7 @@ WITH CHECK (true);
                                             <tr class="hover:bg-slate-100 transition">
                                                 <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
                                                 <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
-                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
+                                                <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
                                                 <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white font-black text-[10px] rounded-full border border-emerald-950">${p.status}</span></td>
                                                 <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
                                                 <td class="p-3 text-center whitespace-nowrap space-x-1">
@@ -1391,6 +1398,22 @@ WITH CHECK (true);
             return '';
         }
 
+        function updateModalPaymentAmount() {
+            const checkboxes = document.querySelectorAll('.pay-month-checkbox:checked');
+            const santriSelect = document.getElementById('pay-santri');
+            if (!santriSelect) return;
+            const santriId = santriSelect.value;
+            const santri = (dbState.santri || []).find(s => s.id === santriId);
+            const defaultSpp = santri?.customSpp !== undefined ? santri.customSpp : (dbState.profile?.defaultSpp || 250000);
+            
+            const count = checkboxes.length > 0 ? checkboxes.length : 1;
+            const total = count * defaultSpp;
+            const amountInput = document.getElementById('pay-amount');
+            if (amountInput) {
+                amountInput.value = total;
+            }
+        }
+
         function deleteTransaction(trxId) {
             showModal('Konfirmasi Hapus Transaksi', 'Apakah Anda yakin ingin menghapus catatan transaksi kas ini?', 'error', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
@@ -1413,7 +1436,6 @@ WITH CHECK (true);
                     const payObj = dbState.payments.find(p => p.id === payId);
                     dbState.payments = dbState.payments.filter(p => p.id !== payId);
                     
-                    // Also remove corresponding transaction if it exists
                     if (payObj) {
                         dbState.transactions = (dbState.transactions || []).filter(t => {
                             return !(t.date === payObj.date && t.amount === payObj.amount && t.desc.includes(payObj.santriName));
@@ -1530,7 +1552,7 @@ WITH CHECK (true);
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Bulan / Periode</label>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Periode Bulan</label>
                         <input type="text" id="edit-pay-month" value="${pay.month}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
                     </div>
                     <div>
@@ -1683,7 +1705,6 @@ WITH CHECK (true);
                     santri.scholarship = scholarship;
                     santri.phone = phone;
 
-                    // Also update santriName in payments if changed
                     if (dbState.payments) {
                         dbState.payments.forEach(p => {
                             if (p.santriId === santriId) {
@@ -1734,13 +1755,20 @@ WITH CHECK (true);
             const todayStr = new Date().toISOString().split('T')[0];
             const defaultSppVal = santriList[0]?.customSpp !== undefined ? santriList[0].customSpp : (dbState.profile?.defaultSpp || 250000);
 
-            showModal('Catat Pembayaran Santri', 'Formulir transaksi pembayaran dengan tanggal rekam jejak:', 'info', [
+            showModal('Catat Pembayaran Santri', 'Formulir transaksi pembayaran dengan list periode bulan:', 'info', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
                 { text: 'Catat Pembayaran', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
                     const paymentDate = document.getElementById('pay-date').value || todayStr;
                     const santriId = document.getElementById('pay-santri').value;
                     const type = document.getElementById('pay-type').value;
-                    const month = document.getElementById('pay-month').value;
+                    
+                    const checkedMonths = Array.from(document.querySelectorAll('.pay-month-checkbox:checked')).map(cb => cb.value);
+                    if (checkedMonths.length === 0) {
+                        showModal('Peringatan', 'Pilih minimal satu periode bulan pembayaran.', 'error');
+                        return;
+                    }
+                    const monthStr = checkedMonths.join(', ');
+
                     const amount = parseInt(document.getElementById('pay-amount').value) || 0;
 
                     const santri = santriList.find(s => s.id === santriId);
@@ -1749,46 +1777,55 @@ WITH CHECK (true);
                     if (!dbState.payments) dbState.payments = [];
                     if (!dbState.transactions) dbState.transactions = [];
 
+                    const finalAmount = santri.scholarship === 'Ya' && type === 'SPP' ? 0 : amount;
+
                     const newPayment = {
                         id: 'P00' + (dbState.payments.length + 1) + Math.floor(Math.random()*100),
                         santriId,
                         santriName: santri.name,
                         type,
-                        month,
-                        amount: santri.scholarship === 'Ya' && type === 'SPP' ? 0 : amount,
+                        month: monthStr,
+                        amount: finalAmount,
                         date: paymentDate,
                         status: santri.scholarship === 'Ya' && type === 'SPP' ? 'Beasiswa (Gratis)' : 'Lunas'
                     };
 
                     dbState.payments.push(newPayment);
 
-                    if (newPayment.amount > 0) {
+                    if (finalAmount > 0) {
                         dbState.transactions.push({
                             id: 'T00' + (dbState.transactions.length + 1) + Math.floor(Math.random()*100),
                             date: paymentDate,
                             type: 'Pemasukan',
                             category: type === 'SPP' ? 'SPP Bulanan' : 'Daftar Ulang',
-                            amount: newPayment.amount,
-                            desc: `${type} ${santri.name} (${month})`
+                            amount: finalAmount,
+                            desc: `${type} ${santri.name} (${monthStr})`
                         });
                     }
 
                     saveDb();
                     closeModal();
                     renderDashboard();
-                    showModal('Berhasil', 'Pembayaran berhasil dicatat dengan tanggal rekam jejak dan masuk ke buku kas umum.', 'success');
+                    showModal('Berhasil', 'Pembayaran berhasil dicatat. Periode multi-bulan otomatis dikelompokkan ke folder arsip yang sesuai.', 'success');
                 }}
             ]);
+
+            const monthCheckboxesHtml = MONTH_OPTIONS.map((m, idx) => `
+                <label class="flex items-center gap-2 p-2 bg-white rounded-xl border border-slate-300 text-xs font-black text-slate-800 cursor-pointer hover:bg-slate-50 transition">
+                    <input type="checkbox" value="${m}" ${idx === 1 ? 'checked' : ''} onchange="updateModalPaymentAmount()" class="pay-month-checkbox w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700">
+                    <span class="truncate">${m}</span>
+                </label>
+            `).join('');
 
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3 text-left mt-2">
                     <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi (Form Rekam Jejak)</label>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi</label>
                         <input type="date" id="pay-date" value="${todayStr}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
                     </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Pilih Santri</label>
-                        <select id="pay-santri" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                        <select id="pay-santri" onchange="updateModalPaymentAmount()" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
                             ${santriOptions}
                         </select>
                     </div>
@@ -1800,11 +1837,14 @@ WITH CHECK (true);
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Bulan / Keterangan Periode</label>
-                        <input type="text" id="pay-month" value="Agustus 2026" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">List Periode Bulan (Centang 1 atau Lebih)</label>
+                        <div class="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto p-2 bg-slate-100 border-2 border-slate-300 rounded-xl">
+                            ${monthCheckboxesHtml}
+                        </div>
+                        <p class="text-[10px] text-slate-500 font-bold mt-1">Jika lebih dari 1 periode dipilih, otomatis masuk ke folder arsip gabungan.</p>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Total Nominal Otomatis (Rp)</label>
                         <input type="number" id="pay-amount" value="${defaultSppVal}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-emerald-700">
                     </div>
                 </div>
