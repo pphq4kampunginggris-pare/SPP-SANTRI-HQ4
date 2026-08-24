@@ -66,6 +66,9 @@
             "Maret 2027", "April 2027", "Mei 2027", "Juni 2027"
         ];
 
+        // Automatically set current active month based on system date (August 2026)
+        const CURRENT_ACTIVE_MONTH = "Agustus 2026";
+
         const DEFAULT_STATE = {
             profile: {
                 name: "Pesantren Darul Ulum Al-Islamy",
@@ -287,6 +290,7 @@
             if (currentUser.role === 'admin') {
                 tabs = [
                     { id: 'cycles', label: 'Siklus Keuangan', icon: 'fa-chart-pie' },
+                    { id: 'spp_monitor_admin', label: 'Monitoring SPP & Folder', icon: 'fa-folder-tree' },
                     { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
                     { id: 'unpaid_admin', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
                     { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
@@ -436,7 +440,7 @@
             const totalIncome = txList.filter(t => t.type === 'Pemasukan').reduce((acc, curr) => acc + curr.amount, 0);
             const totalExpense = txList.filter(t => t.type === 'Pengeluaran').reduce((acc, curr) => acc + curr.amount, 0);
             const balance = totalIncome - totalExpense;
-            const currentMonth = 'Agustus 2026';
+            const currentMonth = CURRENT_ACTIVE_MONTH;
 
             const renderUnpaidSantriTable = () => {
                 const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && (p.month === currentMonth || (p.month && p.month.includes(currentMonth)))).map(p => p.santriId);
@@ -503,6 +507,140 @@
             if (currentUser && currentUser.role === 'pesantren' && currentTab === 'arrears') return renderUnpaidSantriTable();
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'unpaid_treasurer') return renderUnpaidSantriTable();
 
+            if (currentUser && currentUser.role === 'admin' && currentTab === 'spp_monitor_admin') {
+                const paymentsByMonth = {};
+                const sortedPayments = [...paymentList].sort((a, b) => new Date(a.date) - new Date(b.date));
+                sortedPayments.forEach(p => {
+                    const mKey = p.month || 'Lainnya';
+                    if (!paymentsByMonth[mKey]) {
+                        paymentsByMonth[mKey] = [];
+                    }
+                    paymentsByMonth[mKey].push(p);
+                });
+                const monthKeys = Object.keys(paymentsByMonth);
+
+                let contentHtml = '';
+                if (currentActiveFolderMonth === null) {
+                    contentHtml = `
+                        <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
+                            <div class="mb-6">
+                                <h3 class="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                                    <i class="fa-solid fa-money-bill-wave text-emerald-700"></i> Monitoring SPP & Folder Bulanan (Admin Utama)
+                                </h3>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Pantau seluruh catatan pembayaran SPP dan klik folder bulanan untuk melihat rincian pembayaran pada periode tersebut.</p>
+                            </div>
+
+                            <div class="mb-8">
+                                <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran Bulanan
+                                </h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    ${monthKeys.map(m => `
+                                        <div onclick="openMonthFolder('${m}')" class="bg-amber-100 p-4 rounded-3xl border-2 border-amber-400 shadow-md hover:shadow-lg transition cursor-pointer flex items-center justify-between group">
+                                            <div class="flex items-center gap-3 min-w-0">
+                                                <div class="w-10 h-10 rounded-2xl bg-amber-700 text-white flex items-center justify-center text-lg shadow-md border border-amber-950 group-hover:scale-105 transition flex-shrink-0">
+                                                    <i class="fa-solid fa-folder-open"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <h5 class="font-black text-slate-900 text-xs sm:text-sm truncate">${m}</h5>
+                                                    <p class="text-[10px] sm:text-xs font-black text-slate-800 mt-0.5 truncate">${paymentsByMonth[m].length} Riwayat</p>
+                                                </div>
+                                            </div>
+                                            <div class="w-7 h-7 rounded-full bg-amber-700 text-white flex items-center justify-center text-xs font-black group-hover:scale-110 transition flex-shrink-0 ml-2">
+                                                <i class="fa-solid fa-chevron-right"></i>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-receipt text-emerald-700"></i> Keseluruhan Riwayat Pembayaran (Urutan Kronologis)
+                                </h4>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs sm:text-sm">
+                                        <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                            <tr>
+                                                <th class="p-3 rounded-l-2xl">Tanggal</th>
+                                                <th class="p-3">Nama Santri</th>
+                                                <th class="p-3">Jenis</th>
+                                                <th class="p-3">Periode Bulan</th>
+                                                <th class="p-3">Status</th>
+                                                <th class="p-3 rounded-r-2xl text-right">Nominal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y-2 divide-slate-200">
+                                            ${sortedPayments.length === 0 ? `
+                                                <tr>
+                                                    <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran.</td>
+                                                </tr>
+                                            ` : sortedPayments.map(p => `
+                                                <tr class="hover:bg-slate-100 transition">
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
+                                                    <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2 py-0.5 bg-teal-800 text-white rounded-full text-[10px] font-black">${p.type}</span></td>
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] font-black">${p.status}</span></td>
+                                                    <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const folderPayments = (paymentsByMonth[currentActiveFolderMonth] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
+                    contentHtml = `
+                        <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
+                            <div class="mb-4 flex items-center justify-between">
+                                <button onclick="backToMainFolders()" class="px-3.5 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-black text-xs rounded-xl transition flex items-center gap-2 active:scale-95 border-2 border-slate-500">
+                                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Folder Utama
+                                </button>
+                                <span class="px-3 py-1 bg-amber-700 text-white font-black text-xs rounded-xl border border-amber-950 truncate max-w-[250px]">
+                                    <i class="fa-solid fa-folder-open mr-1"></i> ${currentActiveFolderMonth}
+                                </span>
+                            </div>
+
+                            <div class="bg-amber-50 p-4 sm:p-5 rounded-3xl border-2 border-amber-300">
+                                <h4 class="font-black text-slate-900 mb-4 text-xs sm:text-sm flex items-center gap-2 truncate">
+                                    <i class="fa-solid fa-folder-open text-amber-700"></i> Arsip Folder Periode: ${currentActiveFolderMonth} (Urutan Kronologis)
+                                </h4>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs sm:text-sm">
+                                        <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                            <tr>
+                                                <th class="p-3 rounded-l-xl">Tanggal</th>
+                                                <th class="p-3">Nama Santri</th>
+                                                <th class="p-3">Jenis</th>
+                                                <th class="p-3">Periode Bulan</th>
+                                                <th class="p-3">Status</th>
+                                                <th class="p-3 rounded-r-xl text-right">Nominal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y-2 divide-slate-200">
+                                            ${folderPayments.length === 0 ? '<tr><td colspan="6" class="p-4 text-xs font-black text-slate-700 italic text-center">Tidak ada pembayaran di folder ini.</td></tr>' : folderPayments.map(p => `
+                                                <tr class="hover:bg-white transition">
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-amber-700 mr-1.5"></i> ${p.date}</td>
+                                                    <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2 py-0.5 bg-teal-800 text-white rounded-full text-[10px] font-black">${p.type}</span></td>
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-amber-700 text-white rounded-full text-[10px] font-black">${p.status}</span></td>
+                                                    <td class="p-3 text-right font-black text-amber-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                return contentHtml;
+            }
+
             if (currentUser && currentUser.role === 'admin' && currentTab === 'cycles') {
                 let sortedChronological = [...txList].sort((a, b) => new Date(a.date) - new Date(b.date));
                 let running = 0;
@@ -513,6 +651,27 @@
                         running -= t.amount;
                     }
                     return { ...t, saldoKas: running };
+                });
+
+                let groupedTxs = {};
+                txWithRunningBalance.forEach(t => {
+                    let mLabel = "Lainnya";
+                    MONTH_OPTIONS.forEach(m => {
+                        if (t.date && t.date.includes("2026-08") && m.includes("Agustus")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-07") && m.includes("Juli")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-09") && m.includes("September")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-10") && m.includes("Oktober")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-11") && m.includes("November")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-12") && m.includes("Desember")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-01") && m.includes("Januari")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-02") && m.includes("Februari")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-03") && m.includes("Maret")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-04") && m.includes("April")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-05") && m.includes("Mei")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-06") && m.includes("Juni")) mLabel = m;
+                    });
+                    if (!groupedTxs[mLabel]) groupedTxs[mLabel] = [];
+                    groupedTxs[mLabel].push(t);
                 });
 
                 return `
@@ -562,23 +721,34 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y-2 divide-slate-200">
-                                    ${txWithRunningBalance.map(t => `
-                                        <tr class="hover:bg-slate-100 transition">
-                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${t.date}</td>
-                                            <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${t.type === 'Pemasukan' ? 'bg-emerald-700 text-white border border-emerald-900' : 'bg-red-700 text-white border border-red-900'}">${t.type}</span></td>
-                                            <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${t.category}</td>
-                                            <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
-                                            <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">${t.type === 'Pemasukan' ? '+ ' : '- '} Rp ${t.amount.toLocaleString('id-ID')}</td>
-                                            <td class="p-3 text-right font-black text-indigo-900 whitespace-nowrap text-xs">Rp ${t.saldoKas.toLocaleString('id-ID')}</td>
-                                            <td class="p-3 text-center whitespace-nowrap space-x-1">
-                                                <button onclick="openEditTransactionModal('${t.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
-                                                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                                                </button>
-                                                <button onclick="deleteTransaction('${t.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
-                                                    <i class="fa-solid fa-trash-can mr-1"></i> Hapus
-                                                </button>
+                                    ${Object.keys(groupedTxs).length === 0 ? `
+                                        <tr>
+                                            <td colspan="7" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan rekam jejak transaksi.</td>
+                                        </tr>
+                                    ` : Object.keys(groupedTxs).map(monthName => `
+                                        <tr class="bg-emerald-600 text-white">
+                                            <td colspan="7" class="p-3.5 font-black text-xs tracking-wider uppercase">
+                                                <i class="fa-solid fa-calendar-days mr-2"></i> Periode Bulan & Tahun: ${monthName}
                                             </td>
                                         </tr>
+                                        ${groupedTxs[monthName].map(t => `
+                                            <tr class="hover:bg-slate-100 transition">
+                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${t.date}</td>
+                                                <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${t.type === 'Pemasukan' ? 'bg-emerald-700 text-white border border-emerald-900' : 'bg-red-700 text-white border border-red-900'}">${t.type}</span></td>
+                                                <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${t.category}</td>
+                                                <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
+                                                <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">${t.type === 'Pemasukan' ? '+ ' : '- '} Rp ${t.amount.toLocaleString('id-ID')}</td>
+                                                <td class="p-3 text-right font-black text-indigo-900 whitespace-nowrap text-xs">Rp ${t.saldoKas.toLocaleString('id-ID')}</td>
+                                                <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                    <button onclick="openEditTransactionModal('${t.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                        <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                    </button>
+                                                    <button onclick="deleteTransaction('${t.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                        <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
                                     `).join('')}
                                 </tbody>
                             </table>
@@ -597,6 +767,27 @@
                         running -= t.amount;
                     }
                     return { ...t, saldoKas: running };
+                });
+
+                let groupedTxs = {};
+                txWithRunningBalance.forEach(t => {
+                    let mLabel = "Lainnya";
+                    MONTH_OPTIONS.forEach(m => {
+                        if (t.date && t.date.includes("2026-08") && m.includes("Agustus")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-07") && m.includes("Juli")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-09") && m.includes("September")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-10") && m.includes("Oktober")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-11") && m.includes("November")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-12") && m.includes("Desember")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-01") && m.includes("Januari")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-02") && m.includes("Februari")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-03") && m.includes("Maret")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-04") && m.includes("April")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-05") && m.includes("Mei")) mLabel = m;
+                        else if (t.date && t.date.includes("2027-06") && m.includes("Juni")) mLabel = m;
+                    });
+                    if (!groupedTxs[mLabel]) groupedTxs[mLabel] = [];
+                    groupedTxs[mLabel].push(t);
                 });
 
                 return `
@@ -648,27 +839,34 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y-2 divide-slate-200">
-                                    ${txWithRunningBalance.length === 0 ? `
+                                    ${Object.keys(groupedTxs).length === 0 ? `
                                         <tr>
                                             <td colspan="7" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan transaksi buku kas.</td>
                                         </tr>
-                                    ` : txWithRunningBalance.map(t => `
-                                        <tr class="hover:bg-slate-100 transition">
-                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-amber-700 mr-1.5"></i> ${t.date}</td>
-                                            <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${t.type === 'Pemasukan' ? 'bg-emerald-700 text-white border border-emerald-950' : 'bg-red-700 text-white border border-emerald-950'}">${t.type}</span></td>
-                                            <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${t.category}</td>
-                                            <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
-                                            <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">${t.type === 'Pemasukan' ? '+ ' : '- '} Rp ${t.amount.toLocaleString('id-ID')}</td>
-                                            <td class="p-3 text-right font-black text-indigo-900 whitespace-nowrap text-xs">Rp ${t.saldoKas.toLocaleString('id-ID')}</td>
-                                            <td class="p-3 text-center whitespace-nowrap space-x-1">
-                                                <button onclick="openEditTransactionModal('${t.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
-                                                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                                                </button>
-                                                <button onclick="deleteTransaction('${t.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
-                                                    <i class="fa-solid fa-trash-can mr-1"></i> Hapus
-                                                </button>
+                                    ` : Object.keys(groupedTxs).map(monthName => `
+                                        <tr class="bg-emerald-600 text-white">
+                                            <td colspan="7" class="p-3.5 font-black text-xs tracking-wider uppercase">
+                                                <i class="fa-solid fa-calendar-days mr-2"></i> Periode Bulan & Tahun: ${monthName}
                                             </td>
                                         </tr>
+                                        ${groupedTxs[monthName].map(t => `
+                                            <tr class="hover:bg-slate-100 transition">
+                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-amber-700 mr-1.5"></i> ${t.date}</td>
+                                                <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[10px] font-black ${t.type === 'Pemasukan' ? 'bg-emerald-700 text-white border border-emerald-950' : 'bg-red-700 text-white border border-emerald-950'}">${t.type}</span></td>
+                                                <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${t.category}</td>
+                                                <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
+                                                <td class="p-3 text-right font-black whitespace-nowrap text-xs ${t.type === 'Pemasukan' ? 'text-emerald-800' : 'text-red-700'}">${t.type === 'Pemasukan' ? '+ ' : '- '} Rp ${t.amount.toLocaleString('id-ID')}</td>
+                                                <td class="p-3 text-right font-black text-indigo-900 whitespace-nowrap text-xs">Rp ${t.saldoKas.toLocaleString('id-ID')}</td>
+                                                <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                    <button onclick="openEditTransactionModal('${t.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                        <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                    </button>
+                                                    <button onclick="deleteTransaction('${t.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                        <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
                                     `).join('')}
                                 </tbody>
                             </table>
@@ -737,7 +935,8 @@
             if (currentTab === 'dashboard') {
                 if (currentUser && currentUser.role === 'pesantren') {
                     const paymentsByMonth = {};
-                    paymentList.forEach(p => {
+                    const sortedPayments = [...paymentList].sort((a, b) => new Date(a.date) - new Date(b.date));
+                    sortedPayments.forEach(p => {
                         const mKey = p.month || 'Lainnya';
                         if (!paymentsByMonth[mKey]) {
                             paymentsByMonth[mKey] = [];
@@ -756,7 +955,7 @@
                             <div class="mb-6">
                                 <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center justify-between">
                                     <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran & Rekam Jejak Tanggal</span>
-                                    <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${paymentList.length}</span>
+                                    <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${sortedPayments.length}</span>
                                 </h4>
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-left text-xs sm:text-sm">
@@ -771,11 +970,11 @@
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y-2 divide-slate-200">
-                                            ${paymentList.length === 0 ? `
+                                            ${sortedPayments.length === 0 ? `
                                                 <tr>
                                                     <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran.</td>
                                                 </tr>
-                                            ` : paymentList.map(p => `
+                                            ` : sortedPayments.map(p => `
                                                 <tr class="hover:bg-slate-100 transition">
                                                     <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
                                                     <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
@@ -822,7 +1021,7 @@
                             </div>
                         `;
                     } else {
-                        const folderPayments = paymentsByMonth[currentActiveFolderMonth] || [];
+                        const folderPayments = (paymentsByMonth[currentActiveFolderMonth] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
                         paymentsHtml = `
                             <div class="mb-4 flex items-center justify-between">
                                 <button onclick="backToMainFolders()" class="px-3.5 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-black text-xs rounded-xl transition flex items-center gap-2 active:scale-95 border-2 border-slate-500">
@@ -854,7 +1053,7 @@
                                                 <tr class="hover:bg-white transition">
                                                     <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-amber-700 mr-1.5"></i> ${p.date}</td>
                                                     <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
-                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
+                                                    <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
                                                     <td class="p-3 font-black text-amber-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
                                                     <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-amber-700 text-white rounded-full text-[10px] font-black border border-amber-950">${p.status}</span></td>
                                                     <td class="p-3 text-center whitespace-nowrap space-x-1">
@@ -1206,12 +1405,13 @@ WITH CHECK (true);
             }
 
             if (currentUser && currentUser.role === 'pesantren' && currentTab === 'payments') {
+                const sortedPayments = [...paymentList].sort((a, b) => new Date(a.date) - new Date(b.date));
                 return `
                     <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div>
                                 <h3 class="font-black text-slate-900 text-sm sm:text-base">Pencatatan Pembayaran & Rekam Jejak Tanggal SPP</h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Catat pembayaran Daftar Ulang & SPP santri dengan memilih periode bulan (bisa lebih dari satu periode bulan).</p>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Catat pembayaran Daftar Ulang & SPP santri.</p>
                             </div>
                             <div class="flex items-center gap-3">
                                 <button onclick="openPaymentModal()" class="w-full sm:w-auto px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-700/40 transition flex items-center justify-center gap-2 active:scale-95 border-2 border-emerald-950">
@@ -1221,7 +1421,7 @@ WITH CHECK (true);
                         </div>
 
                         <div class="mb-8">
-                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Riwayat Pembayaran & Tanggal Rekam Jejak Terbaru</h4>
+                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Riwayat Pembayaran & Tanggal Rekam Jejak (Urutan Kronologis)</h4>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left text-xs sm:text-sm">
                                     <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
@@ -1236,7 +1436,7 @@ WITH CHECK (true);
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y-2 divide-slate-200">
-                                        ${paymentList.map(p => `
+                                        ${sortedPayments.map(p => `
                                             <tr class="hover:bg-slate-100 transition">
                                                 <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
                                                 <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
@@ -1264,86 +1464,186 @@ WITH CHECK (true);
 
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'spp_monitor') {
                 const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && (p.month === currentMonth || (p.month && p.month.includes(currentMonth)))).map(p => p.santriId);
-                const sppPayments = paymentList.filter(p => p.type === 'SPP');
+                const sppPayments = [...paymentList].filter(p => p.type === 'SPP').sort((a, b) => new Date(a.date) - new Date(b.date));
                 const totalSpp = sppPayments.reduce((acc, curr) => acc + curr.amount, 0);
 
-                return `
-                    <div class="space-y-6">
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6">
-                            <div class="bg-emerald-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-emerald-900">
-                                <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-100 mb-1">Total Pemasukan Kas</div>
-                                <div class="text-lg sm:text-2xl font-black truncate">Rp ${totalIncome.toLocaleString('id-ID')}</div>
-                            </div>
-                            <div class="bg-red-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-red-900">
-                                <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-100 mb-1">Total Pengeluaran Kas</div>
-                                <div class="text-lg sm:text-2xl font-black truncate">Rp ${totalExpense.toLocaleString('id-ID')}</div>
-                            </div>
-                            <div class="bg-indigo-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-indigo-900">
-                                <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-indigo-100 mb-1">Saldo Kas Bersih</div>
-                                <div class="text-lg sm:text-2xl font-black truncate">Rp ${balance.toLocaleString('id-ID')}</div>
-                            </div>
-                        </div>
+                const paymentsByMonth = {};
+                sppPayments.forEach(p => {
+                    const mKey = p.month || 'Lainnya';
+                    if (!paymentsByMonth[mKey]) {
+                        paymentsByMonth[mKey] = [];
+                    }
+                    paymentsByMonth[mKey].push(p);
+                });
+                const monthKeys = Object.keys(paymentsByMonth);
 
-                        <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                                <div>
-                                    <h3 class="font-black text-slate-900 text-sm sm:text-base">Monitoring SPP Masuk & Rekam Jejak Tanggal</h3>
-                                    <p class="text-[11px] sm:text-xs font-bold text-slate-800">Pemantauan setoran SPP bulanan lengkap dengan tanggal transaksi pencatatan.</p>
+                let contentHtml = '';
+                if (currentActiveFolderMonth === null) {
+                    contentHtml = `
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6">
+                                <div class="bg-emerald-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-emerald-900">
+                                    <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-100 mb-1">Total Pemasukan Kas</div>
+                                    <div class="text-lg sm:text-2xl font-black truncate">Rp ${totalIncome.toLocaleString('id-ID')}</div>
                                 </div>
-                                <div class="p-3 bg-emerald-700 text-white rounded-2xl shadow-md text-left sm:text-right w-full sm:w-auto border-2 border-emerald-950">
-                                    <div class="text-[10px] font-black uppercase text-emerald-100">Total SPP Masuk</div>
-                                    <div class="text-base sm:text-lg font-black truncate">Rp ${totalSpp.toLocaleString('id-ID')}</div>
+                                <div class="bg-red-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-red-900">
+                                    <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-100 mb-1">Total Pengeluaran Kas</div>
+                                    <div class="text-lg sm:text-2xl font-black truncate">Rp ${totalExpense.toLocaleString('id-ID')}</div>
                                 </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                                <div class="p-4 bg-blue-700 text-white rounded-2xl shadow-md border-2 border-blue-950">
-                                    <div class="text-[11px] font-black uppercase text-blue-100">Sudah Bayar (${currentMonth})</div>
-                                    <div class="text-xl sm:text-2xl font-black mt-1">${paidThisMonthSantriIds.length} Santri</div>
-                                </div>
-                                <div class="p-4 bg-purple-800 text-white rounded-2xl shadow-md border-2 border-purple-950">
-                                    <div class="text-[11px] font-black uppercase text-purple-100">Total Transaksi SPP Tercatat</div>
-                                    <div class="text-xl sm:text-2xl font-black mt-1">${sppPayments.length} Transaksi</div>
+                                <div class="bg-indigo-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-indigo-900">
+                                    <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-indigo-100 mb-1">Saldo Kas Bersih</div>
+                                    <div class="text-lg sm:text-2xl font-black truncate">Rp ${balance.toLocaleString('id-ID')}</div>
                                 </div>
                             </div>
 
-                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm"><i class="fa-solid fa-receipt text-emerald-700 mr-2"></i> Riwayat Pembayaran SPP Terbaru</h4>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-xs sm:text-sm">
-                                    <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
-                                        <tr>
-                                            <th class="p-3 rounded-l-xl">Tanggal Transaksi</th>
-                                            <th class="p-3">Nama Santri</th>
-                                            <th class="p-3">Periode Bulan</th>
-                                            <th class="p-3">Status</th>
-                                            <th class="p-3 text-right">Nominal</th>
-                                            <th class="p-3 rounded-r-xl text-center">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y-2 divide-slate-200">
-                                        ${sppPayments.map(p => `
-                                            <tr class="hover:bg-slate-100 transition">
-                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
-                                                <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
-                                                <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
-                                                <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white font-black text-[10px] rounded-full border border-emerald-950">${p.status}</span></td>
-                                                <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
-                                                <td class="p-3 text-center whitespace-nowrap space-x-1">
-                                                    <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
-                                                        <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                                                    </button>
-                                                    <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
-                                                        <i class="fa-solid fa-trash-can mr-1"></i> Hapus
-                                                    </button>
-                                                </td>
-                                            </tr>
+                            <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                                    <div>
+                                        <h3 class="font-black text-slate-900 text-sm sm:text-base">Monitoring SPP Masuk & Rekam Jejak Tanggal</h3>
+                                        <p class="text-[11px] sm:text-xs font-bold text-slate-800">Pemantauan setoran SPP bulanan lengkap dengan tanggal transaksi pencatatan.</p>
+                                    </div>
+                                    <div class="p-3 bg-emerald-700 text-white rounded-2xl shadow-md text-left sm:text-right w-full sm:w-auto border-2 border-emerald-950">
+                                        <div class="text-[10px] font-black uppercase text-emerald-100">Total SPP Masuk</div>
+                                        <div class="text-base sm:text-lg font-black truncate">Rp ${totalSpp.toLocaleString('id-ID')}</div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                                    <div class="p-4 bg-blue-700 text-white rounded-2xl shadow-md border-2 border-blue-950">
+                                        <div class="text-[11px] font-black uppercase text-blue-100">Sudah Bayar (${currentMonth})</div>
+                                        <div class="text-xl sm:text-2xl font-black mt-1">${paidThisMonthSantriIds.length} Santri</div>
+                                    </div>
+                                    <div class="p-4 bg-purple-800 text-white rounded-2xl shadow-md border-2 border-purple-950">
+                                        <div class="text-[11px] font-black uppercase text-purple-100">Total Transaksi SPP Tercatat</div>
+                                        <div class="text-xl sm:text-2xl font-black mt-1">${sppPayments.length} Transaksi</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-6">
+                                    <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center justify-between">
+                                        <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran SPP (Kronologis)</span>
+                                        <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${sppPayments.length}</span>
+                                    </h4>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left text-xs sm:text-sm">
+                                            <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                                <tr>
+                                                    <th class="p-3 rounded-l-2xl">Tanggal</th>
+                                                    <th class="p-3">Nama Santri</th>
+                                                    <th class="p-3">Periode Bulan</th>
+                                                    <th class="p-3">Status</th>
+                                                    <th class="p-3 text-right">Nominal</th>
+                                                    <th class="p-3 rounded-r-2xl text-center">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y-2 divide-slate-200">
+                                                ${sppPayments.length === 0 ? `
+                                                    <tr>
+                                                        <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran SPP.</td>
+                                                    </tr>
+                                                ` : sppPayments.map(p => `
+                                                    <tr class="hover:bg-slate-100 transition">
+                                                        <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
+                                                        <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                        <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
+                                                        <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-emerald-950">${p.status}</span></td>
+                                                        <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                        <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                            <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                                <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                            </button>
+                                                            <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                                <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8">
+                                    <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
+                                        <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran (Agustus, September, dll)
+                                    </h4>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                        ${monthKeys.map(m => `
+                                            <div onclick="openMonthFolder('${m}')" class="bg-amber-100 p-4 rounded-3xl border-2 border-amber-400 shadow-md hover:shadow-lg transition cursor-pointer flex items-center justify-between group">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <div class="w-10 h-10 rounded-2xl bg-amber-700 text-white flex items-center justify-center text-lg shadow-md border border-amber-950 group-hover:scale-105 transition flex-shrink-0">
+                                                        <i class="fa-solid fa-folder-open"></i>
+                                                    </div>
+                                                    <div class="min-w-0">
+                                                        <h5 class="font-black text-slate-900 text-xs sm:text-sm truncate">${m}</h5>
+                                                        <p class="text-[10px] sm:text-xs font-black text-slate-800 mt-0.5 truncate">${paymentsByMonth[m].length} Riwayat</p>
+                                                    </div>
+                                                </div>
+                                                <div class="w-7 h-7 rounded-full bg-amber-700 text-white flex items-center justify-center text-xs font-black group-hover:scale-110 transition flex-shrink-0 ml-2">
+                                                    <i class="fa-solid fa-chevron-right"></i>
+                                                </div>
+                                            </div>
                                         `).join('')}
-                                    </tbody>
-                                </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    const folderPayments = (paymentsByMonth[currentActiveFolderMonth] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
+                    contentHtml = `
+                        <div class="space-y-6">
+                            <div class="mb-4 flex items-center justify-between">
+                                <button onclick="backToMainFolders()" class="px-3.5 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-black text-xs rounded-xl transition flex items-center gap-2 active:scale-95 border-2 border-slate-500">
+                                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Folder Utama
+                                </button>
+                                <span class="px-3 py-1 bg-amber-700 text-white font-black text-xs rounded-xl border border-amber-950 truncate max-w-[250px]">
+                                    <i class="fa-solid fa-folder-open mr-1"></i> ${currentActiveFolderMonth}
+                                </span>
+                            </div>
+
+                            <div class="bg-amber-50 p-4 sm:p-5 rounded-3xl border-2 border-amber-300 shadow-md">
+                                <h4 class="font-black text-slate-900 mb-4 text-xs sm:text-sm flex items-center gap-2 truncate">
+                                    <i class="fa-solid fa-folder-open text-amber-700"></i> Arsip Folder Periode: ${currentActiveFolderMonth}
+                                </h4>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs sm:text-sm">
+                                        <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                            <tr>
+                                                <th class="p-3 rounded-l-xl">Tanggal</th>
+                                                <th class="p-3">Nama Santri</th>
+                                                <th class="p-3">Periode Bulan</th>
+                                                <th class="p-3">Status</th>
+                                                <th class="p-3 text-right">Nominal</th>
+                                                <th class="p-3 rounded-r-xl text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y-2 divide-slate-200">
+                                            ${folderPayments.length === 0 ? '<tr><td colspan="6" class="p-4 text-xs font-black text-slate-700 italic text-center">Tidak ada pembayaran di folder ini.</td></tr>' : folderPayments.map(p => `
+                                                <tr class="hover:bg-white transition">
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-amber-700 mr-1.5"></i> ${p.date}</td>
+                                                    <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                    <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-amber-700 text-white rounded-full text-[10px] font-black border border-amber-950">${p.status}</span></td>
+                                                    <td class="p-3 text-right font-black text-amber-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                    <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                        <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                        </button>
+                                                        <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                            <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                return contentHtml;
             }
 
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'reports') {
@@ -1398,18 +1698,16 @@ WITH CHECK (true);
         }
 
         function updateModalPaymentAmount() {
-            const countSelect = document.getElementById('pay-month-count');
+            const monthSelect = document.getElementById('pay-month');
             const santriSelect = document.getElementById('pay-santri');
-            if (!countSelect || !santriSelect) return;
+            if (!monthSelect || !santriSelect) return;
             const santriId = santriSelect.value;
             const santri = (dbState.santri || []).find(s => s.id === santriId);
             const defaultSpp = santri?.customSpp !== undefined ? santri.customSpp : (dbState.profile?.defaultSpp || 250000);
             
-            const count = parseInt(countSelect.value) || 1;
-            const total = count * defaultSpp;
             const amountInput = document.getElementById('pay-amount');
             if (amountInput) {
-                amountInput.value = total;
+                amountInput.value = defaultSpp;
             }
         }
 
@@ -1533,6 +1831,11 @@ WITH CHECK (true);
                 }}
             ]);
 
+            const monthOptionsHtml = MONTH_OPTIONS.map(m => {
+                const isSelected = pay.month === m ? 'selected' : '';
+                return `<option value="${m}" ${isSelected}>${m}</option>`;
+            }).join('');
+
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3 text-left mt-2">
                     <div>
@@ -1552,7 +1855,9 @@ WITH CHECK (true);
                     </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Periode Bulan</label>
-                        <input type="text" id="edit-pay-month" value="${pay.month}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                        <select id="edit-pay-month" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                            ${monthOptionsHtml}
+                        </select>
                     </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
@@ -1754,33 +2059,18 @@ WITH CHECK (true);
             const todayStr = new Date().toISOString().split('T')[0];
             const defaultSppVal = santriList[0]?.customSpp !== undefined ? santriList[0].customSpp : (dbState.profile?.defaultSpp || 250000);
 
-            showModal('Catat Pembayaran Santri', 'Formulir transaksi pembayaran dengan pilihan jumlah bulan:', 'info', [
+            showModal('Catat Pembayaran Santri', 'Formulir transaksi pembayaran periode bulan:', 'info', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
                 { text: 'Catat Pembayaran', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
                     const paymentDate = document.getElementById('pay-date').value || todayStr;
                     const santriId = document.getElementById('pay-santri').value;
                     const type = document.getElementById('pay-type').value;
-                    const startMonth = document.getElementById('pay-start-month').value;
-                    const countMonths = parseInt(document.getElementById('pay-month-count').value) || 1;
+                    const monthSelect = document.getElementById('pay-month');
+                    const selectedMonth = monthSelect ? monthSelect.value : CURRENT_ACTIVE_MONTH;
                     const amount = parseInt(document.getElementById('pay-amount').value) || 0;
 
                     const santri = santriList.find(s => s.id === santriId);
                     if (!santri) return;
-
-                    let monthStr = startMonth;
-                    if (countMonths > 1) {
-                        const startIdx = MONTH_OPTIONS.indexOf(startMonth);
-                        if (startIdx !== -1) {
-                            let selectedMonthsList = [];
-                            for (let i = 0; i < countMonths; i++) {
-                                const targetIdx = (startIdx + i) % MONTH_OPTIONS.length;
-                                selectedMonthsList.push(MONTH_OPTIONS[targetIdx]);
-                            }
-                            monthStr = selectedMonthsList.join(', ');
-                        } else {
-                            monthStr = `${startMonth} (+${countMonths - 1} Bulan)`;
-                        }
-                    }
 
                     if (!dbState.payments) dbState.payments = [];
                     if (!dbState.transactions) dbState.transactions = [];
@@ -1792,7 +2082,7 @@ WITH CHECK (true);
                         santriId,
                         santriName: santri.name,
                         type,
-                        month: monthStr,
+                        month: selectedMonth,
                         amount: finalAmount,
                         date: paymentDate,
                         status: santri.scholarship === 'Ya' && type === 'SPP' ? 'Beasiswa (Gratis)' : 'Lunas'
@@ -1807,18 +2097,18 @@ WITH CHECK (true);
                             type: 'Pemasukan',
                             category: type === 'SPP' ? 'SPP Bulanan' : 'Daftar Ulang',
                             amount: finalAmount,
-                            desc: `${type} ${santri.name} (${monthStr})`
+                            desc: `${type} ${santri.name} (${selectedMonth})`
                         });
                     }
 
                     saveDb();
                     closeModal();
                     renderDashboard();
-                    showModal('Berhasil', 'Pembayaran berhasil dicatat. Arsip folder secara otomatis mengelompokkan periode tersebut.', 'success');
+                    showModal('Berhasil', 'Pembayaran berhasil dicatat.', 'success');
                 }}
             ]);
 
-            const monthOptionsHtml = MONTH_OPTIONS.map(m => `<option value="${m}">${m}</option>`).join('');
+            const monthOptionsHtml = MONTH_OPTIONS.map(m => `<option value="${m}" ${m === CURRENT_ACTIVE_MONTH ? 'selected' : ''}>${m}</option>`).join('');
 
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3 text-left mt-2">
@@ -1839,23 +2129,11 @@ WITH CHECK (true);
                             <option value="Daftar Ulang">Daftar Ulang</option>
                         </select>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Mulai Bulan</label>
-                            <select id="pay-start-month" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
-                                ${monthOptionsHtml}
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Jumlah Periode / Bulan</label>
-                            <select id="pay-month-count" onchange="updateModalPaymentAmount()" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
-                                <option value="1">1 Bulan</option>
-                                <option value="2">2 Bulan Sekaligus</option>
-                                <option value="3">3 Bulan (Triwulan)</option>
-                                <option value="6">6 Bulan (Semester)</option>
-                                <option value="12">12 Bulan (1 Tahun)</option>
-                            </select>
-                        </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Periode Bulan</label>
+                        <select id="pay-month" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                            ${monthOptionsHtml}
+                        </select>
                     </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Total Nominal Otomatis (Rp)</label>
