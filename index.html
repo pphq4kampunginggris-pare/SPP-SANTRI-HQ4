@@ -39,12 +39,12 @@
     <div id="app" class="flex-1 flex flex-col">
     </div>
 
-    <!-- Notification & Dynamic Form Modal -->
+    <!-- Notification Modal -->
     <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 hidden backdrop-blur-sm p-4 transition-all duration-300">
-        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full mx-auto shadow-2xl transform transition-all scale-95 opacity-0 duration-300 border-2 border-slate-300 overflow-y-auto max-h-[90vh]" id="modal-box">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full mx-auto shadow-2xl transform transition-all scale-95 opacity-0 duration-300 border-2 border-slate-300" id="modal-box">
             <div id="modal-icon" class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4 mx-auto shadow-inner"></div>
             <h3 id="modal-title" class="text-xl font-extrabold text-center text-slate-900 mb-2"></h3>
-            <div id="modal-message" class="text-sm font-bold text-slate-800 mb-6 leading-relaxed"></div>
+            <p id="modal-message" class="text-sm font-bold text-center text-slate-800 mb-6 leading-relaxed"></p>
             <div id="modal-actions" class="flex flex-col sm:flex-row gap-3 justify-center"></div>
         </div>
     </div>
@@ -66,7 +66,6 @@
             "Maret 2027", "April 2027", "Mei 2027", "Juni 2027"
         ];
 
-        // Automatically set current active month based on system date (August 2026)
         const CURRENT_ACTIVE_MONTH = "Agustus 2026";
 
         const DEFAULT_STATE = {
@@ -75,10 +74,10 @@
                 foundation: "Yayasan Pendidikan Islam Darul Ulum",
                 address: "Jl. Pesantren No. 45, Kediri, Jawa Timur",
                 phone: "(0354) 555123",
-                adminPesantrenPhone: "08123456789",
                 email: "info@darululum.sch.id",
                 currentYear: "2025/2026",
-                defaultSpp: 250000
+                defaultSpp: 250000,
+                adminPesantrenPhone: "6281234567891"
             },
             credentials: {
                 admin: { user: "admin", pass: "admin123", name: "Administrator Utama" },
@@ -98,7 +97,7 @@
             transactions: [
                 { id: "T001", date: "2026-07-10", type: "Pemasukan", category: "Daftar Ulang", amount: 900000, desc: "Pembayaran Daftar Ulang Santri" },
                 { id: "T002", date: "2026-07-15", type: "Pengeluaran", category: "Operasional", amount: 500000, desc: "Servis Mobil Operasional Pesantren" },
-                { id: "T003", date: "2026-08-01", type: "Pemasukan", category: "Donasi / Hibah", amount: 1000000, desc: "Dana Hibah Yayasan ke Rekening Bendahara Pusat" }
+                { id: "T003", date: "2026-08-01", type: "Pemasukan", category: "Donasi / Hibah", amount: 1000000, desc: "Dana Hibah Yayasan" }
             ]
         };
 
@@ -193,64 +192,6 @@
                     } catch (e) {}
                 }
             }, 5000);
-        }
-
-        function showModal(title, message, type = 'info', actionsHtml = '') {
-            const container = document.getElementById('modal-container');
-            const box = document.getElementById('modal-box');
-            const iconEl = document.getElementById('modal-icon');
-            const titleEl = document.getElementById('modal-title');
-            const msgEl = document.getElementById('modal-message');
-            const actionsEl = document.getElementById('modal-actions');
-
-            if (!container || !box) return;
-
-            titleEl.textContent = title;
-            if (typeof message === 'string') {
-                msgEl.innerHTML = message;
-            } else {
-                msgEl.innerHTML = '';
-                msgEl.appendChild(message);
-            }
-
-            if (type === 'error') {
-                iconEl.className = 'w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4 mx-auto shadow-inner bg-red-100 text-red-700 border-2 border-red-400';
-                iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-            } else if (type === 'success') {
-                iconEl.className = 'w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4 mx-auto shadow-inner bg-emerald-100 text-emerald-700 border-2 border-emerald-400';
-                iconEl.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
-            } else {
-                iconEl.className = 'w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4 mx-auto shadow-inner bg-indigo-100 text-indigo-700 border-2 border-indigo-400';
-                iconEl.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
-            }
-
-            if (actionsHtml) {
-                actionsEl.innerHTML = actionsHtml;
-            } else {
-                actionsEl.innerHTML = `
-                    <button onclick="closeModal()" class="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 border border-slate-700">
-                        Tutup
-                    </button>
-                `;
-            }
-
-            container.classList.remove('hidden');
-            setTimeout(() => {
-                box.classList.remove('scale-95', 'opacity-0');
-                box.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
-
-        function closeModal() {
-            const container = document.getElementById('modal-container');
-            const box = document.getElementById('modal-box');
-            if (!container || !box) return;
-
-            box.classList.remove('scale-100', 'opacity-100');
-            box.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                container.classList.add('hidden');
-            }, 300);
         }
 
         function renderAuthPortal() {
@@ -352,7 +293,7 @@
                     { id: 'spp_monitor_admin', label: 'Monitoring SPP & Folder', icon: 'fa-folder-tree' },
                     { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
                     { id: 'unpaid_admin', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
-                    { id: 'wa_invoice_admin', label: 'Kirim WA & Invoice Kas', icon: 'fa-paper-plane' },
+                    { id: 'whatsapp_report', label: 'Kirim WA & Invoice Kas', icon: 'fa-brands fa-whatsapp text-emerald-400' },
                     { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
                     { id: 'profile', label: 'Profil Pesantren', icon: 'fa-school' },
                     { id: 'credentials', label: 'Sandi Ruangan', icon: 'fa-key' },
@@ -501,6 +442,82 @@
             const totalExpense = txList.filter(t => t.type === 'Pengeluaran').reduce((acc, curr) => acc + curr.amount, 0);
             const balance = totalIncome - totalExpense;
             const currentMonth = CURRENT_ACTIVE_MONTH;
+
+            // Custom WhatsApp Invoice Generator for Treasurer -> Admin Pesantren
+            if (currentUser && currentUser.role === 'admin' && currentTab === 'whatsapp_report') {
+                const adminPhone = dbState.profile?.adminPesantrenPhone || "6281234567891";
+
+                return `
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 sm:p-8 rounded-3xl border-2 border-slate-300 shadow-md">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-100">
+                                <div>
+                                    <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
+                                        <i class="fa-brands fa-whatsapp text-emerald-700 text-2xl"></i> Kirim Invoice & Laporan Uang Masuk ke Admin Pesantren
+                                    </h3>
+                                    <p class="text-xs font-bold text-slate-600 mt-1">Buat format pesan WhatsApp custom untuk melaporkan uang masuk dari siapa ke bendahara pusat, lengkap dengan instruksi segera input.</p>
+                                </div>
+                                <div class="px-3.5 py-2 bg-emerald-100 border-2 border-emerald-400 text-emerald-950 font-black text-xs rounded-xl">
+                                    <i class="fa-solid fa-phone mr-1"></i> No WA Tujuan: ${adminPhone}
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-300 space-y-4">
+                                    <h4 class="font-black text-slate-900 text-sm flex items-center gap-2">
+                                        <i class="fa-solid fa-pen-to-square text-emerald-700"></i> Form Custom Invoice Uang Masuk
+                                    </h4>
+
+                                    <div>
+                                        <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Nomor WhatsApp Admin Pesantren</label>
+                                        <input type="text" id="wa-custom-phone" value="${adminPhone}" class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Uang Masuk Dari Siapa (Sumber / Donatur / Wali)</label>
+                                        <input type="text" id="wa-custom-source" placeholder="Contoh: H. Ahmad Suyanto (Wali Santri / Donatur)" class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700" oninput="updateCustomWaPreview()">
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Nominal (Rp)</label>
+                                            <input type="number" id="wa-custom-amount" placeholder="1500000" class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-emerald-700" oninput="updateCustomWaPreview()">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Tanggal Terima</label>
+                                            <input type="date" id="wa-custom-date" value="${new Date().toISOString().split('T')[0]}" class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700" oninput="updateCustomWaPreview()">
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Keterangan / Keperluan</label>
+                                        <input type="text" id="wa-custom-desc" value="Pembayaran Sumbangan Pembangunan / Infaq Gedung" class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700" oninput="updateCustomWaPreview()">
+                                    </div>
+
+                                    <button onclick="sendCustomWhatsAppInvoice()" class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-700/40 transition active:scale-95 flex items-center justify-center gap-2 border-2 border-emerald-950">
+                                        <i class="fa-brands fa-whatsapp text-lg"></i> Kirim WhatsApp Invoice Custom Sekarang
+                                    </button>
+                                </div>
+
+                                <div class="bg-slate-900 text-emerald-300 p-5 rounded-2xl border-2 border-slate-700 font-mono text-xs flex flex-col justify-between shadow-inner">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800 text-slate-400 font-bold">
+                                            <span><i class="fa-solid fa-eye mr-1"></i> Preview Format Pesan Invoice WhatsApp</span>
+                                            <span class="text-[10px] bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded font-black">Live Preview</span>
+                                        </div>
+                                        <div id="wa-custom-preview-box" class="whitespace-pre-line bg-slate-950 p-4 rounded-xl border border-slate-800 leading-relaxed text-slate-200 text-xs">
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 pt-3 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between">
+                                        <span>Pesantren Terintegrasi Supabase</span>
+                                        <i class="fa-solid fa-shield-halved text-emerald-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
 
             const renderUnpaidSantriTable = () => {
                 const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && (p.month === currentMonth || (p.month && p.month.includes(currentMonth)))).map(p => p.santriId);
@@ -817,133 +834,6 @@
                 `;
             }
 
-            if (currentUser && currentUser.role === 'admin' && currentTab === 'wa_invoice_admin') {
-                const incomeTxs = txList.filter(t => t.type === 'Pemasukan');
-                const defaultPhone = dbState.profile?.adminPesantrenPhone || "08123456789";
-
-                return `
-                    <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md space-y-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b-2 border-slate-200">
-                            <div>
-                                <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
-                                    <i class="fa-solid fa-paper-plane text-emerald-700"></i> Kirim WA & Invoice Kas Bendahara Pusat
-                                </h3>
-                                <p class="text-xs font-bold text-slate-700 mt-1">
-                                    Fitur untuk mengirimkan format pesan WhatsApp bergaya invoice resmi kepada <strong>Admin Pesantren</strong> apabila ada uang masuk ke rekening bendahara pusat, lengkap dengan instruksi penginputan & konfirmasi pertanggungjawaban.
-                                </p>
-                            </div>
-                            <div class="flex-shrink-0">
-                                <button onclick="openTransactionModal()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2 active:scale-95 border-2 border-emerald-950">
-                                    <i class="fa-solid fa-plus-circle"></i> Input Cash In Baru
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Phone Configuration Box -->
-                        <div class="bg-emerald-50 border-2 border-emerald-300 p-4 sm:p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 bg-emerald-700 text-white rounded-2xl flex items-center justify-center text-xl flex-shrink-0 shadow-md border border-emerald-900">
-                                    <i class="fa-brands fa-whatsapp"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-black text-slate-900 text-xs sm:text-sm">Nomor WhatsApp Tujuan (Admin Pesantren)</h4>
-                                    <p class="text-[11px] font-bold text-slate-700">Notifikasi invoice kas masuk akan dikirimkan ke nomor ini.</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 w-full md:w-auto">
-                                <input type="text" id="wa-target-phone" value="${defaultPhone}" placeholder="Contoh: 08123456789" class="w-full md:w-64 px-3.5 py-2.5 bg-white border-2 border-slate-400 rounded-xl text-xs font-black text-slate-900 focus:ring-2 focus:ring-emerald-700 transition">
-                                <button onclick="saveAdminPesantrenPhone()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl transition border border-emerald-900 flex-shrink-0 active:scale-95 shadow-sm">
-                                    <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Income Transactions Table with WA Action -->
-                        <div>
-                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-receipt text-emerald-700"></i> Daftar Transaksi Kas Masuk Rekening Bendahara Pusat
-                            </h4>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-xs sm:text-sm border-collapse">
-                                    <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
-                                        <tr>
-                                            <th class="p-3 rounded-l-xl">ID Bukti</th>
-                                            <th class="p-3">Tanggal</th>
-                                            <th class="p-3">Kategori Pemasukan</th>
-                                            <th class="p-3">Uraian / Sumber Dana</th>
-                                            <th class="p-3 text-right">Nominal</th>
-                                            <th class="p-3 rounded-r-xl text-center">Tindakan Kirim WA</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y-2 divide-slate-200">
-                                        ${incomeTxs.length === 0 ? `
-                                            <tr>
-                                                <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada transaksi uang masuk ke rekening bendahara pusat.</td>
-                                            </tr>
-                                        ` : incomeTxs.map(t => `
-                                            <tr class="hover:bg-slate-100 transition">
-                                                <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">
-                                                    <span class="px-2 py-0.5 bg-slate-200 text-slate-900 rounded-md font-mono border border-slate-400">INV-${t.id}</span>
-                                                </td>
-                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${t.date}</td>
-                                                <td class="p-3 font-black text-emerald-800 whitespace-nowrap text-xs">${t.category}</td>
-                                                <td class="p-3 font-black text-slate-800 text-xs">${t.desc}</td>
-                                                <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${t.amount.toLocaleString('id-ID')}</td>
-                                                <td class="p-3 text-center whitespace-nowrap">
-                                                    <div class="flex items-center justify-center gap-1.5">
-                                                        <button onclick="previewWaInvoiceModal('${t.id}')" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-indigo-950 shadow-xs" title="Pratinjau Format Invoice">
-                                                            <i class="fa-solid fa-eye mr-1"></i> Preview Invoice
-                                                        </button>
-                                                        <button onclick="sendWaInvoice('${t.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-emerald-950 shadow-xs" title="Kirim Langsung via WhatsApp">
-                                                            <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> Kirim WA
-                                                        </button>
-                                                        <button onclick="copyWaInvoiceText('${t.id}')" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-slate-900 shadow-xs" title="Salin Teks Invoice">
-                                                            <i class="fa-solid fa-copy"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Quick Manual Custom Message Box -->
-                        <div class="bg-slate-50 border-2 border-slate-300 p-5 rounded-3xl space-y-4">
-                            <h4 class="font-black text-slate-900 text-xs sm:text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-pen-ruler text-amber-700"></i> Buat Notifikasi Uang Masuk Manual (Custom)
-                            </h4>
-                            <p class="text-xs font-bold text-slate-700">Gunakan form di bawah ini jika ingin membuat notifikasi invoice manual secara cepat tanpa memilih dari daftar transaksi.</p>
-                            
-                            <form onsubmit="handleCustomWaInvoiceSubmit(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <div>
-                                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Tanggal Terima</label>
-                                    <input type="date" id="cust-date" value="${new Date().toISOString().split('T')[0]}" required class="w-full px-3 py-2 bg-white border-2 border-slate-300 rounded-xl text-xs font-black text-slate-900">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Nominal Pemasukan (Rp)</label>
-                                    <input type="number" id="cust-amount" placeholder="Contoh: 1500000" required class="w-full px-3 py-2 bg-white border-2 border-slate-300 rounded-xl text-xs font-black text-slate-900">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Kategori / Sumber</label>
-                                    <input type="text" id="cust-category" placeholder="Contoh: Donasi Alumni / Hibah" required class="w-full px-3 py-2 bg-white border-2 border-slate-300 rounded-xl text-xs font-black text-slate-900">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Keterangan Transfer</label>
-                                    <input type="text" id="cust-desc" placeholder="Contoh: Transfer BRI a.n Bendahara Pusat" required class="w-full px-3 py-2 bg-white border-2 border-slate-300 rounded-xl text-xs font-black text-slate-900">
-                                </div>
-                                <div class="sm:col-span-2 lg:col-span-4 flex justify-end gap-2 pt-2">
-                                    <button type="submit" class="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl transition border-2 border-emerald-950 shadow-md active:scale-95 flex items-center gap-2">
-                                        <i class="fa-brands fa-whatsapp text-sm"></i> Generate & Kirim WA Invoice
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                `;
-            }
-
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'transactions') {
                 let sortedChronological = [...txList].sort((a, b) => new Date(a.date) - new Date(b.date));
                 let running = 0;
@@ -1242,7 +1132,7 @@
                                                     <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
                                                     <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
                                                     <td class="p-3 font-black text-amber-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
-                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-amber-700 text-white rounded-full text-[10px] font-black border border-amber-950">${p.status}</span></td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-amber-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-amber-950">${p.status}</span></td>
                                                     <td class="p-3 text-center whitespace-nowrap space-x-1">
                                                         <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
                                                             <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
@@ -1540,17 +1430,13 @@ WITH CHECK (true);
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1.5">Nomor Telepon / HP Pesantren</label>
+                                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1.5">Nomor Telepon / HP</label>
                                     <input type="text" id="prof-phone" value="${dbState.profile?.phone || ''}" required class="w-full px-4 py-3 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700 focus:bg-white transition">
                                 </div>
                                 <div>
-                                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1.5">HP WA Admin Pesantren</label>
-                                    <input type="text" id="prof-wa-admin" value="${dbState.profile?.adminPesantrenPhone || '08123456789'}" required class="w-full px-4 py-3 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700 focus:bg-white transition">
+                                    <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1.5">Tahun Ajaran Aktif</label>
+                                    <input type="text" id="prof-year" value="${dbState.profile?.currentYear || ''}" required class="w-full px-4 py-3 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700 focus:bg-white transition">
                                 </div>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1.5">Tahun Ajaran Aktif</label>
-                                <input type="text" id="prof-year" value="${dbState.profile?.currentYear || ''}" required class="w-full px-4 py-3 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700 focus:bg-white transition">
                             </div>
                             <button type="submit" class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black rounded-xl shadow-lg shadow-emerald-700/40 transition flex items-center justify-center gap-2 mt-4 text-xs sm:text-sm active:scale-95 border-2 border-emerald-950">
                                 <i class="fa-solid fa-floppy-disk"></i> Simpan Profil Pesantren
@@ -1568,14 +1454,24 @@ WITH CHECK (true);
 
                         <div class="space-y-4">
                             ${santriList.map(s => `
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-100 rounded-2xl border-2 border-slate-300">
-                                    <div>
-                                        <div class="font-black text-slate-900 text-xs sm:text-sm">${s.name} (${s.class})</div>
-                                        <div class="text-[10px] font-bold text-slate-600">ID: ${s.id} | HP: ${s.phone}</div>
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-100 rounded-2xl border-2 border-slate-300 shadow-xs">
+                                    <div class="min-w-0">
+                                        <div class="font-black text-slate-900 text-xs sm:text-sm truncate">${s.name}</div>
+                                        <div class="text-[10px] sm:text-xs font-bold text-slate-700 truncate">${s.class} | Telp: ${s.phone}</div>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <button onclick="openEditSantriModal('${s.id}')" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl border border-emerald-900 active:scale-95 transition">
-                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Ubah SPP / Beasiswa
+                                    <div class="flex flex-wrap items-center gap-2 flex-shrink-0">
+                                        <div class="flex items-center gap-1">
+                                            <select id="spp-scholarship-${s.id}" class="px-2.5 py-2 bg-white border-2 border-slate-400 rounded-xl text-xs font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                                                <option value="Tidak" ${s.scholarship === 'Tidak' ? 'selected' : ''}>Reguler</option>
+                                                <option value="Ya" ${s.scholarship === 'Ya' ? 'selected' : ''}>Beasiswa</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <span class="text-xs font-black text-slate-800">Rp</span>
+                                            <input type="number" id="spp-santri-${s.id}" value="${s.customSpp !== undefined ? s.customSpp : (dbState.profile?.defaultSpp || 250000)}" class="w-28 sm:w-32 px-3 py-2 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-emerald-700">
+                                        </div>
+                                        <button onclick="saveSantriSppAndScholarship('${s.id}')" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl transition flex items-center justify-center gap-1 active:scale-95 border-2 border-emerald-950">
+                                            <i class="fa-solid fa-floppy-disk"></i> Simpan
                                         </button>
                                     </div>
                                 </div>
@@ -1586,624 +1482,1065 @@ WITH CHECK (true);
             }
 
             if (currentUser && currentUser.role === 'pesantren' && currentTab === 'payments') {
+                const sortedPayments = [...paymentList].sort((a, b) => new Date(a.date) - new Date(b.date));
                 return `
-                    <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md max-w-2xl mx-auto space-y-4">
-                        <div class="flex items-center justify-between">
+                    <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div>
-                                <h3 class="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2"><i class="fa-solid fa-receipt text-emerald-700"></i> Catat Pembayaran SPP / Biaya Santri</h3>
-                                <p class="text-xs font-bold text-slate-700">Input setoran tunai atau transfer dari wali santri.</p>
+                                <h3 class="font-black text-slate-900 text-sm sm:text-base">Pencatatan Pembayaran & Rekam Jejak Tanggal SPP</h3>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Catat pembayaran Daftar Ulang & SPP santri.</p>
                             </div>
-                            <button onclick="openAddPaymentModal()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-md transition border-2 border-emerald-950 active:scale-95 flex items-center gap-2">
-                                <i class="fa-solid fa-plus-circle"></i> Catat Pembayaran
-                            </button>
+                            <div class="flex items-center gap-3">
+                                <button onclick="openPaymentModal()" class="w-full sm:w-auto px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-700/40 transition flex items-center justify-center gap-2 active:scale-95 border-2 border-emerald-950">
+                                    <i class="fa-solid fa-receipt"></i> Catat Pembayaran Baru
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-8">
+                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Riwayat Pembayaran & Tanggal Rekam Jejak (Urutan Kronologis)</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs sm:text-sm">
+                                    <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                        <tr>
+                                            <th class="p-3 rounded-l-2xl">Tanggal Transaksi</th>
+                                            <th class="p-3">Nama Santri</th>
+                                            <th class="p-3">Jenis Pembayaran</th>
+                                            <th class="p-3">Periode Bulan</th>
+                                            <th class="p-3">Status</th>
+                                            <th class="p-3 text-right">Nominal</th>
+                                            <th class="p-3 rounded-r-2xl text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y-2 divide-slate-200">
+                                        ${sortedPayments.map(p => `
+                                            <tr class="hover:bg-slate-100 transition">
+                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
+                                                <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-teal-800 text-white rounded-full text-[10px] sm:text-xs font-black border border-teal-950">${p.type}</span></td>
+                                                <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
+                                                <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-emerald-950">${p.status}</span></td>
+                                                <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                    <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                        <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                    </button>
+                                                    <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                        <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 `;
+            }
+
+            if (currentUser && currentUser.role === 'treasurer' && currentTab === 'spp_monitor') {
+                const paidThisMonthSantriIds = paymentList.filter(p => p.type === 'SPP' && (p.month === currentMonth || (p.month && p.month.includes(currentMonth)))).map(p => p.santriId);
+                const sppPayments = [...paymentList].filter(p => p.type === 'SPP').sort((a, b) => new Date(a.date) - new Date(b.date));
+                const totalSpp = sppPayments.reduce((acc, curr) => acc + curr.amount, 0);
+
+                const paymentsByMonth = {};
+                sppPayments.forEach(p => {
+                    const mKey = p.month || 'Lainnya';
+                    if (!paymentsByMonth[mKey]) {
+                        paymentsByMonth[mKey] = [];
+                    }
+                    paymentsByMonth[mKey].push(p);
+                });
+                const monthKeys = Object.keys(paymentsByMonth);
+
+                let contentHtml = '';
+                if (currentActiveFolderMonth === null) {
+                    contentHtml = `
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6">
+                                <div class="bg-emerald-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-emerald-900">
+                                    <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-100 mb-1">Total Pemasukan Kas</div>
+                                    <div class="text-lg sm:text-2xl font-black truncate">Rp ${totalIncome.toLocaleString('id-ID')}</div>
+                                </div>
+                                <div class="bg-red-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-red-900">
+                                    <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-100 mb-1">Total Pengeluaran Kas</div>
+                                    <div class="text-lg sm:text-2xl font-black truncate">Rp ${totalExpense.toLocaleString('id-ID')}</div>
+                                </div>
+                                <div class="bg-indigo-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white border-2 border-indigo-900">
+                                    <div class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-indigo-100 mb-1">Saldo Kas Bersih</div>
+                                    <div class="text-lg sm:text-2xl font-black truncate">Rp ${balance.toLocaleString('id-ID')}</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                                    <div>
+                                        <h3 class="font-black text-slate-900 text-sm sm:text-base">Monitoring SPP Masuk & Rekam Jejak Tanggal</h3>
+                                        <p class="text-[11px] sm:text-xs font-bold text-slate-800">Pemantauan setoran SPP bulanan lengkap dengan tanggal transaksi pencatatan.</p>
+                                    </div>
+                                    <div class="p-3 bg-emerald-700 text-white rounded-2xl shadow-md text-left sm:text-right w-full sm:w-auto border-2 border-emerald-950">
+                                        <div class="text-[10px] font-black uppercase text-emerald-100">Total SPP Masuk</div>
+                                        <div class="text-base sm:text-lg font-black truncate">Rp ${totalSpp.toLocaleString('id-ID')}</div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                                    <div class="p-4 bg-blue-700 text-white rounded-2xl shadow-md border-2 border-blue-950">
+                                        <div class="text-[11px] font-black uppercase text-blue-100">Sudah Bayar (${currentMonth})</div>
+                                        <div class="text-xl sm:text-2xl font-black mt-1">${paidThisMonthSantriIds.length} Santri</div>
+                                    </div>
+                                    <div class="p-4 bg-purple-800 text-white rounded-2xl shadow-md border-2 border-purple-950">
+                                        <div class="text-[11px] font-black uppercase text-purple-100">Total Transaksi SPP Tercatat</div>
+                                        <div class="text-xl sm:text-2xl font-black mt-1">${sppPayments.length} Transaksi</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-6">
+                                    <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center justify-between">
+                                        <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran SPP (Kronologis)</span>
+                                        <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${sppPayments.length}</span>
+                                    </h4>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left text-xs sm:text-sm">
+                                            <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                                <tr>
+                                                    <th class="p-3 rounded-l-2xl">Tanggal</th>
+                                                    <th class="p-3">Nama Santri</th>
+                                                    <th class="p-3">Periode Bulan</th>
+                                                    <th class="p-3">Status</th>
+                                                    <th class="p-3 text-right">Nominal</th>
+                                                    <th class="p-3 rounded-r-2xl text-center">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y-2 divide-slate-200">
+                                                ${sppPayments.length === 0 ? `
+                                                    <tr>
+                                                        <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran SPP.</td>
+                                                    </tr>
+                                                ` : sppPayments.map(p => `
+                                                    <tr class="hover:bg-slate-100 transition">
+                                                        <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
+                                                        <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                        <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
+                                                        <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-emerald-950">${p.status}</span></td>
+                                                        <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                        <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                            <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                                <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                            </button>
+                                                            <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                                <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8">
+                                    <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
+                                        <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran (Agustus, September, dll)
+                                    </h4>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                        ${monthKeys.map(m => `
+                                            <div onclick="openMonthFolder('${m}')" class="bg-amber-100 p-4 rounded-3xl border-2 border-amber-400 shadow-md hover:shadow-lg transition cursor-pointer flex items-center justify-between group">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <div class="w-10 h-10 rounded-2xl bg-amber-700 text-white flex items-center justify-center text-lg shadow-md border border-amber-950 group-hover:scale-105 transition flex-shrink-0">
+                                                        <i class="fa-solid fa-folder-open"></i>
+                                                    </div>
+                                                    <div class="min-w-0">
+                                                        <h5 class="font-black text-slate-900 text-xs sm:text-sm truncate">${m}</h5>
+                                                        <p class="text-[10px] sm:text-xs font-black text-slate-800 mt-0.5 truncate">${paymentsByMonth[m].length} Riwayat</p>
+                                                    </div>
+                                                </div>
+                                                <div class="w-7 h-7 rounded-full bg-amber-700 text-white flex items-center justify-center text-xs font-black group-hover:scale-110 transition flex-shrink-0 ml-2">
+                                                    <i class="fa-solid fa-chevron-right"></i>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const folderPayments = (paymentsByMonth[currentActiveFolderMonth] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
+                    contentHtml = `
+                        <div class="space-y-6">
+                            <div class="mb-4 flex items-center justify-between">
+                                <button onclick="backToMainFolders()" class="px-3.5 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-black text-xs rounded-xl transition flex items-center gap-2 active:scale-95 border-2 border-slate-500">
+                                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Folder Utama
+                                </button>
+                                <span class="px-3 py-1 bg-amber-700 text-white font-black text-xs rounded-xl border border-amber-950 truncate max-w-[250px]">
+                                    <i class="fa-solid fa-folder-open mr-1"></i> ${currentActiveFolderMonth}
+                                </span>
+                            </div>
+
+                            <div class="bg-amber-50 p-4 sm:p-5 rounded-3xl border-2 border-amber-300 shadow-md">
+                                <h4 class="font-black text-slate-900 mb-4 text-xs sm:text-sm flex items-center gap-2 truncate">
+                                    <i class="fa-solid fa-folder-open text-amber-700"></i> Arsip Folder Periode: ${currentActiveFolderMonth}
+                                </h4>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs sm:text-sm">
+                                        <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                            <tr>
+                                                <th class="p-3 rounded-l-xl">Tanggal</th>
+                                                <th class="p-3">Nama Santri</th>
+                                                <th class="p-3">Periode Bulan</th>
+                                                <th class="p-3">Status</th>
+                                                <th class="p-3 text-right">Nominal</th>
+                                                <th class="p-3 rounded-r-xl text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y-2 divide-slate-200">
+                                            ${folderPayments.length === 0 ? '<tr><td colspan="6" class="p-4 text-xs font-black text-slate-700 italic text-center">Tidak ada pembayaran di folder ini.</td></tr>' : folderPayments.map(p => `
+                                                <tr class="hover:bg-white transition">
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-amber-700 mr-1.5"></i> ${p.date}</td>
+                                                    <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                    <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-amber-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-amber-950">${p.status}</span></td>
+                                                    <td class="p-3 text-right font-black text-amber-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                    <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                        <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                        </button>
+                                                        <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                            <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                return contentHtml;
             }
 
             if (currentUser && currentUser.role === 'treasurer' && currentTab === 'reports') {
                 return `
                     <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
-                        <h3 class="font-black text-slate-900 text-sm sm:text-base mb-4 flex items-center gap-2"><i class="fa-solid fa-user-graduate text-emerald-700"></i> Rekapitulasi Santri & Penerima Beasiswa</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                            <div class="bg-indigo-700 p-4 rounded-2xl text-white font-black border-2 border-indigo-950">
-                                <div class="text-xs uppercase text-indigo-100">Total Santri</div>
-                                <div class="text-2xl mt-1">${totalSantri} Santri</div>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                            <div>
+                                <h3 class="font-black text-slate-900 text-sm sm:text-base">Data Santri Terdaftar & Nominal SPP</h3>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Daftar nama santri beserta besaran SPP dan status beasiswa untuk keperluan audit.</p>
                             </div>
-                            <div class="bg-emerald-700 p-4 rounded-2xl text-white font-black border-2 border-emerald-950">
-                                <div class="text-xs uppercase text-emerald-100">Santri Reguler</div>
-                                <div class="text-2xl mt-1">${totalSantri - scholarshipSantri} Santri</div>
-                            </div>
-                            <div class="bg-purple-800 p-4 rounded-2xl text-white font-black border-2 border-purple-950">
-                                <div class="text-xs uppercase text-purple-100">Santri Beasiswa</div>
-                                <div class="text-2xl mt-1">${scholarshipSantri} Santri</div>
-                            </div>
+                            <button onclick="downloadPdfReport()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-md transition flex items-center gap-2 active:scale-95 border-2 border-emerald-950">
+                                <i class="fa-solid fa-file-pdf"></i> Unduh PDF Laporan Santri
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs sm:text-sm">
+                                <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                    <tr>
+                                        <th class="p-3 rounded-l-2xl">ID & Nama Santri</th>
+                                        <th class="p-3">Kelas</th>
+                                        <th class="p-3">Nominal SPP</th>
+                                        <th class="p-3">Status Beasiswa</th>
+                                        <th class="p-3 rounded-r-2xl text-right">No Telepon</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y-2 divide-slate-200">
+                                    ${santriList.map(s => `
+                                        <tr class="hover:bg-slate-100 transition">
+                                            <td class="p-3">
+                                                <div class="font-black text-slate-900 text-xs sm:text-sm">${s.name}</div>
+                                                <div class="text-[10px] font-bold text-slate-700">ID: ${s.id}</div>
+                                            </td>
+                                            <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${s.class}</td>
+                                            <td class="p-3 text-emerald-800 font-black whitespace-nowrap text-xs">Rp ${(s.customSpp !== undefined ? s.customSpp : (dbState.profile?.defaultSpp || 250000)).toLocaleString('id-ID')}</td>
+                                            <td class="p-3 whitespace-nowrap">
+                                                <span class="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black ${s.scholarship === 'Ya' ? 'bg-purple-800 text-white border border-purple-950' : 'bg-slate-800 text-white border border-slate-950'}">
+                                                    ${s.scholarship === 'Ya' ? 'Beasiswa (Gratis)' : 'Reguler'}
+                                                </span>
+                                            </td>
+                                            <td class="p-3 text-right text-slate-900 font-black whitespace-nowrap text-xs">${s.phone}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 `;
             }
 
-            return `<div class="bg-white p-6 rounded-3xl text-center font-black text-slate-700">Ruangan aktif dapat diakses melalui menu navigasi samping.</div>`;
+            return '';
         }
 
-        function formatWaNumber(phoneStr) {
-            let cleaned = (phoneStr || "").replace(/\D/g, "");
-            if (cleaned.startsWith("0")) {
-                cleaned = "62" + cleaned.substring(1);
-            }
-            return cleaned;
-        }
-
-        function saveAdminPesantrenPhone() {
-            const phoneEl = document.getElementById('wa-target-phone');
-            if (phoneEl) {
-                const val = phoneEl.value.trim();
-                dbState.profile.adminPesantrenPhone = val;
-                saveDb();
-                showModal('Berhasil Disimpan', `Nomor WhatsApp Admin Pesantren berhasil diperbarui menjadi: <strong>${val}</strong>`, 'success');
-            }
-        }
-
-        function buildOfficialWaInvoiceText(invId, date, amount, category, desc) {
+        function getCustomWaText() {
+            const source = document.getElementById('wa-custom-source')?.value || "H. Ahmad Suyanto (Donatur / Wali)";
+            const amount = parseFloat(document.getElementById('wa-custom-amount')?.value || 0);
+            const date = document.getElementById('wa-custom-date')?.value || new Date().toISOString().split('T')[0];
+            const desc = document.getElementById('wa-custom-desc')?.value || "Sumbangan Pembangunan";
             const pesName = dbState.profile?.name || "Pesantren Darul Ulum Al-Islamy";
+            const foundationName = dbState.profile?.foundation || "Yayasan Pendidikan Islam Darul Ulum";
+
             const formattedAmount = "Rp " + Number(amount).toLocaleString('id-ID');
 
-            return `🧾 *INVOICE & NOTIFIKASI KAS MASUK*
-*${pesName.toUpperCase()}*
------------------------------------------
-📌 *No. Bukti Invoice:* INV-${invId}
-📅 *Tanggal Terima:* ${date}
-💰 *Nominal Masuk:* ${formattedAmount}
-🏷️ *Kategori Kas:* ${category}
-📝 *Uraian / Sumber:* ${desc}
-🏦 *Rekening Tujuan:* Kas Rekening Bendahara Pusat
------------------------------------------
+            return `🧾 *INVOICE & NOTIFIKASI UANG MASUK KAS*
+---------------------------------------
+🏛 *${pesName.toUpperCase()}*
+🏢 ${foundationName}
+---------------------------------------
+📅 Tanggal Terima: *${date}*
+👤 Uang Masuk Dari: *${source}*
+💰 Nominal Masuk: *${formattedAmount}*
+📝 Keterangan: ${desc}
+🏦 Rekening Tujuan: Rekening Bendahara Pusat
+---------------------------------------
 ⚠️ *INSTRUKSI UTAMA KEPADA ADMIN PESANTREN:*
 Yth. Admin Pesantren, dimohon untuk segera:
-1. Menginput transaksi uang masuk ini ke sistem laporan keuangan internal pesantren.
-2. Memberikan konfirmasi pertanggungjawaban kepada Administrator / Bendahara Utama setelah selesai diinput.
+1. *Segera input* transaksi uang masuk ini ke sistem aplikasi pembukuan internal pesantren.
+2. Berikan *konfirmasi* kepada Bendahara Pusat setelah selesai diinput.
 
 _Syukron wa Jazakumullahu Khairan._
------------------------------------------`;
+---------------------------------------
+_Pesan Otomatis Sistem Keuangan Terintegrasi_`;
         }
 
-        function generateWaInvoiceTextForTx(txId) {
-            const tx = (dbState.transactions || []).find(t => t.id === txId);
-            if (!tx) return "";
-            return buildOfficialWaInvoiceText(tx.id, tx.date, tx.amount, tx.category, tx.desc);
+        function updateCustomWaPreview() {
+            const box = document.getElementById('wa-custom-preview-box');
+            if (box) {
+                box.innerText = getCustomWaText();
+            }
         }
 
-        function sendWaInvoice(txId) {
-            const text = generateWaInvoiceTextForTx(txId);
-            const targetPhone = formatWaNumber(dbState.profile?.adminPesantrenPhone || "08123456789");
-            const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
+        function sendCustomWhatsAppInvoice() {
+            const phoneEl = document.getElementById('wa-custom-phone');
+            const sourceEl = document.getElementById('wa-custom-source');
+            const amountEl = document.getElementById('wa-custom-amount');
+            
+            if (!phoneEl || !sourceEl || !amountEl) return;
+
+            let phone = phoneEl.value.trim().replace(/[^0-9]/g, '');
+            if (phone.startsWith('0')) {
+                phone = '62' + phone.substring(1);
+            }
+
+            const source = sourceEl.value.trim();
+            const amount = parseFloat(amountEl.value || 0);
+
+            if (!source || !amount) {
+                showModal('Peringatan', 'Harap isi nama pengirim/sumber uang dan nominal dengan lengkap.', 'error');
+                return;
+            }
+
+            const text = getCustomWaText();
+            const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+            
             window.open(url, '_blank');
+            showModal('Berhasil Membuka WhatsApp', 'Invoice custom uang masuk berhasil disiapkan dan diarahkan ke WhatsApp Admin Pesantren.', 'success');
         }
 
-        function copyWaInvoiceText(txId) {
-            const text = generateWaInvoiceTextForTx(txId);
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = text;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-            showModal('Teks Dycetak & Disalin', 'Format pesan WA bergaya invoice resmi berhasil disalin ke clipboard!', 'success');
+        setTimeout(() => {
+            if (document.getElementById('wa-custom-preview-box')) {
+                updateCustomWaPreview();
+            }
+        }, 500);
+
+        function updateModalPaymentAmount() {
+            const monthSelect = document.getElementById('pay-month');
+            const santriSelect = document.getElementById('pay-santri');
+            if (!monthSelect || !santriSelect) return;
+            const santriId = santriSelect.value;
+            const santri = (dbState.santri || []).find(s => s.id === santriId);
+            const defaultSpp = santri?.customSpp !== undefined ? santri.customSpp : (dbState.profile?.defaultSpp || 250000);
+            
+            const amountInput = document.getElementById('pay-amount');
+            if (amountInput) {
+                amountInput.value = defaultSpp;
+            }
         }
 
-        function previewWaInvoiceModal(txId) {
-            const tx = (dbState.transactions || []).find(t => t.id === txId);
-            if (!tx) return;
+        function deleteTransaction(trxId) {
+            showModal('Konfirmasi Hapus Transaksi', 'Apakah Anda yakin ingin menghapus catatan transaksi kas ini?', 'error', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Ya, Hapus', class: 'bg-red-700 text-white hover:bg-red-800 flex-1 py-3 shadow-md shadow-red-700/40 font-black border-2 border-red-950 text-xs sm:text-sm', onClick: () => {
+                    if (!dbState.transactions) return;
+                    dbState.transactions = dbState.transactions.filter(t => t.id !== trxId);
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Transaksi kas berhasil dihapus.', 'success');
+                }}
+            ]);
+        }
 
-            const text = buildOfficialWaInvoiceText(tx.id, tx.date, tx.amount, tx.category, tx.desc);
+        function deletePayment(payId) {
+            showModal('Konfirmasi Hapus Pembayaran', 'Apakah Anda yakin ingin menghapus catatan pembayaran santri ini?', 'error', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Ya, Hapus', class: 'bg-red-700 text-white hover:bg-red-800 flex-1 py-3 shadow-md shadow-red-700/40 font-black border-2 border-red-950 text-xs sm:text-sm', onClick: () => {
+                    if (!dbState.payments) return;
+                    const payObj = dbState.payments.find(p => p.id === payId);
+                    dbState.payments = dbState.payments.filter(p => p.id !== payId);
+                    
+                    if (payObj) {
+                        dbState.transactions = (dbState.transactions || []).filter(t => {
+                            return !(t.date === payObj.date && t.amount === payObj.amount && t.desc.includes(payObj.santriName));
+                        });
+                    }
 
-            const contentHtml = `
-                <div class="space-y-4 text-left">
-                    <div class="p-4 bg-emerald-950 text-emerald-100 rounded-2xl font-mono text-xs leading-relaxed whitespace-pre-wrap border-2 border-emerald-600 shadow-inner">
-                        ${text.replace(/\*(.*?)\*/g, '<strong>$1</strong>')}
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Catatan pembayaran santri berhasil dihapus dan nama santri dikembalikan ke daftar belum bayar.', 'success');
+                }}
+            ]);
+        }
+
+        function openEditTransactionModal(trxId) {
+            const txList = dbState.transactions || [];
+            const trx = txList.find(t => t.id === trxId);
+            if (!trx) return;
+
+            showModal('Edit Transaksi Kas', 'Formulir koreksi data transaksi keuangan:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
+                    const date = document.getElementById('edit-trx-date').value || trx.date;
+                    const type = document.getElementById('edit-trx-type').value;
+                    const category = document.getElementById('edit-trx-cat').value;
+                    const amount = parseInt(document.getElementById('edit-trx-amount').value) || 0;
+                    const desc = document.getElementById('edit-trx-desc').value;
+
+                    if (!category || !amount) return;
+
+                    trx.date = date;
+                    trx.type = type;
+                    trx.category = category;
+                    trx.amount = amount;
+                    trx.desc = desc;
+
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Data transaksi kas berhasil diperbarui.', 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi</label>
+                        <input type="date" id="edit-trx-date" value="${trx.date}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Jenis Arus Kas</label>
+                        <select id="edit-trx-type" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                            <option value="Pemasukan" ${trx.type === 'Pemasukan' ? 'selected' : ''}>Pemasukan Kas</option>
+                            <option value="Pengeluaran" ${trx.type === 'Pengeluaran' ? 'selected' : ''}>Pengeluaran Kas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Kategori Transaksi</label>
+                        <input type="text" id="edit-trx-cat" value="${trx.category}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
+                        <input type="number" id="edit-trx-amount" value="${trx.amount}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Keterangan / Deskripsi</label>
+                        <textarea id="edit-trx-desc" rows="2" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">${trx.desc}</textarea>
                     </div>
                 </div>
             `;
-
-            const actionsHtml = `
-                <button onclick="sendWaInvoice('${tx.id}'); closeModal();" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl transition border-2 border-emerald-950 flex items-center justify-center gap-2 active:scale-95">
-                    <i class="fa-brands fa-whatsapp text-sm"></i> Kirim WhatsApp Now
-                </button>
-                <button onclick="copyWaInvoiceText('${tx.id}')" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-black text-xs rounded-xl transition border-2 border-indigo-950 flex items-center justify-center gap-2 active:scale-95">
-                    <i class="fa-solid fa-copy"></i> Salin Teks
-                </button>
-                <button onclick="closeModal()" class="w-full sm:w-auto px-5 py-2.5 bg-slate-300 hover:bg-slate-400 text-slate-900 font-black text-xs rounded-xl transition border-2 border-slate-500 flex items-center justify-center">
-                    Batal
-                </button>
-            `;
-
-            showModal('Pratinjau Format WA Invoice', contentHtml, 'info', actionsHtml);
         }
 
-        function handleCustomWaInvoiceSubmit(e) {
-            e.preventDefault();
-            const date = document.getElementById('cust-date').value;
-            const amount = parseFloat(document.getElementById('cust-amount').value || 0);
-            const category = document.getElementById('cust-category').value.trim();
-            const desc = document.getElementById('cust-desc').value.trim();
+        function openEditPaymentModal(payId) {
+            const paymentList = dbState.payments || [];
+            const pay = paymentList.find(p => p.id === payId);
+            if (!pay) return;
 
-            const customId = "CUST-" + Math.floor(1000 + Math.random() * 9000);
-            const text = buildOfficialWaInvoiceText(customId, date, amount, category, desc);
+            showModal('Edit Pembayaran Santri', 'Formulir koreksi data pembayaran santri:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
+                    const date = document.getElementById('edit-pay-date').value || pay.date;
+                    const type = document.getElementById('edit-pay-type').value;
+                    const month = document.getElementById('edit-pay-month').value;
+                    const amount = parseInt(document.getElementById('edit-pay-amount').value) || 0;
 
-            const targetPhone = formatWaNumber(dbState.profile?.adminPesantrenPhone || "08123456789");
-            const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
-        }
+                    pay.date = date;
+                    pay.type = type;
+                    pay.month = month;
+                    pay.amount = amount;
+                    pay.status = amount === 0 ? 'Beasiswa (Gratis)' : 'Lunas';
 
-        function openAddSantriModal() {
-            const html = `
-                <form onsubmit="saveSantri(event)" class="space-y-3 text-left">
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">ID Santri</label>
-                        <input type="text" id="santri-id" value="S00${(dbState.santri?.length || 0) + 1}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nama Santri</label>
-                        <input type="text" id="santri-name" placeholder="Nama Lengkap..." required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Kelas</label>
-                        <input type="text" id="santri-class" placeholder="Contoh: VII-A (Tsanawiyah)" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">No HP Orang Tua / Wali</label>
-                        <input type="text" id="santri-phone" placeholder="Contoh: 081234567890" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nominal SPP (Rp)</label>
-                        <input type="number" id="santri-spp" value="${dbState.profile?.defaultSpp || 250000}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Status Beasiswa</label>
-                        <select id="santri-scholarship" class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                            <option value="Tidak">Tidak (Reguler)</option>
-                            <option value="Ya">Ya (Bebas SPP / Gratis)</option>
-                        </select>
-                    </div>
-                    <div class="flex justify-end gap-2 pt-3">
-                        <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl border border-emerald-950">Simpan Santri</button>
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-300 text-slate-900 font-black text-xs rounded-xl">Batal</button>
-                    </div>
-                </form>
-            `;
-            showModal('Tambah Data Santri', html, 'info', ' ');
-        }
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Data pembayaran santri berhasil diperbarui.', 'success');
+                }}
+            ]);
 
-        function saveSantri(e) {
-            e.preventDefault();
-            const id = document.getElementById('santri-id').value.trim();
-            const name = document.getElementById('santri-name').value.trim();
-            const cls = document.getElementById('santri-class').value.trim();
-            const phone = document.getElementById('santri-phone').value.trim();
-            const spp = parseFloat(document.getElementById('santri-spp').value || 0);
-            const scholarship = document.getElementById('santri-scholarship').value;
+            const monthOptionsHtml = MONTH_OPTIONS.map(m => {
+                const isSelected = pay.month === m ? 'selected' : '';
+                return `<option value="${m}" ${isSelected}>${m}</option>`;
+            }).join('');
 
-            const existingIdx = (dbState.santri || []).findIndex(s => s.id === id);
-            const santriObj = { id, name, class: cls, phone, customSpp: spp, status: 'Aktif', scholarship };
-
-            if (existingIdx >= 0) {
-                dbState.santri[existingIdx] = santriObj;
-            } else {
-                dbState.santri.push(santriObj);
-            }
-
-            saveDb();
-            closeModal();
-            renderDashboard();
-        }
-
-        function openEditSantriModal(id) {
-            const s = (dbState.santri || []).find(item => item.id === id);
-            if (!s) return;
-
-            const html = `
-                <form onsubmit="saveSantri(event)" class="space-y-3 text-left">
-                    <input type="hidden" id="santri-id" value="${s.id}">
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
                     <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nama Santri</label>
-                        <input type="text" id="santri-name" value="${s.name}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Santri</label>
+                        <input type="text" value="${pay.santriName}" disabled class="w-full px-3 py-2.5 bg-slate-200 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-600 cursor-not-allowed">
                     </div>
                     <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Kelas</label>
-                        <input type="text" id="santri-class" value="${s.class}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi</label>
+                        <input type="date" id="edit-pay-date" value="${pay.date}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
                     </div>
                     <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">No HP Orang Tua / Wali</label>
-                        <input type="text" id="santri-phone" value="${s.phone}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nominal SPP (Rp)</label>
-                        <input type="number" id="santri-spp" value="${s.customSpp !== undefined ? s.customSpp : 250000}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Status Beasiswa</label>
-                        <select id="santri-scholarship" class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                            <option value="Tidak" ${s.scholarship !== 'Ya' ? 'selected' : ''}>Tidak (Reguler)</option>
-                            <option value="Ya" ${s.scholarship === 'Ya' ? 'selected' : ''}>Ya (Bebas SPP / Gratis)</option>
-                        </select>
-                    </div>
-                    <div class="flex justify-end gap-2 pt-3">
-                        <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl border border-emerald-950">Update Data</button>
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-300 text-slate-900 font-black text-xs rounded-xl">Batal</button>
-                    </div>
-                </form>
-            `;
-            showModal('Edit Data Santri', html, 'info', ' ');
-        }
-
-        function deleteSantri(id) {
-            dbState.santri = (dbState.santri || []).filter(s => s.id !== id);
-            saveDb();
-            renderDashboard();
-        }
-
-        function openTransactionModal() {
-            const html = `
-                <form onsubmit="saveTransaction(event)" class="space-y-3 text-left">
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Tanggal Transaksi</label>
-                        <input type="date" id="tx-date" value="${new Date().toISOString().split('T')[0]}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Jenis Transaksi</label>
-                        <select id="tx-type" class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                            <option value="Pemasukan">Pemasukan (Uang Masuk ke Rekening Bendahara)</option>
-                            <option value="Pengeluaran">Pengeluaran (Kas Keluar)</option>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Jenis Pembayaran</label>
+                        <select id="edit-pay-type" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                            <option value="SPP" ${pay.type === 'SPP' ? 'selected' : ''}>SPP Bulanan</option>
+                            <option value="Daftar Ulang" ${pay.type === 'Daftar Ulang' ? 'selected' : ''}>Daftar Ulang</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Kategori</label>
-                        <input type="text" id="tx-cat" placeholder="Contoh: Donasi / Hibah / Operasional" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
-                        <input type="number" id="tx-amount" placeholder="Contoh: 1000000" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Uraian / Keterangan</label>
-                        <input type="text" id="tx-desc" placeholder="Penjelasan transaksi..." required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div class="flex justify-end gap-2 pt-3">
-                        <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl border border-emerald-950">Simpan Transaksi</button>
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-300 text-slate-900 font-black text-xs rounded-xl">Batal</button>
-                    </div>
-                </form>
-            `;
-            showModal('Tambah Transaksi Kas', html, 'info', ' ');
-        }
-
-        function saveTransaction(e) {
-            e.preventDefault();
-            const date = document.getElementById('tx-date').value;
-            const type = document.getElementById('tx-type').value;
-            const category = document.getElementById('tx-cat').value.trim();
-            const amount = parseFloat(document.getElementById('tx-amount').value || 0);
-            const desc = document.getElementById('tx-desc').value.trim();
-
-            const newId = "T" + String((dbState.transactions?.length || 0) + 1).padStart(3, '0');
-            dbState.transactions.push({ id: newId, date, type, category, amount, desc });
-
-            saveDb();
-            closeModal();
-            renderDashboard();
-
-            if (type === 'Pemasukan' && currentUser?.role === 'admin') {
-                showModal(
-                    'Pemasukan Berhasil Dicatat!',
-                    `Transaksi pemasukan sebesar <strong>Rp ${amount.toLocaleString('id-ID')}</strong> telah tersimpan.<br><br>Apakah Anda ingin langsung mengirimkan format <strong>WhatsApp Invoice</strong> kepada Admin Pesantren?`,
-                    'success',
-                    `
-                        <button onclick="sendWaInvoice('${newId}'); closeModal();" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl border border-emerald-950 flex items-center gap-1.5">
-                            <i class="fa-brands fa-whatsapp text-sm"></i> Ya, Kirim WA Invoice Now
-                        </button>
-                        <button onclick="closeModal()" class="px-4 py-2 bg-slate-300 text-slate-900 font-black text-xs rounded-xl">
-                            Nanti Saja
-                        </button>
-                    `
-                );
-            }
-        }
-
-        function openEditTransactionModal(id) {
-            const t = (dbState.transactions || []).find(item => item.id === id);
-            if (!t) return;
-
-            const html = `
-                <form onsubmit="updateTransaction(event, '${t.id}')" class="space-y-3 text-left">
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Tanggal Transaksi</label>
-                        <input type="date" id="tx-edit-date" value="${t.date}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Jenis Transaksi</label>
-                        <select id="tx-edit-type" class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                            <option value="Pemasukan" ${t.type === 'Pemasukan' ? 'selected' : ''}>Pemasukan</option>
-                            <option value="Pengeluaran" ${t.type === 'Pengeluaran' ? 'selected' : ''}>Pengeluaran</option>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Periode Bulan</label>
+                        <select id="edit-pay-month" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                            ${monthOptionsHtml}
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Kategori</label>
-                        <input type="text" id="tx-edit-cat" value="${t.category}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
+                        <input type="number" id="edit-pay-amount" value="${pay.amount}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-amber-600">
                     </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
-                        <input type="number" id="tx-edit-amount" value="${t.amount}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Uraian / Keterangan</label>
-                        <input type="text" id="tx-edit-desc" value="${t.desc}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div class="flex justify-end gap-2 pt-3">
-                        <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl border border-emerald-950">Update Transaksi</button>
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-300 text-slate-900 font-black text-xs rounded-xl">Batal</button>
-                    </div>
-                </form>
+                </div>
             `;
-            showModal('Edit Transaksi Kas', html, 'info', ' ');
         }
 
-        function updateTransaction(e, id) {
-            e.preventDefault();
-            const date = document.getElementById('tx-edit-date').value;
-            const type = document.getElementById('tx-edit-type').value;
-            const category = document.getElementById('tx-edit-cat').value.trim();
-            const amount = parseFloat(document.getElementById('tx-edit-amount').value || 0);
-            const desc = document.getElementById('tx-edit-desc').value.trim();
-
-            const idx = (dbState.transactions || []).findIndex(t => t.id === id);
-            if (idx >= 0) {
-                dbState.transactions[idx] = { id, date, type, category, amount, desc };
-                saveDb();
-            }
-            closeModal();
-            renderDashboard();
-        }
-
-        function deleteTransaction(id) {
-            dbState.transactions = (dbState.transactions || []).filter(t => t.id !== id);
-            saveDb();
-            renderDashboard();
-        }
-
-        function openAddPaymentModal() {
-            const santriOpts = (dbState.santri || []).map(s => `<option value="${s.id}">${s.name} (${s.class})</option>`).join('');
-            const monthOpts = MONTH_OPTIONS.map(m => `<option value="${m}">${m}</option>`).join('');
-
-            const html = `
-                <form onsubmit="savePayment(event)" class="space-y-3 text-left">
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Pilih Santri</label>
-                        <select id="pay-santri" class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                            ${santriOpts}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Periode Bulan</label>
-                        <select id="pay-month" class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                            ${monthOpts}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Jenis Pembayaran</label>
-                        <input type="text" id="pay-type" value="SPP" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nominal Setoran (Rp)</label>
-                        <input type="number" id="pay-amount" value="250000" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Tanggal Setor</label>
-                        <input type="date" id="pay-date" value="${new Date().toISOString().split('T')[0]}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div class="flex justify-end gap-2 pt-3">
-                        <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl border border-emerald-950">Simpan Setoran</button>
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-300 text-slate-900 font-black text-xs rounded-xl">Batal</button>
-                    </div>
-                </form>
-            `;
-            showModal('Catat Pembayaran SPP', html, 'info', ' ');
-        }
-
-        function savePayment(e) {
-            e.preventDefault();
-            const santriId = document.getElementById('pay-santri').value;
-            const santriObj = (dbState.santri || []).find(s => s.id === santriId);
-            const month = document.getElementById('pay-month').value;
-            const type = document.getElementById('pay-type').value.trim();
-            const amount = parseFloat(document.getElementById('pay-amount').value || 0);
-            const date = document.getElementById('pay-date').value;
-
-            const newId = "P" + String((dbState.payments?.length || 0) + 1).padStart(3, '0');
-            const newPay = {
-                id: newId,
-                santriId,
-                santriName: santriObj ? santriObj.name : 'Santri',
-                type,
-                month,
-                amount,
-                date,
-                status: 'Lunas'
-            };
-
-            dbState.payments.push(newPay);
-
-            // Auto log entry to cashbook
-            const newTxId = "T" + String((dbState.transactions?.length || 0) + 1).padStart(3, '0');
-            dbState.transactions.push({
-                id: newTxId,
-                date,
-                type: 'Pemasukan',
-                category: type,
-                amount,
-                desc: `Setoran ${type} (${month}) a.n ${santriObj ? santriObj.name : 'Santri'}`
-            });
-
-            saveDb();
-            closeModal();
-            renderDashboard();
-        }
-
-        function openEditPaymentModal(id) {
-            const p = (dbState.payments || []).find(item => item.id === id);
-            if (!p) return;
-
-            const html = `
-                <form onsubmit="updatePayment(event, '${p.id}')" class="space-y-3 text-left">
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nama Santri</label>
-                        <input type="text" value="${p.santriName}" readonly class="w-full p-2.5 bg-slate-200 border border-slate-400 rounded-xl text-xs font-black text-slate-700">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Periode Bulan</label>
-                        <input type="text" id="pay-edit-month" value="${p.month}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Nominal Setoran (Rp)</label>
-                        <input type="number" id="pay-edit-amount" value="${p.amount}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase text-slate-900 mb-1">Tanggal Setor</label>
-                        <input type="date" id="pay-edit-date" value="${p.date}" required class="w-full p-2.5 bg-slate-100 border border-slate-400 rounded-xl text-xs font-black">
-                    </div>
-                    <div class="flex justify-end gap-2 pt-3">
-                        <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl border border-emerald-950">Update Setoran</button>
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-300 text-slate-900 font-black text-xs rounded-xl">Batal</button>
-                    </div>
-                </form>
-            `;
-            showModal('Edit Catatan Pembayaran', html, 'info', ' ');
-        }
-
-        function updatePayment(e, id) {
-            e.preventDefault();
-            const month = document.getElementById('pay-edit-month').value.trim();
-            const amount = parseFloat(document.getElementById('pay-edit-amount').value || 0);
-            const date = document.getElementById('pay-edit-date').value;
-
-            const idx = (dbState.payments || []).findIndex(p => p.id === id);
-            if (idx >= 0) {
-                dbState.payments[idx].month = month;
-                dbState.payments[idx].amount = amount;
-                dbState.payments[idx].date = date;
-                saveDb();
-            }
-            closeModal();
-            renderDashboard();
-        }
-
-        function deletePayment(id) {
-            dbState.payments = (dbState.payments || []).filter(p => p.id !== id);
-            saveDb();
-            renderDashboard();
+        function confirmResetAllData() {
+            showModal('Konfirmasi Kosongkan Data', 'Apakah Anda yakin ingin mengosongkan seluruh data santri, pembayaran, dan transaksi kas? Tindakan ini tidak dapat dibatalkan.', 'error', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Ya, Kosongkan', class: 'bg-red-700 text-white hover:bg-red-800 flex-1 py-3 shadow-md shadow-red-700/40 font-black border-2 border-red-950 text-xs sm:text-sm', onClick: () => {
+                    dbState.santri = [];
+                    dbState.payments = [];
+                    dbState.transactions = [];
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil Dikosongkan', 'Seluruh data santri, pembayaran, dan transaksi telah dibersihkan. Sistem siap digunakan dari awal.', 'success');
+                }}
+            ]);
         }
 
         function updateCredentials(e) {
             e.preventDefault();
-            const passAdmin = document.getElementById('pass-admin').value.trim();
-            const passPesantren = document.getElementById('pass-pesantren').value.trim();
-            const passTreasurer = document.getElementById('pass-treasurer').value.trim();
-
-            dbState.credentials.admin.pass = passAdmin;
-            dbState.credentials.pesantren.pass = passPesantren;
-            dbState.credentials.treasurer.pass = passTreasurer;
-
+            if (!dbState.credentials) dbState.credentials = DEFAULT_STATE.credentials;
+            dbState.credentials.admin.pass = document.getElementById('pass-admin').value;
+            dbState.credentials.pesantren.pass = document.getElementById('pass-pesantren').value;
+            dbState.credentials.treasurer.pass = document.getElementById('pass-treasurer').value;
             saveDb();
-            showModal('Berhasil Disimpan', 'Kata sandi seluruh ruangan telah diperbarui.', 'success');
+            showModal('Berhasil', 'Kata sandi seluruh ruangan berhasil diperbarui.', 'success');
         }
 
         function updateProfile(e) {
             e.preventDefault();
-            const name = document.getElementById('prof-name').value.trim();
-            const foundation = document.getElementById('prof-foundation').value.trim();
-            const address = document.getElementById('prof-address').value.trim();
-            const phone = document.getElementById('prof-phone').value.trim();
-            const adminWa = document.getElementById('prof-wa-admin').value.trim();
-            const year = document.getElementById('prof-year').value.trim();
-
-            dbState.profile = {
-                ...dbState.profile,
-                name,
-                foundation,
-                address,
-                phone,
-                adminPesantrenPhone: adminWa,
-                currentYear: year
-            };
-
+            if (!dbState.profile) dbState.profile = DEFAULT_STATE.profile;
+            dbState.profile.name = document.getElementById('prof-name').value;
+            dbState.profile.foundation = document.getElementById('prof-foundation').value;
+            dbState.profile.address = document.getElementById('prof-address').value;
+            dbState.profile.phone = document.getElementById('prof-phone').value;
+            dbState.profile.currentYear = document.getElementById('prof-year').value;
             saveDb();
-            showModal('Berhasil Disimpan', 'Informasi profil pesantren telah diperbarui.', 'success');
             renderDashboard();
+            showModal('Berhasil', 'Profil pesantren dan yayasan berhasil diperbarui.', 'success');
         }
 
-        function confirmResetAllData() {
-            showModal(
-                'Konfirmasi Kosongkan Data',
-                'Apakah Anda yakin ingin menghapus seluruh data santri, pembayaran SPP, dan transaksi kas?',
-                'error',
-                `
-                    <button onclick="executeResetAllData()" class="px-4 py-2 bg-red-700 hover:bg-red-800 text-white font-black text-xs rounded-xl border border-red-950">Ya, Hapus Semua Data</button>
-                    <button onclick="closeModal()" class="px-4 py-2 bg-slate-300 text-slate-900 font-black text-xs rounded-xl">Batal</button>
-                `
-            );
+        function saveSantriSppAndScholarship(santriId) {
+            const inputVal = document.getElementById(`spp-santri-${santriId}`).value;
+            const scholarshipVal = document.getElementById(`spp-scholarship-${santriId}`).value;
+            const santri = dbState.santri.find(s => s.id === santriId);
+            if (santri) {
+                santri.customSpp = parseInt(inputVal) || 250000;
+                santri.scholarship = scholarshipVal;
+                saveDb();
+                renderDashboard();
+                showModal('Berhasil', `Pengaturan untuk ${santri.name} berhasil diperbarui.`, 'success');
+            }
         }
 
-        function executeResetAllData() {
-            dbState.santri = [];
-            dbState.payments = [];
-            dbState.transactions = [];
-            saveDb();
-            closeModal();
-            showModal('Data Dikosongkan', 'Seluruh data telah dikosongkan. Anda dapat memasukkan data baru dari awal.', 'success');
-            renderDashboard();
+        function openAddSantriModal() {
+            const defaultSpp = dbState.profile?.defaultSpp || 250000;
+            showModal('Tambah Santri Baru', 'Formulir input data santri:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
+                    const name = document.getElementById('modal-santri-name').value;
+                    const santriClass = document.getElementById('modal-santri-class').value;
+                    const customSpp = parseInt(document.getElementById('modal-santri-spp').value) || defaultSpp;
+                    const scholarship = document.getElementById('modal-santri-scholarship').value;
+                    const phone = document.getElementById('modal-santri-phone').value;
+
+                    if (!name) return;
+
+                    if (!dbState.santri) dbState.santri = [];
+                    const newId = 'S00' + (dbState.santri.length + 1);
+                    dbState.santri.push({ id: newId, name, class: santriClass, customSpp, status: 'Aktif', scholarship, phone });
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Santri baru berhasil ditambahkan.', 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Lengkap Santri</label>
+                        <input type="text" id="modal-santri-name" placeholder="cth: Ahmad Dani" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Kelas</label>
+                        <input type="text" id="modal-santri-class" placeholder="cth: VII-A (Tsanawiyah)" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal SPP Bulanan (Rp)</label>
+                        <input type="number" id="modal-santri-spp" value="${defaultSpp}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Status Beasiswa</label>
+                        <select id="modal-santri-scholarship" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                            <option value="Tidak">Reguler (Tidak Beasiswa)</option>
+                            <option value="Ya">Penerima Beasiswa (Gratis SPP)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor Telepon Wali</label>
+                        <input type="text" id="modal-santri-phone" placeholder="cth: 08123456789" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                </div>
+            `;
+        }
+
+        function deleteSantri(id) {
+            showModal('Konfirmasi Hapus Santri', 'Apakah Anda yakin ingin menghapus data santri ini beserta riwayat terkait?', 'error', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Ya, Hapus', class: 'bg-red-700 text-white hover:bg-red-800 flex-1 py-3 shadow-md shadow-red-700/40 font-black border-2 border-red-950 text-xs sm:text-sm', onClick: () => {
+                    if (!dbState.santri) return;
+                    dbState.santri = dbState.santri.filter(s => s.id !== id);
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Data santri berhasil dihapus.', 'success');
+                }}
+            ]);
+        }
+
+        function openEditSantriModal(santriId) {
+            const santriList = dbState.santri || [];
+            const santri = santriList.find(s => s.id === santriId);
+            if (!santri) return;
+
+            const defaultSpp = dbState.profile?.defaultSpp || 250000;
+            const currentCustomSpp = santri.customSpp !== undefined ? santri.customSpp : defaultSpp;
+
+            showModal('Edit Data Santri', 'Formulir koreksi biodata santri:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
+                    const name = document.getElementById('edit-santri-name').value;
+                    const santriClass = document.getElementById('edit-santri-class').value;
+                    const customSpp = parseInt(document.getElementById('edit-santri-spp').value) || defaultSpp;
+                    const scholarship = document.getElementById('edit-santri-scholarship').value;
+                    const phone = document.getElementById('edit-santri-phone').value;
+
+                    if (!name) return;
+
+                    santri.name = name;
+                    santri.class = santriClass;
+                    santri.customSpp = customSpp;
+                    santri.scholarship = scholarship;
+                    santri.phone = phone;
+
+                    if (dbState.payments) {
+                        dbState.payments.forEach(p => {
+                            if (p.santriId === santriId) {
+                                p.santriName = name;
+                            }
+                        });
+                    }
+
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Biodata santri berhasil diperbarui.', 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Lengkap Santri</label>
+                        <input type="text" id="edit-santri-name" value="${santri.name}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Kelas</label>
+                        <input type="text" id="edit-santri-class" value="${santri.class}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal SPP Bulanan (Rp)</label>
+                        <input type="number" id="edit-santri-spp" value="${currentCustomSpp}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Status Beasiswa</label>
+                        <select id="edit-santri-scholarship" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                            <option value="Tidak" ${santri.scholarship === 'Tidak' ? 'selected' : ''}>Reguler (Tidak Beasiswa)</option>
+                            <option value="Ya" ${santri.scholarship === 'Ya' ? 'selected' : ''}>Penerima Beasiswa (Gratis SPP)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor Telepon Wali</label>
+                        <input type="text" id="edit-santri-phone" value="${santri.phone}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                </div>
+            `;
+        }
+
+        function openPaymentModal() {
+            const santriList = dbState.santri || [];
+            const santriOptions = santriList.map(s => `<option value="${s.id}">${s.name} (${s.class})</option>`).join('');
+            const todayStr = new Date().toISOString().split('T')[0];
+            const defaultSppVal = santriList[0]?.customSpp !== undefined ? santriList[0].customSpp : (dbState.profile?.defaultSpp || 250000);
+
+            showModal('Catat Pembayaran Santri', 'Formulir transaksi pembayaran periode bulan:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Catat Pembayaran', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
+                    const paymentDate = document.getElementById('pay-date').value || todayStr;
+                    const santriId = document.getElementById('pay-santri').value;
+                    const type = document.getElementById('pay-type').value;
+                    const monthSelect = document.getElementById('pay-month');
+                    const selectedMonth = monthSelect ? monthSelect.value : CURRENT_ACTIVE_MONTH;
+                    const amount = parseInt(document.getElementById('pay-amount').value) || 0;
+
+                    const santri = santriList.find(s => s.id === santriId);
+                    if (!santri) return;
+
+                    if (!dbState.payments) dbState.payments = [];
+                    if (!dbState.transactions) dbState.transactions = [];
+
+                    const finalAmount = santri.scholarship === 'Ya' && type === 'SPP' ? 0 : amount;
+
+                    const newPayment = {
+                        id: 'P00' + (dbState.payments.length + 1) + Math.floor(Math.random()*100),
+                        santriId,
+                        santriName: santri.name,
+                        type,
+                        month: selectedMonth,
+                        amount: finalAmount,
+                        date: paymentDate,
+                        status: santri.scholarship === 'Ya' && type === 'SPP' ? 'Beasiswa (Gratis)' : 'Lunas'
+                    };
+
+                    dbState.payments.push(newPayment);
+
+                    if (finalAmount > 0) {
+                        dbState.transactions.push({
+                            id: 'T00' + (dbState.transactions.length + 1) + Math.floor(Math.random()*100),
+                            date: paymentDate,
+                            type: 'Pemasukan',
+                            category: type === 'SPP' ? 'SPP Bulanan' : 'Daftar Ulang',
+                            amount: finalAmount,
+                            desc: `${type} ${santri.name} (${selectedMonth})`
+                        });
+                    }
+
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Pembayaran berhasil dicatat.', 'success');
+                }}
+            ]);
+
+            const monthOptionsHtml = MONTH_OPTIONS.map(m => `<option value="${m}" ${m === CURRENT_ACTIVE_MONTH ? 'selected' : ''}>${m}</option>`).join('');
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi</label>
+                        <input type="date" id="pay-date" value="${todayStr}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Pilih Santri</label>
+                        <select id="pay-santri" onchange="updateModalPaymentAmount()" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                            ${santriOptions}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Jenis Pembayaran</label>
+                        <select id="pay-type" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                            <option value="SPP">SPP Bulanan</option>
+                            <option value="Daftar Ulang">Daftar Ulang</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Periode Bulan</label>
+                        <select id="pay-month" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                            ${monthOptionsHtml}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Total Nominal Otomatis (Rp)</label>
+                        <input type="number" id="pay-amount" value="${defaultSppVal}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                </div>
+            `;
+        }
+
+        function openTransactionModal() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            showModal('Catat Kas Pemasukan / Pengeluaran', 'Formulir transaksi kas dengan tanggal rekam jejak:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan Transaksi', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
+                    const trxDate = document.getElementById('trx-date').value || todayStr;
+                    const type = document.getElementById('trx-type').value;
+                    const category = document.getElementById('trx-cat').value;
+                    const amount = parseInt(document.getElementById('trx-amount').value) || 0;
+                    const desc = document.getElementById('trx-desc').value;
+
+                    if (!category || !amount) return;
+
+                    if (!dbState.transactions) dbState.transactions = [];
+                    dbState.transactions.push({
+                        id: 'T00' + (dbState.transactions.length + 1) + Math.floor(Math.random()*100),
+                        date: trxDate,
+                        type,
+                        category,
+                        amount,
+                        desc
+                    });
+
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Transaksi kas berhasil dicatat dengan tanggal rekam jejak.', 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi (Form Rekam Jejak)</label>
+                        <input type="date" id="trx-date" value="${todayStr}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Jenis Arus Kas</label>
+                        <select id="trx-type" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                            <option value="Pemasukan">Pemasukan Kas</option>
+                            <option value="Pengeluaran">Pengeluaran Kas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Kategori Transaksi</label>
+                        <input type="text" id="trx-cat" placeholder="cth: Operasional / Donasi" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
+                        <input type="number" id="trx-amount" placeholder="500000" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Keterangan / Deskripsi</label>
+                        <textarea id="trx-desc" rows="2" placeholder="Catatan atau rincian transaksi..." class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700"></textarea>
+                    </div>
+                </div>
+            `;
+        }
+
+        function downloadPdfReport() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'landscape' });
+                const pageWidth = doc.internal.pageSize.getWidth();
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(15, 23, 42);
+                doc.text((dbState.profile?.name || "Pesantren Darul Ulum").toUpperCase(), pageWidth / 2, 16, { align: "center" });
+                
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(51, 65, 85);
+                doc.text((dbState.profile?.foundation || "").toUpperCase(), pageWidth / 2, 22, { align: "center" });
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.setTextColor(71, 85, 105);
+                doc.text(dbState.profile?.address || "", pageWidth / 2, 28, { align: "center" });
+
+                doc.setLineWidth(0.5);
+                doc.line(14, 32, pageWidth - 14, 32);
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(11);
+                doc.setTextColor(15, 23, 42);
+                doc.text("LAPORAN RESMI KEUANGAN & DATA SANTRI", pageWidth / 2, 40, { align: "center" });
+
+                const santriRows = (dbState.santri || []).map((s, idx) => [
+                    idx + 1,
+                    s.name,
+                    s.class,
+                    s.scholarship === 'Ya' ? 'Beasiswa' : 'Reguler',
+                    'Rp ' + (s.customSpp !== undefined ? s.customSpp : 250000).toLocaleString('id-ID'),
+                    s.phone
+                ]);
+
+                doc.autoTable({
+                    startY: 46,
+                    head: [['No', 'Nama Santri', 'Kelas', 'Status', 'Nominal SPP', 'Telepon']],
+                    body: santriRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+                    bodyStyles: { textColor: [15, 23, 42], fontStyle: 'bold' },
+                    columnStyles: { 0: { halign: 'center', cellWidth: 12 }, 4: { halign: 'right' }, 5: { halign: 'center' } }
+                });
+
+                doc.save("Laporan-Keuangan-Pesantren.pdf");
+                showModal('Berhasil Unduh PDF', 'File laporan PDF lanskap berhasil diunduh dengan kop terpusat.', 'success');
+            } catch (err) {
+                console.error("Gagal export PDF:", err);
+                showModal('Gagal', 'Terjadi kesalahan saat menghasilkan PDF.', 'error');
+            }
+        }
+
+        function downloadTransactionPdf() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'landscape' });
+                const pageWidth = doc.internal.pageSize.getWidth();
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(15, 23, 42);
+                doc.text((dbState.profile?.name || "Pesantren Darul Ulum").toUpperCase(), pageWidth / 2, 16, { align: "center" });
+                
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(51, 65, 85);
+                doc.text((dbState.profile?.foundation || "").toUpperCase(), pageWidth / 2, 22, { align: "center" });
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.setTextColor(71, 85, 105);
+                doc.text(dbState.profile?.address || "", pageWidth / 2, 28, { align: "center" });
+
+                doc.setLineWidth(0.5);
+                doc.line(14, 32, pageWidth - 14, 32);
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(11);
+                doc.setTextColor(15, 23, 42);
+                doc.text("BUKU KAS UMUM & REKAM JEJAK TANGGAL TRANSAKSI", pageWidth / 2, 40, { align: "center" });
+
+                let sortedChronological = [...(dbState.transactions || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
+                let running = 0;
+                const txRows = sortedChronological.map((t, idx) => {
+                    if (t.type === 'Pemasukan') {
+                        running += t.amount;
+                    } else if (t.type === 'Pengeluaran') {
+                        running -= t.amount;
+                    }
+                    return [
+                        idx + 1,
+                        t.date,
+                        t.type,
+                        t.category,
+                        t.desc,
+                        (t.type === 'Pemasukan' ? '+ ' : '- ') + 'Rp ' + t.amount.toLocaleString('id-ID'),
+                        'Rp ' + running.toLocaleString('id-ID')
+                    ];
+                });
+
+                doc.autoTable({
+                    startY: 46,
+                    head: [['No', 'Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Nominal', 'Saldo Kas Akhir']],
+                    body: txRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+                    bodyStyles: { textColor: [15, 23, 42], fontStyle: 'bold' },
+                    columnStyles: { 0: { halign: 'center', cellWidth: 10 }, 1: { halign: 'center' }, 2: { halign: 'center' }, 5: { halign: 'right' }, 6: { halign: 'right' } }
+                });
+
+                doc.save("Buku-Kas-Rekam-Jejak-Tanggal.pdf");
+                showModal('Berhasil Unduh PDF', 'File buku kas PDF lanskap dengan rekam jejak tanggal berhasil diunduh.', 'success');
+            } catch (err) {
+                console.error("Gagal export PDF transaksi:", err);
+                showModal('Gagal', 'Terjadi kesalahan saat menghasilkan PDF buku kas.', 'error');
+            }
         }
 
         function copySqlScript() {
             const textarea = document.getElementById('sql-textarea');
-            if (textarea) {
-                textarea.select();
-                document.execCommand('copy');
-                showModal('Berhasil Disalin', 'Skrip SQL Supabase berhasil disalin ke clipboard.', 'success');
+            if (!textarea) return;
+            textarea.select();
+            document.execCommand('copy');
+            showModal('Berhasil Disalin', 'Skrip SQL berhasil disalin ke clipboard Anda.', 'success');
+        }
+
+        function showModal(title, message, type, actions = []) {
+            const container = document.getElementById('modal-container');
+            const box = document.getElementById('modal-box');
+            const icon = document.getElementById('modal-icon');
+            const titleEl = document.getElementById('modal-title');
+            const msgEl = document.getElementById('modal-message');
+            const actEl = document.getElementById('modal-actions');
+            if (!container || !box || !icon || !titleEl || !msgEl || !actEl) return;
+
+            titleEl.innerText = title;
+            msgEl.innerHTML = message;
+
+            if (type === 'success') {
+                icon.className = 'w-14 h-14 rounded-2xl bg-emerald-700 text-white flex items-center justify-center text-2xl mb-4 mx-auto shadow-md border border-emerald-950';
+                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else if (type === 'error') {
+                icon.className = 'w-14 h-14 rounded-2xl bg-red-700 text-white flex items-center justify-center text-2xl mb-4 mx-auto shadow-md border border-red-950';
+                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            } else {
+                icon.className = 'w-14 h-14 rounded-2xl bg-emerald-700 text-white flex items-center justify-center text-2xl mb-4 mx-auto shadow-md border border-emerald-950';
+                icon.innerHTML = '<i class="fa-solid fa-info"></i>';
             }
+
+            if (actions.length === 0) {
+                actEl.innerHTML = `<button onclick="closeModal()" class="w-full py-3.5 bg-emerald-700 text-white font-black rounded-xl text-xs sm:text-sm hover:bg-emerald-800 transition shadow-lg shadow-emerald-700/40 active:scale-95 border-2 border-emerald-950">Tutup</button>`;
+            } else {
+                actEl.innerHTML = actions.map((a, idx) => `
+                    <button id="modal-act-${idx}" class="px-4 py-3 font-black rounded-xl text-xs sm:text-sm transition active:scale-95 ${a.class}">${a.text}</button>
+                `).join('');
+
+                actions.forEach((a, idx) => {
+                    const btn = document.getElementById(`modal-act-${idx}`);
+                    if (btn) btn.onclick = a.onClick;
+                });
+            }
+
+            container.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.remove('scale-95', 'opacity-0');
+                box.classList.add('scale-100', 'opacity-100');
+            }, 10);
         }
 
-        function downloadPdfReport() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            const pName = dbState.profile?.name || 'Pesantren Darul Ulum Al-Islamy';
-            const fName = dbState.profile?.foundation || 'Yayasan Education';
-
-            doc.setFontSize(14);
-            doc.text(pName.toUpperCase(), 14, 15);
-            doc.setFontSize(10);
-            doc.text(fName, 14, 21);
-            doc.text("Laporan Keuangan & Kas Pesantren", 14, 27);
-            doc.line(14, 30, 196, 30);
-
-            const txRows = (dbState.transactions || []).map(t => [t.date, t.type, t.category, t.desc, `Rp ${t.amount.toLocaleString('id-ID')}`]);
-
-            doc.autoTable({
-                startY: 35,
-                head: [['Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Nominal']],
-                body: txRows,
-                headStyles: { fillColor: [6, 78, 59] }
-            });
-
-            doc.save(`Laporan_Keuangan_Pesantren_${new Date().toISOString().split('T')[0]}.pdf`);
-        }
-
-        function downloadTransactionPdf() {
-            downloadPdfReport();
+        function closeModal() {
+            const container = document.getElementById('modal-container');
+            const box = document.getElementById('modal-box');
+            if (!container || !box) return;
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                container.classList.add('hidden');
+            }, 300);
         }
 
         window.onload = function() {
-            fetchCloudData();
-            initRealtimeUpdates();
+            try {
+                fetchCloudData().catch(err => console.warn("Cloud sync warning:", err));
+                initRealtimeUpdates();
+            } catch (err) {
+                console.warn("Startup initialization warning:", err);
+            }
             renderAuthPortal();
         };
     </script>
