@@ -491,7 +491,7 @@
 
                                     <div>
                                         <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Keterangan / Keperluan</label>
-                                        <input type="text" id="wa-custom-desc" value="Pembayaran Sumbangan Pembangunan / Infaq Gedung" class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700" oninput="updateCustomWaPreview()">
+                                        <input type="text" id="wa-custom-desc" value="" class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700" oninput="updateCustomWaPreview()">
                                     </div>
 
                                     <button onclick="sendCustomWhatsAppInvoice()" class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-700/40 transition active:scale-95 flex items-center justify-center gap-2 border-2 border-emerald-950">
