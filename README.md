@@ -5,13 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Keuangan Pesantren Terintegrasi Supabase</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- jsPDF for PDF Exports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
@@ -84,6 +80,10 @@
                 pesantren: { user: "admin_pesantren", pass: "santri123", name: "Admin Pesantren" },
                 treasurer: { user: "bendahara", pass: "pusat123", name: "Bendahara Pusat" }
             },
+            contacts: [
+                { id: "C001", name: "H. Ahmad Suyanto", phone: "6281234567890", desc: "Donatur Tetap Yayasan" },
+                { id: "C002", name: "Bpk. H. Mahmud", phone: "6281345678901", desc: "Wali Santri Dermawan" }
+            ],
             santri: [
                 { id: "S001", name: "Ahmad Fauzi", class: "VII-A (Tsanawiyah)", customSpp: 250000, status: "Aktif", scholarship: "Tidak", phone: "081234567890" },
                 { id: "S002", name: "Siti Aminah", class: "VIII-B (Tsanawiyah)", customSpp: 250000, status: "Aktif", scholarship: "Ya", phone: "081345678901" },
@@ -108,6 +108,9 @@
                 const parsed = JSON.parse(saved);
                 if (parsed && parsed.credentials) {
                     dbState = parsed;
+                    if (!dbState.contacts) {
+                        dbState.contacts = DEFAULT_STATE.contacts;
+                    }
                 }
             }
         } catch (err) {
@@ -141,6 +144,7 @@
                 const { data, error } = await supabaseClient.from('pesantren_sync').select('payload').eq('id', 1).maybeSingle();
                 if (!error && data && data.payload && data.payload.credentials) {
                     dbState = data.payload;
+                    if (!dbState.contacts) dbState.contacts = DEFAULT_STATE.contacts;
                     try {
                         localStorage.setItem('pesantren_db', JSON.stringify(dbState));
                     } catch (e) {}
@@ -160,6 +164,7 @@
                         const parsed = JSON.parse(e.newValue);
                         if (parsed && parsed.credentials) {
                             dbState = parsed;
+                            if (!dbState.contacts) dbState.contacts = DEFAULT_STATE.contacts;
                             if (currentUser) {
                                 renderDashboard();
                             }
@@ -183,6 +188,7 @@
                             const stringifiedCurrent = JSON.stringify(dbState);
                             if (stringifiedNew !== stringifiedCurrent) {
                                 dbState = data.payload;
+                                if (!dbState.contacts) dbState.contacts = DEFAULT_STATE.contacts;
                                 localStorage.setItem('pesantren_db', stringifiedNew);
                                 if (currentUser) {
                                     renderDashboard();
@@ -433,6 +439,7 @@
             const santriList = dbState.santri || [];
             const paymentList = dbState.payments || [];
             const txList = dbState.transactions || [];
+            const contactList = dbState.contacts || [];
 
             const totalSantri = santriList.length;
             const activeSantri = santriList.filter(s => s.status === 'Aktif').length;
@@ -443,11 +450,134 @@
             const balance = totalIncome - totalExpense;
             const currentMonth = CURRENT_ACTIVE_MONTH;
 
+            if (currentUser && currentUser.role === 'admin' && currentTab === 'contacts') {
+                return `
+                    <div class="space-y-6">
+                        <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-100">
+                                <div>
+                                    <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
+                                        <i class="fa-solid fa-address-book text-emerald-700"></i> Data Kontak & List Kirim Invoice / Notifikasi Kas Masuk
+                                    </h3>
+                                    <p class="text-xs font-bold text-slate-600 mt-1">Tambahkan data kontak (Nama & No HP). Setiap kontak yang tersimpan akan otomatis terdaftar dalam list kirim invoice dan notifikasi kas masuk.</p>
+                                </div>
+                                <button onclick="openAddContactModal()" class="px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-95 border-2 border-emerald-950 flex-shrink-0">
+                                    <i class="fa-solid fa-user-plus"></i> Tambah Kontak Baru
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs sm:text-sm">
+                                    <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                        <tr>
+                                            <th class="p-3 rounded-l-2xl">Nama Kontak</th>
+                                            <th class="p-3">Nomor Handphone (WhatsApp)</th>
+                                            <th class="p-3">Keterangan / Peran</th>
+                                            <th class="p-3 rounded-r-2xl text-center">Aksi Kirim Invoice & Kas Masuk</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y-2 divide-slate-200">
+                                        ${contactList.length === 0 ? `
+                                            <tr>
+                                                <td colspan="4" class="p-6 text-center text-slate-500 font-bold">Belum ada data kontak tersimpan.</td>
+                                            </tr>
+                                        ` : contactList.map(c => `
+                                            <tr class="hover:bg-slate-50 transition">
+                                                <td class="p-3">
+                                                    <div class="font-black text-slate-900 text-xs sm:text-sm">${c.name}</div>
+                                                    <div class="text-[10px] font-bold text-slate-500">ID: ${c.id}</div>
+                                                </td>
+                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">
+                                                    <div class="flex items-center gap-2">
+                                                        <span><i class="fa-solid fa-phone text-emerald-700 mr-1"></i> ${c.phone}</span>
+                                                        <button onclick="copyToWaForm('${c.phone}')" class="px-2 py-1 bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 rounded-lg transition border border-slate-300 hover:border-emerald-400 flex items-center gap-1.5" title="Copy dan masukkan ke Nomor WhatsApp Admin / Tujuan di atas">
+                                                            <i class="fa-regular fa-copy"></i> <span class="text-[10px]">Copy</span>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td class="p-3 text-slate-800 font-black text-xs">${c.desc || '-'}</td>
+                                                <td class="p-3 text-center whitespace-nowrap space-x-2">
+                                                    <button onclick="openSendContactInvoiceModal('${c.id}')" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 border border-emerald-950 inline-flex items-center gap-1.5">
+                                                        <i class="fa-brands fa-whatsapp text-sm"></i> Kirim Invoice & Kas Masuk
+                                                    </button>
+                                                    <button onclick="deleteContact('${c.id}')" class="px-3 py-2 bg-red-700 hover:bg-red-800 text-white font-black text-xs rounded-xl transition active:scale-95 border border-red-950">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             // Custom WhatsApp Invoice Generator for Treasurer -> Admin Pesantren
             if (currentUser && currentUser.role === 'admin' && currentTab === 'whatsapp_report') {
                 const adminPhone = dbState.profile?.adminPesantrenPhone || "6281234567891";
-
                 return `
+                    <div class="space-y-6">
+                        <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-100">
+                                <div>
+                                    <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
+                                        <i class="fa-solid fa-address-book text-emerald-700"></i> Data Kontak & List Kirim Invoice / Notifikasi Kas Masuk
+                                    </h3>
+                                    <p class="text-xs font-bold text-slate-600 mt-1">Tambahkan data kontak (Nama & No HP). Setiap kontak yang tersimpan akan otomatis terdaftar dalam list kirim invoice dan notifikasi kas masuk.</p>
+                                </div>
+                                <button onclick="openAddContactModal()" class="px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-95 border-2 border-emerald-950 flex-shrink-0">
+                                    <i class="fa-solid fa-user-plus"></i> Tambah Kontak Baru
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs sm:text-sm">
+                                    <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                        <tr>
+                                            <th class="p-3 rounded-l-2xl">Nama Kontak</th>
+                                            <th class="p-3">Nomor Handphone (WhatsApp)</th>
+                                            <th class="p-3">Keterangan / Peran</th>
+                                            <th class="p-3 rounded-r-2xl text-center">Aksi Kirim Invoice & Kas Masuk</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y-2 divide-slate-200">
+                                        ${contactList.length === 0 ? `
+                                            <tr>
+                                                <td colspan="4" class="p-6 text-center text-slate-500 font-bold">Belum ada data kontak tersimpan.</td>
+                                            </tr>
+                                        ` : contactList.map(c => `
+                                            <tr class="hover:bg-slate-50 transition">
+                                                <td class="p-3">
+                                                    <div class="font-black text-slate-900 text-xs sm:text-sm">${c.name}</div>
+                                                    <div class="text-[10px] font-bold text-slate-500">ID: ${c.id}</div>
+                                                </td>
+                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">
+                                                    <div class="flex items-center gap-2">
+                                                        <span><i class="fa-solid fa-phone text-emerald-700 mr-1"></i> ${c.phone}</span>
+                                                        <button onclick="copyToWaForm('${c.phone}')" class="px-2 py-1 bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 rounded-lg transition border border-slate-300 hover:border-emerald-400 flex items-center gap-1.5" title="Copy dan masukkan ke Nomor WhatsApp Admin / Tujuan di atas">
+                                                            <i class="fa-regular fa-copy"></i> <span class="text-[10px]">Copy</span>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td class="p-3 text-slate-800 font-black text-xs">${c.desc || '-'}</td>
+                                                <td class="p-3 text-center whitespace-nowrap space-x-2">
+                                                    <button onclick="openSendContactInvoiceModal('${c.id}')" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 border border-emerald-950 inline-flex items-center gap-1.5">
+                                                        <i class="fa-brands fa-whatsapp text-sm"></i> Kirim Invoice & Kas Masuk
+                                                    </button>
+                                                    <button onclick="deleteContact('${c.id}')" class="px-3 py-2 bg-red-700 hover:bg-red-800 text-white font-black text-xs rounded-xl transition active:scale-95 border border-red-950">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div> 
+
                     <div class="space-y-6">
                         <div class="bg-white p-6 sm:p-8 rounded-3xl border-2 border-slate-300 shadow-md">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-100">
@@ -456,9 +586,6 @@
                                         <i class="fa-brands fa-whatsapp text-emerald-700 text-2xl"></i> Kirim Invoice & Laporan Uang Masuk ke Admin Pesantren
                                     </h3>
                                     <p class="text-xs font-bold text-slate-600 mt-1">Buat format pesan WhatsApp custom untuk melaporkan uang masuk dari siapa ke bendahara pusat, lengkap dengan instruksi segera input.</p>
-                                </div>
-                                <div class="px-3.5 py-2 bg-emerald-100 border-2 border-emerald-400 text-emerald-950 font-black text-xs rounded-xl">
-                                    <i class="fa-solid fa-phone mr-1"></i> No WA Tujuan: ${adminPhone}
                                 </div>
                             </div>
 
@@ -470,7 +597,7 @@
 
                                     <div>
                                         <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Nomor WhatsApp Admin Pesantren</label>
-                                        <input type="text" id="wa-custom-phone" value="${adminPhone}" class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                                        <input type="text" id="wa-custom-phone" value="" class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
                                     </div>
 
                                     <div>
@@ -1774,6 +1901,142 @@ WITH CHECK (true);
             return '';
         }
 
+        function openAddContactModal() {
+            showModal('Tambah Kontak Baru', 'Masukkan nama kontak dan nomor HP untuk list kirim invoice dan notifikasi kas masuk:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan Kontak', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
+                    const name = document.getElementById('modal-contact-name').value.trim();
+                    const phone = document.getElementById('modal-contact-phone').value.trim();
+                    const desc = document.getElementById('modal-contact-desc').value.trim();
+
+                    if (!name || !phone) {
+                        showModal('Peringatan', 'Nama kontak dan nomor HP wajib diisi.', 'error');
+                        return;
+                    }
+
+                    if (!dbState.contacts) dbState.contacts = [];
+                    const newId = 'C00' + (dbState.contacts.length + 1) + Math.floor(Math.random()*100);
+                    dbState.contacts.push({ id: newId, name, phone, desc: desc || 'Kontak Keuangan' });
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Kontak baru berhasil disimpan dan dimasukkan ke dalam list kirim invoice & notifikasi kas masuk.', 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Kontak</label>
+                        <input type="text" id="modal-contact-name" placeholder="cth: H. Abdullah (Donatur / Wali)" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor Handphone (WhatsApp)</label>
+                        <input type="text" id="modal-contact-phone" placeholder="cth: 6281234567890" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Keterangan / Peran</label>
+                        <input type="text" id="modal-contact-desc" placeholder="cth: Donatur Tetap / Wali Santri" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                </div>
+            `;
+        }
+
+        function deleteContact(contactId) {
+            showModal('Konfirmasi Hapus Kontak', 'Apakah Anda yakin ingin menghapus kontak ini dari daftar?', 'error', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Ya, Hapus', class: 'bg-red-700 text-white hover:bg-red-800 flex-1 py-3 shadow-md shadow-red-700/40 font-black border-2 border-red-950 text-xs sm:text-sm', onClick: () => {
+                    if (!dbState.contacts) return;
+                    dbState.contacts = dbState.contacts.filter(c => c.id !== contactId);
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Kontak berhasil dihapus.', 'success');
+                }}
+            ]);
+        }
+
+        function openSendContactInvoiceModal(contactId) {
+            const contact = (dbState.contacts || []).find(c => c.id === contactId);
+            if (!contact) return;
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            showModal(`Kirim Invoice & Notifikasi Kas Masuk`, `Kirim pesan WhatsApp kepada <strong>${contact.name}</strong> (${contact.phone}) untuk tagihan invoice / konfirmasi kas masuk:`, 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Kirim WhatsApp Sekarang', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
+                    const amount = parseFloat(document.getElementById('send-contact-amount').value) || 0;
+                    const date = document.getElementById('send-contact-date').value || todayStr;
+                    const desc = document.getElementById('send-contact-desc').value || 'Setoran / Kas Masuk Pesantren';
+
+                    let phone = contact.phone.trim().replace(/[^0-9]/g, '');
+                    if (phone.startsWith('0')) {
+                        phone = '62' + phone.substring(1);
+                    }
+
+                    const pesName = dbState.profile?.name || "Pesantren Darul Ulum Al-Islamy";
+                    const foundationName = dbState.profile?.foundation || "Yayasan Pendidikan Islam Darul Ulum";
+                    const formattedAmount = "Rp " + amount.toLocaleString('id-ID');
+
+                    const text = `🧾 *INVOICE & NOTIFIKASI KAS MASUK PESANTREN*
+---------------------------------------
+🏛 *${pesName.toUpperCase()}*
+🏢 ${foundationName}
+---------------------------------------
+👤 Yth. Bpk/Ibu/Saudara: *${contact.name}*
+📅 Tanggal Transaksi: *${date}*
+💰 Nominal Kas Masuk: *${formattedAmount}*
+📝 Keterangan: ${desc}
+---------------------------------------
+✅ _Dana telah diterima dan dicatat ke dalam buku kas resmi pesantren. Terima kasih atas partisipasi dan amanah yang diberikan._
+
+_Syukron wa Jazakumullahu Khairan._
+---------------------------------------
+_Pesan Otomatis Sistem Keuangan Terintegrasi_`;
+
+                    const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+                    window.open(url, '_blank');
+                    closeModal();
+                    showModal('Berhasil Membuka WhatsApp', `Invoice dan notifikasi kas masuk untuk ${contact.name} berhasil diarahkan ke WhatsApp.`, 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nominal (Rp)</label>
+                        <input type="number" id="send-contact-amount" placeholder="cth: 500000" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-emerald-800 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Tanggal Transaksi</label>
+                        <input type="date" id="send-contact-date" value="${todayStr}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Keterangan / Jenis Tagihan</label>
+                        <input type="text" id="send-contact-desc" value="Donasi / SPP / Sumbangan Pembangunan" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fungsi Copy Kontak Langsung ke Kolom Form WA di atas
+        function copyToWaForm(phone) {
+            const cleanPhone = phone.trim().replace(/[^0-9]/g, '');
+            navigator.clipboard.writeText(cleanPhone).then(() => {
+                const waInput = document.getElementById('wa-custom-phone');
+                if (waInput) {
+                    waInput.value = cleanPhone;
+                    if(typeof updateCustomWaPreview === 'function') {
+                        updateCustomWaPreview();
+                    }
+                }
+                showModal('Berhasil Disalin', `Nomor ${cleanPhone} telah disalin dan otomatis terisi ke form No WA di atas.`, 'success');
+            }).catch(err => {
+                console.error('Gagal menyalin:', err);
+                showModal('Gagal', 'Tidak dapat menyalin nomor handphone.', 'error');
+            });
+        }
+
         function getCustomWaText() {
             const source = document.getElementById('wa-custom-source')?.value || "H. Ahmad Suyanto (Donatur / Wali)";
             const amount = parseFloat(document.getElementById('wa-custom-amount')?.value || 0);
@@ -1796,7 +2059,7 @@ WITH CHECK (true);
 🏦 Rekening Tujuan: Rekening Bendahara Pusat
 ---------------------------------------
 ⚠️ *INSTRUKSI UTAMA KEPADA ADMIN PESANTREN:*
-Yth. Admin Pesantren, dimohon untuk segera:
+Yth. Admin Pesantren, dimohon untuk:
 1. *Segera input* transaksi uang masuk ini ke sistem aplikasi pembukuan internal pesantren.
 2. Berikan *konfirmasi* kepada Bendahara Pusat setelah selesai diinput.
 
