@@ -47,7 +47,7 @@
 
     <script>
         const SUPABASE_URL = "https://ygsjtaputrcruxgqfcbb.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlnc2p0YXB1dHJjcnV4Z3FmY2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NDI0MDAsImV4cCI6MjEwMTUxODQwMH0.UomgHIAYAkpGZj-B36NHwwhe0jF5BeJWjuJHObNTGuY";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlnc2p0YXB1dHJjcnV4Z3FmY2JiIiwicm9sZSI6Inlnc2p0YXB1dHJjcnV4Z3FmY2JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NDI0MDAsImV4cCI6MjEwMTUxODQwMH0.UomgHIAYAkpGZj-B36NHwwhe0jF5BeJWjuJHObNTGuY";
         
         let supabaseClient = null;
         try {
@@ -120,6 +120,120 @@
         let currentUser = null;
         let currentTab = 'dashboard';
         let currentActiveFolderMonth = null;
+
+        function renderDashboard() {
+            const app = document.getElementById('app');
+            if (!app || !currentUser) return;
+            const roleName = currentUser.name;
+
+            let tabs = [];
+            if (currentUser.role === 'admin') {
+                tabs = [
+                    { id: 'cycles', label: 'Siklus Keuangan', icon: 'fa-chart-pie' },
+                    { id: 'spp_monitor_admin', label: 'Monitoring SPP & Folder', icon: 'fa-folder-tree' },
+                    { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
+                    { id: 'unpaid_admin', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
+                    { id: 'whatsapp_report', label: 'Kirim WA & Invoice Kas', icon: 'fa-brands fa-whatsapp text-emerald-400' },
+                    { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
+                    { id: 'profile', label: 'Profil Pesantren', icon: 'fa-school' },
+                    { id: 'credentials', label: 'Sandi Ruangan', icon: 'fa-key' },
+                    { id: 'reset_data', label: 'Kosongkan Data', icon: 'fa-trash-arrow-up' },
+                    { id: 'sql_setup', label: 'Setup SQL Supabase', icon: 'fa-database' }
+                ];
+            } else if (currentUser.role === 'pesantren') {
+                tabs = [
+                    { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
+                    { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
+                    { id: 'spp_setting', label: 'Pengaturan SPP & Beasiswa', icon: 'fa-sliders' },
+                    { id: 'payments', label: 'Catat Pembayaran', icon: 'fa-receipt' },
+                    { id: 'arrears', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
+                    { id: 'contacts', label: 'Data Kontak', icon: 'fa-address-book text-emerald-400' },
+                ];
+            } else if (currentUser.role === 'treasurer') {
+                tabs = [
+                    { id: 'transactions', label: 'Buku Kas & Histori Transaksi', icon: 'fa-book' },
+                    { id: 'spp_monitor', label: 'Monitoring SPP', icon: 'fa-money-bill-wave' },
+                    { id: 'unpaid_treasurer', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
+                    { id: 'reports', label: 'Santri & Beasiswa', icon: 'fa-user-graduate' }
+                ];
+            }
+
+            const currentTabObj = tabs.find(t => t.id === currentTab) || tabs[0];
+
+            app.innerHTML = `
+                <div class="min-h-screen flex flex-col md:flex-row bg-slate-200">
+                    <!-- Mobile Drawer Overlay -->
+                    <div id="mobile-sidebar-overlay" onclick="toggleMobileSidebar(false)" class="fixed inset-0 bg-black/70 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+                    <!-- Sidebar -->
+                    <aside id="mobile-sidebar" class="w-72 bg-slate-900 text-white flex flex-col justify-between p-6 shadow-2xl fixed inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 flex-shrink-0 border-r-2 border-slate-700">
+                        <div>
+                            <div class="mb-6 pb-6 border-b-2 border-slate-800">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3.5 min-w-0">
+                                        <div class="w-12 h-12 bg-emerald-700 rounded-2xl flex items-center justify-center text-white text-xl shadow-md flex-shrink-0 border border-emerald-400">
+                                            <i class="fa-solid fa-mosque"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h2 class="text-sm font-black tracking-tight truncate text-white">Keuangan Pesantren</h2>
+                                            <p class="text-[11px] text-emerald-400 font-black truncate">${roleName}</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="toggleMobileSidebar(false)" class="md:hidden text-slate-300 hover:text-white p-2">
+                                        <i class="fa-solid fa-xmark text-xl"></i>
+                                    </button>
+                                </div>
+                                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-700 hover:bg-red-800 text-white rounded-2xl font-black text-xs transition shadow-md active:scale-95 border-2 border-red-900">
+                                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar Ruangan
+                                </button>
+                            </div>
+
+                            <nav class="space-y-1.5">
+                                ${tabs.map(t => `
+                                    <button onclick="switchTab('${t.id}')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl font-black text-xs sm:text-sm transition text-left ${currentTab === t.id ? 'bg-emerald-700 text-white shadow-lg border-2 border-emerald-500' : 'text-slate-300 hover:text-white hover:bg-slate-800 border-2 border-transparent'}">
+                                        <i class="fa-solid ${t.icon} text-sm w-5 text-center"></i>
+                                        <span class="truncate">${t.label}</span>
+                                    </button>
+                                `).join('')}
+                            </nav>
+                        </div>
+
+                        <div class="pt-6 mt-6 border-t-2 border-slate-800 space-y-3">
+                            <button onclick="downloadPdfReport()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-900/60 hover:bg-emerald-900 text-emerald-300 rounded-2xl font-black text-xs transition border-2 border-emerald-600">
+                                <i class="fa-solid fa-file-pdf"></i> Unduh Laporan PDF
+                            </button>
+                        </div>
+                    </aside>
+
+                    <!-- Main Content Area -->
+                    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+                        <header class="bg-white border-b-2 border-slate-300 px-6 py-4 sticky top-0 z-20 flex items-center justify-between gap-4 shadow-sm">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <button onclick="toggleMobileSidebar(true)" class="md:hidden w-10 h-10 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-900 flex items-center justify-center flex-shrink-0 transition border border-slate-400">
+                                    <i class="fa-solid fa-bars text-lg"></i>
+                                </button>
+                                <div class="min-w-0">
+                                    <h1 class="text-base sm:text-xl font-black text-slate-900 tracking-tight truncate flex items-center gap-2">
+                                        <span class="truncate">${currentTabObj.label}</span>
+                                    </h1>
+                                    <p class="text-[11px] sm:text-xs font-bold text-slate-700 truncate mt-0.5">${dbState.profile?.name || 'Rangkuman aktivitas keuangan.'}</p>
+                                </div>
+                            </div>
+                            <div class="hidden sm:flex items-center gap-3 flex-shrink-0">
+                                <div class="px-3.5 py-2 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs font-black text-slate-900 flex items-center gap-2 shadow-xs">
+                                    <span class="text-slate-600 font-black">Tahun Ajaran:</span>
+                                    <span class="text-emerald-700 font-black">${dbState.profile?.currentYear || '2025/2026'}</span>
+                                </div>
+                            </div>
+                        </header>
+
+                        <main class="p-4 sm:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
+                            ${renderTabContent()}
+                        </main>
+                    </div>
+                </div>
+            `;
+        }
 
         async function saveDb() {
             try {
@@ -287,120 +401,6 @@
             }
         }
 
-        function renderDashboard() {
-            const app = document.getElementById('app');
-            if (!app || !currentUser) return;
-            const roleName = currentUser.name;
-
-            let tabs = [];
-            if (currentUser.role === 'admin') {
-                tabs = [
-                    { id: 'cycles', label: 'Siklus Keuangan', icon: 'fa-chart-pie' },
-                    { id: 'spp_monitor_admin', label: 'Monitoring SPP & Folder', icon: 'fa-folder-tree' },
-                    { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
-                    { id: 'unpaid_admin', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
-                    { id: 'whatsapp_report', label: 'Kirim WA & Invoice Kas', icon: 'fa-brands fa-whatsapp text-emerald-400' },
-                    { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
-                    { id: 'profile', label: 'Profil Pesantren', icon: 'fa-school' },
-                    { id: 'credentials', label: 'Sandi Ruangan', icon: 'fa-key' },
-                    { id: 'reset_data', label: 'Kosongkan Data', icon: 'fa-trash-arrow-up' },
-                    { id: 'sql_setup', label: 'Setup SQL Supabase', icon: 'fa-database' }
-                ];
-            } else if (currentUser.role === 'pesantren') {
-                tabs = [
-                    { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
-                    { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
-                    { id: 'spp_setting', label: 'Pengaturan SPP & Beasiswa', icon: 'fa-sliders' },
-                    { id: 'payments', label: 'Catat Pembayaran', icon: 'fa-receipt' },
-                    { id: 'arrears', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
-                    { id: 'contacts', label: 'Data Kontak', icon: 'fa-address-book text-emerald-400' },
-                ];
-            } else if (currentUser.role === 'treasurer') {
-                tabs = [
-                    { id: 'transactions', label: 'Buku Kas & Histori Transaksi', icon: 'fa-book' },
-                    { id: 'spp_monitor', label: 'Monitoring SPP', icon: 'fa-money-bill-wave' },
-                    { id: 'unpaid_treasurer', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
-                    { id: 'reports', label: 'Santri & Beasiswa', icon: 'fa-user-graduate' }
-                ];
-            }
-
-            const currentTabObj = tabs.find(t => t.id === currentTab) || tabs[0];
-
-            app.innerHTML = `
-                <div class="min-h-screen flex flex-col md:flex-row bg-slate-200">
-                    <!-- Mobile Drawer Overlay -->
-                    <div id="mobile-sidebar-overlay" onclick="toggleMobileSidebar(false)" class="fixed inset-0 bg-black/70 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
-
-                    <!-- Sidebar -->
-                    <aside id="mobile-sidebar" class="w-72 bg-slate-900 text-white flex flex-col justify-between p-6 shadow-2xl fixed inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 flex-shrink-0 border-r-2 border-slate-700">
-                        <div>
-                            <div class="mb-6 pb-6 border-b-2 border-slate-800">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3.5 min-w-0">
-                                        <div class="w-12 h-12 bg-emerald-700 rounded-2xl flex items-center justify-center text-white text-xl shadow-md flex-shrink-0 border border-emerald-400">
-                                            <i class="fa-solid fa-mosque"></i>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <h2 class="text-sm font-black tracking-tight truncate text-white">Keuangan Pesantren</h2>
-                                            <p class="text-[11px] text-emerald-400 font-black truncate">${roleName}</p>
-                                        </div>
-                                    </div>
-                                    <button onclick="toggleMobileSidebar(false)" class="md:hidden text-slate-300 hover:text-white p-2">
-                                        <i class="fa-solid fa-xmark text-xl"></i>
-                                    </button>
-                                </div>
-                                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-700 hover:bg-red-800 text-white rounded-2xl font-black text-xs transition shadow-md active:scale-95 border-2 border-red-900">
-                                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar Ruangan
-                                </button>
-                            </div>
-
-                            <nav class="space-y-1.5">
-                                ${tabs.map(t => `
-                                    <button onclick="switchTab('${t.id}')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl font-black text-xs sm:text-sm transition text-left ${currentTab === t.id ? 'bg-emerald-700 text-white shadow-lg border-2 border-emerald-500' : 'text-slate-300 hover:text-white hover:bg-slate-800 border-2 border-transparent'}">
-                                        <i class="fa-solid ${t.icon} text-sm w-5 text-center"></i>
-                                        <span class="truncate">${t.label}</span>
-                                    </button>
-                                `).join('')}
-                            </nav>
-                        </div>
-
-                        <div class="pt-6 mt-6 border-t-2 border-slate-800 space-y-3">
-                            <button onclick="downloadPdfReport()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-900/60 hover:bg-emerald-900 text-emerald-300 rounded-2xl font-black text-xs transition border-2 border-emerald-600">
-                                <i class="fa-solid fa-file-pdf"></i> Unduh Laporan PDF
-                            </button>
-                        </div>
-                    </aside>
-
-                    <!-- Main Content Area -->
-                    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-                        <header class="bg-white border-b-2 border-slate-300 px-6 py-4 sticky top-0 z-20 flex items-center justify-between gap-4 shadow-sm">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <button onclick="toggleMobileSidebar(true)" class="md:hidden w-10 h-10 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-900 flex items-center justify-center flex-shrink-0 transition border border-slate-400">
-                                    <i class="fa-solid fa-bars text-lg"></i>
-                                </button>
-                                <div class="min-w-0">
-                                    <h1 class="text-base sm:text-xl font-black text-slate-900 tracking-tight truncate flex items-center gap-2">
-                                        <span class="truncate">${currentTabObj.label}</span>
-                                    </h1>
-                                    <p class="text-[11px] sm:text-xs font-bold text-slate-700 truncate mt-0.5">${dbState.profile?.name || 'Rangkuman aktivitas keuangan.'}</p>
-                                </div>
-                            </div>
-                            <div class="hidden sm:flex items-center gap-3 flex-shrink-0">
-                                <div class="px-3.5 py-2 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs font-black text-slate-900 flex items-center gap-2 shadow-xs">
-                                    <span class="text-slate-600 font-black">Tahun Ajaran:</span>
-                                    <span class="text-emerald-700 font-black">${dbState.profile?.currentYear || '2025/2026'}</span>
-                                </div>
-                            </div>
-                        </header>
-
-                        <main class="p-4 sm:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
-                            ${renderTabContent()}
-                        </main>
-                    </div>
-                </div>
-            `;
-        }
-
         function toggleMobileSidebar(open) {
             const sidebar = document.getElementById('mobile-sidebar');
             const overlay = document.getElementById('mobile-sidebar-overlay');
@@ -502,6 +502,9 @@
                                                     <button onclick="openSendContactInvoiceModal('${c.id}')" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 border border-emerald-950 inline-flex items-center gap-1.5">
                                                         <i class="fa-brands fa-whatsapp text-sm"></i> Kirim Invoice & Kas Masuk
                                                     </button>
+                                                    <button onclick="openEditContactModal('${c.id}')" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl transition active:scale-95 border border-amber-800" title="Edit Kontak">
+                                                        <i class="fa-solid fa-pen-to-square"></i>
+                                                    </button>
                                                     <button onclick="deleteContact('${c.id}')" class="px-3 py-2 bg-red-700 hover:bg-red-800 text-white font-black text-xs rounded-xl transition active:scale-95 border border-red-950">
                                                         <i class="fa-solid fa-trash-can"></i>
                                                     </button>
@@ -516,20 +519,27 @@
                 `;
             }
 
-            // Admin Utama -> WhatsApp custom generator + Contacts
+            // Admin Utama -> Box 1 (Wali Santri) + Box 2 (User Aplikasi) + WhatsApp Custom Generator
             if (currentUser && currentUser.role === 'admin' && currentTab === 'whatsapp_report') {
+                const appUsers = dbState.appUsers || [
+                    { id: 'app_admin_pesantren', name: 'Bpk. Admin Pesantren', phone: dbState.profile?.adminPesantrenPhone || '6281234567891', role: 'Admin Pesantren', color: 'emerald' },
+                    { id: 'app_admin_utama', name: 'Administrator Utama', phone: '628111222333', role: 'Admin Utama', color: 'blue' },
+                    { id: 'app_bendahara', name: 'Bendahara Pusat Yayasan', phone: '628999888777', role: 'Bendahara Pusat', color: 'indigo' }
+                ];
+
                 return `
                     <div class="space-y-6">
+                        <!-- BOX 1: DATA KONTAK KHUSUS WALI SANTRI & DONATUR -->
                         <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-100">
                                 <div>
                                     <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
-                                        <i class="fa-solid fa-address-book text-emerald-700"></i> Data Kontak & List Kirim Invoice / Notifikasi Kas Masuk
+                                        <i class="fa-solid fa-address-book text-emerald-700"></i> Box 1: Data Kontak Khusus Wali Santri & Donatur
                                     </h3>
-                                    <p class="text-xs font-bold text-slate-600 mt-1">Tambahkan data kontak (Nama & No HP). Setiap kontak yang tersimpan akan otomatis terdaftar dalam list kirim invoice dan notifikasi kas masuk.</p>
+                                    <p class="text-xs font-bold text-slate-600 mt-1">Daftar kontak wali santri dan donatur untuk pengiriman invoice tagihan.</p>
                                 </div>
                                 <button onclick="openAddContactModal()" class="px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-95 border-2 border-emerald-950 flex-shrink-0">
-                                    <i class="fa-solid fa-user-plus"></i> Tambah Kontak Baru
+                                    <i class="fa-solid fa-user-plus"></i> Tambah Kontak Wali
                                 </button>
                             </div>
 
@@ -537,16 +547,16 @@
                                 <table class="w-full text-left text-xs sm:text-sm">
                                     <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
                                         <tr>
-                                            <th class="p-3 rounded-l-2xl">Nama Kontak</th>
+                                            <th class="p-3 rounded-l-2xl">Nama Kontak Wali</th>
                                             <th class="p-3">Nomor Handphone (WhatsApp)</th>
                                             <th class="p-3">Keterangan / Peran</th>
-                                            <th class="p-3 rounded-r-2xl text-center">Aksi Kirim Invoice & Kas Masuk</th>
+                                            <th class="p-3 rounded-r-2xl text-center">Aksi Kirim Invoice</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y-2 divide-slate-200">
                                         ${contactList.length === 0 ? `
                                             <tr>
-                                                <td colspan="4" class="p-6 text-center text-slate-500 font-bold">Belum ada data kontak tersimpan.</td>
+                                                <td colspan="4" class="p-6 text-center text-slate-500 font-bold">Belum ada data kontak wali tersimpan.</td>
                                             </tr>
                                         ` : contactList.map(c => `
                                             <tr class="hover:bg-slate-50 transition">
@@ -557,7 +567,7 @@
                                                 <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">
                                                     <div class="flex items-center gap-2">
                                                         <span><i class="fa-solid fa-phone text-emerald-700 mr-1"></i> ${c.phone}</span>
-                                                        <button onclick="copyToWaForm('${c.phone}')" class="px-2 py-1 bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 rounded-lg transition border border-slate-300 hover:border-emerald-400 flex items-center gap-1.5" title="Copy dan masukkan ke Nomor WhatsApp Admin / Tujuan di atas">
+                                                        <button onclick="copyToWaForm('${c.phone}')" class="px-2 py-1 bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 rounded-lg transition border border-slate-300 flex items-center gap-1.5" title="Copy nomor">
                                                             <i class="fa-regular fa-copy"></i> <span class="text-[10px]">Copy</span>
                                                         </button>
                                                     </div>
@@ -565,7 +575,10 @@
                                                 <td class="p-3 text-slate-800 font-black text-xs">${c.desc || '-'}</td>
                                                 <td class="p-3 text-center whitespace-nowrap space-x-2">
                                                     <button onclick="openSendContactInvoiceModal('${c.id}')" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 border border-emerald-950 inline-flex items-center gap-1.5">
-                                                        <i class="fa-brands fa-whatsapp text-sm"></i> Kirim Invoice & Kas Masuk
+                                                        <i class="fa-brands fa-whatsapp text-sm"></i> Kirim Invoice
+                                                    </button>
+                                                    <button onclick="openEditContactModal('${c.id}')" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl transition active:scale-95 border border-amber-800" title="Edit Kontak">
+                                                        <i class="fa-solid fa-pen-to-square"></i>
                                                     </button>
                                                     <button onclick="deleteContact('${c.id}')" class="px-3 py-2 bg-red-700 hover:bg-red-800 text-white font-black text-xs rounded-xl transition active:scale-95 border border-red-950">
                                                         <i class="fa-solid fa-trash-can"></i>
@@ -577,16 +590,47 @@
                                 </table>
                             </div>
                         </div>
-                    </div> 
 
-                    <div class="space-y-6">
+                        <!-- BOX 2: DATA KONTAK USER APLIKASI (ADMIN PESANTREN, ADMIN UTAMA, BENDAHARA) -->
+                        <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 pb-4 border-b-2 border-slate-100">
+                                <div>
+                                    <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
+                                        <i class="fa-solid fa-id-card text-emerald-700"></i> Box 2: Data Kontak User Aplikasi (Admin Pesantren, Admin Utama, Bendahara Pusat)
+                                    </h3>
+                                    <p class="text-xs font-bold text-slate-600 mt-1">Nomor telepon resmi pengurus/user internal aplikasi untuk laporan kas masuk & salin cepat ke form WhatsApp di bawah. Anda dapat mengedit nama dan nomor HP setiap saat.</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                ${appUsers.map(u => `
+                                    <div class="bg-slate-50 p-4 rounded-2xl border-2 border-slate-300 flex flex-col justify-between">
+                                        <div>
+                                            <span class="px-2 py-1 bg-${u.color}-700 text-white text-[10px] font-black rounded-lg">${u.role}</span>
+                                            <h4 class="font-black text-slate-900 text-sm mt-2">${u.name}</h4>
+                                            <p class="text-xs font-bold text-slate-700 mt-1"><i class="fa-solid fa-phone text-${u.color}-700 mr-1"></i> ${u.phone}</p>
+                                        </div>
+                                        <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
+                                            <button onclick="copyToCustomPhone('${u.phone}')" class="flex-1 py-2 bg-${u.color}-700 hover:bg-${u.color}-800 text-white text-xs font-black rounded-xl transition shadow-sm border border-${u.color}-950 flex items-center justify-center gap-1.5">
+                                                <i class="fa-regular fa-copy"></i> Salin ke Form WA
+                                            </button>
+                                            <button onclick="openEditAppUserModal('${u.id}')" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition shadow-sm border border-amber-800" title="Edit No HP & Nama">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- KIRIM INVOICE & LAPORAN UANG MASUK KE ADMIN PESANTREN -->
                         <div class="bg-white p-6 sm:p-8 rounded-3xl border-2 border-slate-300 shadow-md">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-100">
                                 <div>
                                     <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
                                         <i class="fa-brands fa-whatsapp text-emerald-700 text-2xl"></i> Kirim Invoice & Laporan Uang Masuk ke Admin Pesantren
                                     </h3>
-                                    <p class="text-xs font-bold text-slate-600 mt-1">Buat format pesan WhatsApp custom untuk melaporkan uang masuk dari siapa ke bendahara pusat, lengkap dengan instruksi segera input.</p>
+                                    <p class="text-xs font-bold text-slate-600 mt-1">Buat format pesan WhatsApp custom untuk melaporkan uang masuk dari siapa ke admin pesantren / user aplikasi.</p>
                                 </div>
                             </div>
 
@@ -597,8 +641,8 @@
                                     </h4>
 
                                     <div>
-                                        <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Nomor WhatsApp Admin Pesantren</label>
-                                        <input type="text" id="wa-custom-phone" value="" class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                                        <label class="block text-[11px] font-black uppercase tracking-wider text-slate-900 mb-1">Nomor WhatsApp Tujuan (User / Admin)</label>
+                                        <input type="text" id="wa-custom-phone" value="${dbState.profile?.adminPesantrenPhone || '6281234567891'}" placeholder="Pilih dari Box 2 di atas atau ketik..." class="w-full px-3.5 py-3 bg-white border-2 border-slate-400 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
                                     </div>
 
                                     <div>
@@ -1154,7 +1198,6 @@
                     const regularSantri = santriList.filter(s => s.scholarship !== 'Ya' && s.status === 'Aktif');
                     const unpaidSantriCount = regularSantri.filter(s => !paidThisMonthSantriIds.includes(s.id)).length;
 
-                    // Filter payments specifically for the active current month
                     const currentMonthPayments = sortedPayments.filter(p => p.month === currentMonth || (p.month && p.month.includes(currentMonth)));
 
                     let paymentsHtml = '';
@@ -1946,6 +1989,102 @@ WITH CHECK (true);
             `;
         }
 
+        function openEditContactModal(contactId) {
+            const contact = (dbState.contacts || []).find(c => c.id === contactId);
+            if (!contact) return;
+
+            showModal('Edit Data Kontak Wali', 'Perbarui nama kontak atau nomor WhatsApp:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
+                    const name = document.getElementById('edit-contact-name').value.trim();
+                    const phone = document.getElementById('edit-contact-phone').value.trim();
+                    const desc = document.getElementById('edit-contact-desc').value.trim();
+
+                    if (!name || !phone) {
+                        showModal('Peringatan', 'Nama dan nomor HP wajib diisi.', 'error');
+                        return;
+                    }
+
+                    contact.name = name;
+                    contact.phone = phone;
+                    contact.desc = desc;
+
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Data kontak berhasil diperbarui.', 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Kontak</label>
+                        <input type="text" id="edit-contact-name" value="${contact.name}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor Handphone (WhatsApp)</label>
+                        <input type="text" id="edit-contact-phone" value="${contact.phone}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Keterangan / Peran</label>
+                        <input type="text" id="edit-contact-desc" value="${contact.desc || ''}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                </div>
+            `;
+        }
+
+        function openEditAppUserModal(userId) {
+            if (!dbState.appUsers) {
+                dbState.appUsers = [
+                    { id: 'app_admin_pesantren', name: 'Bpk. Admin Pesantren', phone: dbState.profile?.adminPesantrenPhone || '6281234567891', role: 'Admin Pesantren', color: 'emerald' },
+                    { id: 'app_admin_utama', name: 'Administrator Utama', phone: '628111222333', role: 'Admin Utama', color: 'blue' },
+                    { id: 'app_bendahara', name: 'Bendahara Pusat Yayasan', phone: '628999888777', role: 'Bendahara Pusat', color: 'indigo' }
+                ];
+            }
+
+            const user = dbState.appUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            showModal(`Edit Kontak User: ${user.role}`, 'Perbarui nama pengurus atau nomor WhatsApp:', 'info', [
+                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
+                { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
+                    const name = document.getElementById('edit-appuser-name').value.trim();
+                    const phone = document.getElementById('edit-appuser-phone').value.trim();
+
+                    if (!name || !phone) {
+                        showModal('Peringatan', 'Nama dan nomor HP wajib diisi.', 'error');
+                        return;
+                    }
+
+                    user.name = name;
+                    user.phone = phone;
+
+                    if (userId === 'app_admin_pesantren' && dbState.profile) {
+                        dbState.profile.adminPesantrenPhone = phone;
+                    }
+
+                    saveDb();
+                    closeModal();
+                    renderDashboard();
+                    showModal('Berhasil', 'Nomor HP dan nama user aplikasi berhasil diperbarui.', 'success');
+                }}
+            ]);
+
+            document.getElementById('modal-message').innerHTML = `
+                <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Pengurus / User</label>
+                        <input type="text" id="edit-appuser-name" value="${user.name}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor Handphone (WhatsApp)</label>
+                        <input type="text" id="edit-appuser-phone" value="${user.phone}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
+                </div>
+            `;
+        }
+
         function deleteContact(contactId) {
             showModal('Konfirmasi Hapus Kontak', 'Apakah Anda yakin ingin menghapus kontak ini dari daftar?', 'error', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
@@ -1992,11 +2131,11 @@ WITH CHECK (true);
 💰 Nominal Kas Masuk: *${formattedAmount}*
 📝 Keterangan: ${desc}
 ---------------------------------------
-✅ _Dana telah diterima dan dicatat ke dalam buku kas resmi pesantren. Terima kasih atas partisipasi dan amanah yang diberikan._
+✅ _Pembayaran telah diterima dan dicatat ke dalam buku kas resmi pesantren. Terima kasih atas partisipasi dan amanah yang diberikan._
 
 _Syukron wa Jazakumullahu Khairan._
 ---------------------------------------
-_Pesan Otomatis Sistem Keuangan Terintegrasi_`;
+_Pesan Otomatis Sistem Keuangan bendahara pesantren_`;
 
                     const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
                     window.open(url, '_blank');
@@ -2031,6 +2170,16 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
                 console.error('Gagal menyalin:', err);
                 showModal('Gagal', 'Tidak dapat menyalin nomor handphone.', 'error');
             });
+        }
+
+        function copyToCustomPhone(phone) {
+            const phoneEl = document.getElementById('wa-custom-phone');
+            if (phoneEl) {
+                phoneEl.value = phone;
+                showModal('Berhasil Disalin', `Nomor ${phone} berhasil dimasukkan otomatis ke form WhatsApp di bawah.`, 'success');
+            } else {
+                copyToWaForm(phone);
+            }
         }
 
         function getCustomWaText() {
@@ -2095,7 +2244,7 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
             const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
             
             window.open(url, '_blank');
-            showModal('Berhasil Membuka WhatsApp', 'Invoice custom uang masuk berhasil disiapkan dan diarahkan ke WhatsApp Admin Pesantren.', 'success');
+            showModal('Berhasil Membuka WhatsApp', 'Invoice custom uang masuk berhasil disiapkan dan diarahkan ke WhatsApp tujuan.', 'success');
         }
 
         setTimeout(() => {
