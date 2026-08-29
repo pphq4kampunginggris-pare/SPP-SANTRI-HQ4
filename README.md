@@ -312,7 +312,8 @@
                     { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
                     { id: 'spp_setting', label: 'Pengaturan SPP & Beasiswa', icon: 'fa-sliders' },
                     { id: 'payments', label: 'Catat Pembayaran', icon: 'fa-receipt' },
-                    { id: 'arrears', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' }
+                    { id: 'arrears', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
+                    { id: 'contacts', label: 'Data Kontak', icon: 'fa-address-book text-emerald-400' },
                 ];
             } else if (currentUser.role === 'treasurer') {
                 tabs = [
@@ -450,7 +451,8 @@
             const balance = totalIncome - totalExpense;
             const currentMonth = CURRENT_ACTIVE_MONTH;
 
-            if (currentUser && currentUser.role === 'admin' && currentTab === 'contacts') {
+            // Admin Pesantren -> Contacts only tab
+            if (currentUser && currentUser.role === 'pesantren' && currentTab === 'contacts') {
                 return `
                     <div class="space-y-6">
                         <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
@@ -459,7 +461,7 @@
                                     <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
                                         <i class="fa-solid fa-address-book text-emerald-700"></i> Data Kontak & List Kirim Invoice / Notifikasi Kas Masuk
                                     </h3>
-                                    <p class="text-xs font-bold text-slate-600 mt-1">Tambahkan data kontak (Nama & No HP). Setiap kontak yang tersimpan akan otomatis terdaftar dalam list kirim invoice dan notifikasi kas masuk.</p>
+                                    <p class="text-xs font-bold text-slate-600 mt-1">Tambahkan data kontak (Nama & No HP). Setiap kontak yang tersimpan dapat dikirimi pesan WhatsApp.</p>
                                 </div>
                                 <button onclick="openAddContactModal()" class="px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-95 border-2 border-emerald-950 flex-shrink-0">
                                     <i class="fa-solid fa-user-plus"></i> Tambah Kontak Baru
@@ -490,7 +492,7 @@
                                                 <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">
                                                     <div class="flex items-center gap-2">
                                                         <span><i class="fa-solid fa-phone text-emerald-700 mr-1"></i> ${c.phone}</span>
-                                                        <button onclick="copyToWaForm('${c.phone}')" class="px-2 py-1 bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 rounded-lg transition border border-slate-300 hover:border-emerald-400 flex items-center gap-1.5" title="Copy dan masukkan ke Nomor WhatsApp Admin / Tujuan di atas">
+                                                        <button onclick="copyToWaForm('${c.phone}')" class="px-2 py-1 bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 rounded-lg transition border border-slate-300 hover:border-emerald-400 flex items-center gap-1.5" title="Copy nomor handphone">
                                                             <i class="fa-regular fa-copy"></i> <span class="text-[10px]">Copy</span>
                                                         </button>
                                                     </div>
@@ -514,9 +516,8 @@
                 `;
             }
 
-            // Custom WhatsApp Invoice Generator for Treasurer -> Admin Pesantren
+            // Admin Utama -> WhatsApp custom generator + Contacts
             if (currentUser && currentUser.role === 'admin' && currentTab === 'whatsapp_report') {
-                const adminPhone = dbState.profile?.adminPesantrenPhone || "6281234567891";
                 return `
                     <div class="space-y-6">
                         <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
@@ -1153,13 +1154,16 @@
                     const regularSantri = santriList.filter(s => s.scholarship !== 'Ya' && s.status === 'Aktif');
                     const unpaidSantriCount = regularSantri.filter(s => !paidThisMonthSantriIds.includes(s.id)).length;
 
+                    // Filter payments specifically for the active current month
+                    const currentMonthPayments = sortedPayments.filter(p => p.month === currentMonth || (p.month && p.month.includes(currentMonth)));
+
                     let paymentsHtml = '';
                     if (currentActiveFolderMonth === null) {
                         paymentsHtml = `
                             <div class="mb-6">
                                 <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center justify-between">
-                                    <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran & Rekam Jejak Tanggal</span>
-                                    <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${sortedPayments.length}</span>
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran & Rekam Jejak Bulan Aktif (${currentMonth})</span>
+                                    <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${currentMonthPayments.length}</span>
                                 </h4>
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-left text-xs sm:text-sm">
@@ -1174,11 +1178,11 @@
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y-2 divide-slate-200">
-                                            ${sortedPayments.length === 0 ? `
+                                            ${currentMonthPayments.length === 0 ? `
                                                 <tr>
-                                                    <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran.</td>
+                                                    <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran untuk bulan ${currentMonth}.</td>
                                                 </tr>
-                                            ` : sortedPayments.map(p => `
+                                            ` : currentMonthPayments.map(p => `
                                                 <tr class="hover:bg-slate-100 transition">
                                                     <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
                                                     <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
@@ -1202,7 +1206,7 @@
 
                             <div class="mt-8">
                                 <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran (Termasuk Periode Multi-Bulan)
+                                    <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran (Lewat / Periode Lain)
                                 </h4>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                     ${monthKeys.map(m => `
@@ -1584,7 +1588,7 @@ WITH CHECK (true);
                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-100 rounded-2xl border-2 border-slate-300 shadow-xs">
                                     <div class="min-w-0">
                                         <div class="font-black text-slate-900 text-xs sm:text-sm truncate">${s.name}</div>
-                                        <div class="text-[10px] sm:text-xs font-bold text-slate-700 truncate">${s.class} | Telp: ${s.phone}</div>
+                                        <div class="text-[10px] sm:text-xs font-bold text-slate-700 truncate">ID: ${s.id} | ${s.class} | Telp: ${s.phone}</div>
                                     </div>
                                     <div class="flex flex-wrap items-center gap-2 flex-shrink-0">
                                         <div class="flex items-center gap-1">
@@ -2013,24 +2017,16 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
                     </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Keterangan / Jenis Tagihan</label>
-                        <input type="text" id="send-contact-desc" value="Donasi / SPP / Sumbangan Pembangunan" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                        <input type="text" id="send-contact-desc" value="" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
                     </div>
                 </div>
             `;
         }
 
-        // Fungsi Copy Kontak Langsung ke Kolom Form WA di atas
         function copyToWaForm(phone) {
             const cleanPhone = phone.trim().replace(/[^0-9]/g, '');
             navigator.clipboard.writeText(cleanPhone).then(() => {
-                const waInput = document.getElementById('wa-custom-phone');
-                if (waInput) {
-                    waInput.value = cleanPhone;
-                    if(typeof updateCustomWaPreview === 'function') {
-                        updateCustomWaPreview();
-                    }
-                }
-                showModal('Berhasil Disalin', `Nomor ${cleanPhone} telah disalin dan otomatis terisi ke form No WA di atas.`, 'success');
+                showModal('Berhasil Disalin', `Nomor ${cleanPhone} telah disalin ke clipboard.`, 'success');
             }).catch(err => {
                 console.error('Gagal menyalin:', err);
                 showModal('Gagal', 'Tidak dapat menyalin nomor handphone.', 'error');
@@ -2334,7 +2330,8 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
             showModal('Tambah Santri Baru', 'Formulir input data santri:', 'info', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
                 { text: 'Simpan', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
-                    const name = document.getElementById('modal-santri-name').value;
+                    const customId = document.getElementById('modal-santri-id').value.trim();
+                    const name = document.getElementById('modal-santri-name').value.trim();
                     const santriClass = document.getElementById('modal-santri-class').value;
                     const customSpp = parseInt(document.getElementById('modal-santri-spp').value) || defaultSpp;
                     const scholarship = document.getElementById('modal-santri-scholarship').value;
@@ -2343,7 +2340,19 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
                     if (!name) return;
 
                     if (!dbState.santri) dbState.santri = [];
-                    const newId = 'S00' + (dbState.santri.length + 1);
+                    
+                    let newId = customId;
+                    if (!newId) {
+                        newId = 'S00' + (dbState.santri.length + 1);
+                    } else {
+                        // Check if ID already exists
+                        const existing = dbState.santri.find(s => s.id === newId);
+                        if (existing) {
+                            showModal('Peringatan ID Ganda', 'Nomor ID santri tersebut sudah digunakan. Harap gunakan ID yang berbeda.', 'error');
+                            return;
+                        }
+                    }
+
                     dbState.santri.push({ id: newId, name, class: santriClass, customSpp, status: 'Aktif', scholarship, phone });
                     saveDb();
                     closeModal();
@@ -2352,8 +2361,14 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
                 }}
             ]);
 
+            const autoId = 'S00' + ((dbState.santri || []).length + 1);
+
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor ID Santri (Unik)</label>
+                        <input type="text" id="modal-santri-id" value="${autoId}" placeholder="cth: S001" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                    </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Lengkap Santri</label>
                         <input type="text" id="modal-santri-name" placeholder="cth: Ahmad Dani" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
@@ -2403,17 +2418,32 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
             const defaultSpp = dbState.profile?.defaultSpp || 250000;
             const currentCustomSpp = santri.customSpp !== undefined ? santri.customSpp : defaultSpp;
 
-            showModal('Edit Data Santri', 'Formulir koreksi biodata santri:', 'info', [
+            showModal('Edit Data Santri', 'Formulir koreksi biodata dan No ID santri:', 'info', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
                 { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
-                    const name = document.getElementById('edit-santri-name').value;
+                    const newId = document.getElementById('edit-santri-id').value.trim();
+                    const name = document.getElementById('edit-santri-name').value.trim();
                     const santriClass = document.getElementById('edit-santri-class').value;
                     const customSpp = parseInt(document.getElementById('edit-santri-spp').value) || defaultSpp;
                     const scholarship = document.getElementById('edit-santri-scholarship').value;
                     const phone = document.getElementById('edit-santri-phone').value;
 
-                    if (!name) return;
+                    if (!name || !newId) {
+                        showModal('Peringatan', 'No ID dan Nama Santri wajib diisi.', 'error');
+                        return;
+                    }
 
+                    // Check duplicate ID if ID is changed
+                    if (newId !== santri.id) {
+                        const duplicate = santriList.find(s => s.id === newId);
+                        if (duplicate) {
+                            showModal('Peringatan ID Ganda', 'Nomor ID santri tersebut sudah digunakan oleh santri lain. Harap masukkan ID yang berbeda.', 'error');
+                            return;
+                        }
+                    }
+
+                    const oldId = santri.id;
+                    santri.id = newId;
                     santri.name = name;
                     santri.class = santriClass;
                     santri.customSpp = customSpp;
@@ -2422,7 +2452,8 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
 
                     if (dbState.payments) {
                         dbState.payments.forEach(p => {
-                            if (p.santriId === santriId) {
+                            if (p.santriId === oldId) {
+                                p.santriId = newId;
                                 p.santriName = name;
                             }
                         });
@@ -2431,12 +2462,16 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
                     saveDb();
                     closeModal();
                     renderDashboard();
-                    showModal('Berhasil', 'Biodata santri berhasil diperbarui.', 'success');
+                    showModal('Berhasil', 'Biodata dan No ID santri berhasil diperbarui.', 'success');
                 }}
             ]);
 
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3 text-left mt-2">
+                    <div>
+                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor ID Santri (Unik)</label>
+                        <input type="text" id="edit-santri-id" value="${santri.id}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
+                    </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Lengkap Santri</label>
                         <input type="text" id="edit-santri-name" value="${santri.name}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
