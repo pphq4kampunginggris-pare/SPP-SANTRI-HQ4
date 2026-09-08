@@ -56,13 +56,22 @@
             console.error("Gagal menginisialisasi Supabase client:", e);
         }
 
-        const MONTH_OPTIONS = [
-            "Juli 2026", "Agustus 2026", "September 2026", "Oktober 2026", 
-            "November 2026", "Desember 2026", "Januari 2027", "Februari 2027", 
-            "Maret 2027", "April 2027", "Mei 2027", "Juni 2027"
+        const MONTH_NAMES = [
+            "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
         ];
 
-        const CURRENT_ACTIVE_MONTH = "Agustus 2026";
+        const now = new Date();
+        const currentMonthName = MONTH_NAMES[now.getMonth()];
+        const currentYearNum = now.getFullYear();
+        const CURRENT_ACTIVE_MONTH = `${currentMonthName} ${currentYearNum}`;
+
+        const MONTH_OPTIONS = [
+            `Juli ${currentYearNum}`, `Agustus ${currentYearNum}`, `September ${currentYearNum}`, 
+            `Oktober ${currentYearNum}`, `November ${currentYearNum}`, `Desember ${currentYearNum}`, 
+            `Januari ${currentYearNum + 1}`, `Februari ${currentYearNum + 1}`, `Maret ${currentYearNum + 1}`, 
+            `April ${currentYearNum + 1}`, `Mei ${currentYearNum + 1}`, `Juni ${currentYearNum + 1}`
+        ];
 
         const DEFAULT_STATE = {
             profile: {
@@ -90,14 +99,14 @@
                 { id: "S003", name: "Muhammad Alif", class: "X-IPA (Aliyah)", customSpp: 300000, status: "Aktif", scholarship: "Tidak", phone: "081567890123" }
             ],
             payments: [
-                { id: "P001", santriId: "S001", santriName: "Ahmad Fauzi", type: "SPP", month: "Agustus 2026", amount: 250000, date: "2026-08-05", status: "Lunas" },
-                { id: "P002", santriId: "S002", santriName: "Siti Aminah", type: "SPP", month: "Agustus 2026", amount: 0, date: "2026-08-06", status: "Beasiswa (Gratis)" },
-                { id: "P003", santriId: "S003", santriName: "Muhammad Alif", type: "Daftar Ulang", month: "Juli 2026", amount: 750000, date: "2026-07-10", status: "Lunas" }
+                { id: "P001", santriId: "S001", santriName: "Ahmad Fauzi", type: "SPP", month: CURRENT_ACTIVE_MONTH, amount: 250000, date: `${currentYearNum}-08-05`, status: "Lunas" },
+                { id: "P002", santriId: "S002", santriName: "Siti Aminah", type: "SPP", month: CURRENT_ACTIVE_MONTH, amount: 0, date: `${currentYearNum}-08-06`, status: "Beasiswa (Gratis)" },
+                { id: "P003", santriId: "S003", santriName: "Muhammad Alif", type: "Daftar Ulang", month: `Juli ${currentYearNum}`, amount: 750000, date: `${currentYearNum}-07-10`, status: "Lunas" }
             ],
             transactions: [
-                { id: "T001", date: "2026-07-10", type: "Pemasukan", category: "Daftar Ulang", amount: 900000, desc: "Pembayaran Daftar Ulang Santri" },
-                { id: "T002", date: "2026-07-15", type: "Pengeluaran", category: "Operasional", amount: 500000, desc: "Servis Mobil Operasional Pesantren" },
-                { id: "T003", date: "2026-08-01", type: "Pemasukan", category: "Donasi / Hibah", amount: 1000000, desc: "Dana Hibah Yayasan" }
+                { id: "T001", date: `${currentYearNum}-07-10`, type: "Pemasukan", category: "Daftar Ulang", amount: 900000, desc: "Pembayaran Daftar Ulang Santri" },
+                { id: "T002", date: `${currentYearNum}-07-15`, type: "Pengeluaran", category: "Operasional", amount: 500000, desc: "Servis Mobil Operasional Pesantren" },
+                { id: "T003", date: `${currentYearNum}-08-01`, type: "Pemasukan", category: "Donasi / Hibah", amount: 1000000, desc: "Dana Hibah Yayasan" }
             ]
         };
 
@@ -221,8 +230,8 @@
                             </div>
                             <div class="hidden sm:flex items-center gap-3 flex-shrink-0">
                                 <div class="px-3.5 py-2 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs font-black text-slate-900 flex items-center gap-2 shadow-xs">
-                                    <span class="text-slate-600 font-black">Tahun Ajaran:</span>
-                                    <span class="text-emerald-700 font-black">${dbState.profile?.currentYear || '2025/2026'}</span>
+                                    <span class="text-slate-600 font-black">Bulan Aktif:</span>
+                                    <span class="text-emerald-700 font-black">${CURRENT_ACTIVE_MONTH}</span>
                                 </div>
                             </div>
                         </header>
@@ -257,13 +266,17 @@
             try {
                 const { data, error } = await supabaseClient.from('pesantren_sync').select('payload').eq('id', 1).maybeSingle();
                 if (!error && data && data.payload && data.payload.credentials) {
-                    dbState = data.payload;
-                    if (!dbState.contacts) dbState.contacts = DEFAULT_STATE.contacts;
-                    try {
-                        localStorage.setItem('pesantren_db', JSON.stringify(dbState));
-                    } catch (e) {}
-                    if (currentUser) {
-                        renderDashboard();
+                    const stringifiedNew = JSON.stringify(data.payload);
+                    const stringifiedCurrent = JSON.stringify(dbState);
+                    if (stringifiedNew !== stringifiedCurrent) {
+                        dbState = data.payload;
+                        if (!dbState.contacts) dbState.contacts = DEFAULT_STATE.contacts;
+                        try {
+                            localStorage.setItem('pesantren_db', stringifiedNew);
+                        } catch (e) {}
+                        if (currentUser) {
+                            renderDashboard();
+                        }
                     }
                 }
             } catch (err) {
@@ -293,25 +306,10 @@
                 }
             });
 
+            // 1-second polling interval to guarantee real-time sync across mobile phone and laptop without security errors
             setInterval(async () => {
-                if (supabaseClient) {
-                    try {
-                        const { data, error } = await supabaseClient.from('pesantren_sync').select('payload').eq('id', 1).maybeSingle();
-                        if (!error && data && data.payload && data.payload.credentials) {
-                            const stringifiedNew = JSON.stringify(data.payload);
-                            const stringifiedCurrent = JSON.stringify(dbState);
-                            if (stringifiedNew !== stringifiedCurrent) {
-                                dbState = data.payload;
-                                if (!dbState.contacts) dbState.contacts = DEFAULT_STATE.contacts;
-                                localStorage.setItem('pesantren_db', stringifiedNew);
-                                if (currentUser) {
-                                    renderDashboard();
-                                }
-                            }
-                        }
-                    } catch (e) {}
-                }
-            }, 5000);
+                await fetchCloudData();
+            }, 1000);
         }
 
         function renderAuthPortal() {
@@ -451,7 +449,6 @@
             const balance = totalIncome - totalExpense;
             const currentMonth = CURRENT_ACTIVE_MONTH;
 
-            // Admin Pesantren -> Contacts only tab
             if (currentUser && currentUser.role === 'pesantren' && currentTab === 'contacts') {
                 return `
                     <div class="space-y-6">
@@ -519,7 +516,6 @@
                 `;
             }
 
-            // Admin Utama -> Box 1 (Wali Santri) + Box 2 (User Aplikasi) + WhatsApp Custom Generator
             if (currentUser && currentUser.role === 'admin' && currentTab === 'whatsapp_report') {
                 const appUsers = dbState.appUsers || [
                     { id: 'app_admin_pesantren', name: 'Bpk. Admin Pesantren', phone: dbState.profile?.adminPesantrenPhone || '6281234567891', role: 'Admin Pesantren', color: 'emerald' },
@@ -529,7 +525,6 @@
 
                 return `
                     <div class="space-y-6">
-                        <!-- BOX 1: DATA KONTAK KHUSUS WALI SANTRI & DONATUR -->
                         <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-100">
                                 <div>
@@ -591,14 +586,13 @@
                             </div>
                         </div>
 
-                        <!-- BOX 2: DATA KONTAK USER APLIKASI (ADMIN PESANTREN, ADMIN UTAMA, BENDAHARA) -->
                         <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 pb-4 border-b-2 border-slate-100">
                                 <div>
                                     <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
                                         <i class="fa-solid fa-id-card text-emerald-700"></i> Box 2: Data Kontak User Aplikasi (Admin Pesantren, Admin Utama, Bendahara Pusat)
                                     </h3>
-                                    <p class="text-xs font-bold text-slate-600 mt-1">Nomor telepon resmi pengurus/user internal aplikasi untuk laporan kas masuk & salin cepat ke form WhatsApp di bawah. Anda dapat mengedit nama dan nomor HP setiap saat.</p>
+                                    <p class="text-xs font-bold text-slate-600 mt-1">Nomor telepon resmi pengurus/user internal aplikasi untuk laporan kas masuk & salin cepat ke form WhatsApp di bawah.</p>
                                 </div>
                             </div>
 
@@ -623,7 +617,6 @@
                             </div>
                         </div>
 
-                        <!-- KIRIM INVOICE & LAPORAN UANG MASUK KE ADMIN PESANTREN -->
                         <div class="bg-white p-6 sm:p-8 rounded-3xl border-2 border-slate-300 shadow-md">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b-2 border-slate-100">
                                 <div>
@@ -1497,18 +1490,21 @@
             if (currentUser && currentUser.role === 'admin' && currentTab === 'sql_setup') {
                 const sqlScript = `
 -- ==========================================
--- SKRIP SQL LENGKAP SUPABASE
--- APLIKASI KEUANGAN PESANTREN TERINTEGRASI
+-- SKRIP SQL LENGKAP SUPABASE (TERINTEGRASI)
+-- APLIKASI KEUANGAN PESANTREN
 -- ==========================================
 
+-- 1. Buat Tabel Sinkronisasi Multi-Perangkat
 CREATE TABLE IF NOT EXISTS pesantren_sync (
     id INT PRIMARY KEY,
     payload JSONB NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 2. Aktifkan Row Level Security (RLS)
 ALTER TABLE pesantren_sync ENABLE ROW LEVEL SECURITY;
 
+-- 3. Berikan Akses Publik (Anon Key) untuk Sinkronisasi Lintas Perangkat
 DROP POLICY IF EXISTS "Akses publik pesantren_sync" ON pesantren_sync;
 CREATE POLICY "Akses publik pesantren_sync" 
 ON pesantren_sync 
@@ -1521,7 +1517,7 @@ WITH CHECK (true);
                     <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md max-w-4xl mx-auto">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                             <div>
-                                <h3 class="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2"><i class="fa-solid fa-database text-emerald-700"></i> Setup Skrip SQL Lengkap Supabase</h3>
+                                <h3 class="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2"><i class="fa-solid fa-database text-emerald-700"></i> Setup Skrip SQL Lengkap Supabase (Realtime & Anon Aktif)</h3>
                                 <p class="text-[11px] sm:text-xs font-bold text-slate-800">Salin skrip SQL di bawah ini dan jalankan pada <strong class="text-slate-900">Supabase SQL Editor</strong> Anda.</p>
                             </div>
                             <button onclick="copySqlScript()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-md transition flex items-center gap-2 active:scale-95 flex-shrink-0 border border-emerald-900">
@@ -1529,11 +1525,14 @@ WITH CHECK (true);
                             </button>
                         </div>
                         <div class="relative">
-                            <textarea id="sql-textarea" rows="10" readonly class="w-full p-4 bg-slate-900 text-emerald-400 font-mono text-xs rounded-2xl border-2 border-slate-700 focus:outline-none">${sqlScript}</textarea>
+                            <textarea id="sql-textarea" rows="11" readonly class="w-full p-4 bg-slate-900 text-emerald-400 font-mono text-xs rounded-2xl border-2 border-slate-700 focus:outline-none">${sqlScript}</textarea>
                         </div>
-                        <div class="mt-4 p-3.5 rounded-2xl bg-emerald-100 border-2 border-emerald-400 text-xs font-black text-emerald-950 flex items-center gap-2">
-                            <i class="fa-solid fa-circle-check text-emerald-700 text-base"></i>
-                            <span class="truncate">Supabase URL: <strong>${SUPABASE_URL}</strong></span>
+                        <div class="mt-4 p-3.5 rounded-2xl bg-emerald-100 border-2 border-emerald-400 text-xs font-black text-emerald-950 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div class="flex items-center gap-2 truncate">
+                                <i class="fa-solid fa-circle-check text-emerald-700 text-base"></i>
+                                <span class="truncate">Supabase URL: <strong>${SUPABASE_URL}</strong></span>
+                            </div>
+                            <span class="text-[10px] bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-black uppercase">Anon Key Tertanam</span>
                         </div>
                     </div>
                 `;
@@ -2494,7 +2493,6 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
                     if (!newId) {
                         newId = 'S00' + (dbState.santri.length + 1);
                     } else {
-                        // Check if ID already exists
                         const existing = dbState.santri.find(s => s.id === newId);
                         if (existing) {
                             showModal('Peringatan ID Ganda', 'Nomor ID santri tersebut sudah digunakan. Harap gunakan ID yang berbeda.', 'error');
@@ -2582,7 +2580,6 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
                         return;
                     }
 
-                    // Check duplicate ID if ID is changed
                     if (newId !== santri.id) {
                         const duplicate = santriList.find(s => s.id === newId);
                         if (duplicate) {
