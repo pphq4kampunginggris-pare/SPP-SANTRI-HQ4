@@ -61,6 +61,7 @@
             "Juli", "Agustus", "September", "Oktober", "November", "Desember"
         ];
 
+        // Dynamic current active month based on live date (September 2026)
         const now = new Date();
         const currentMonthName = MONTH_NAMES[now.getMonth()];
         const currentYearNum = now.getFullYear();
@@ -99,14 +100,14 @@
                 { id: "S003", name: "Muhammad Alif", class: "X-IPA (Aliyah)", customSpp: 300000, status: "Aktif", scholarship: "Tidak", phone: "081567890123" }
             ],
             payments: [
-                { id: "P001", santriId: "S001", santriName: "Ahmad Fauzi", type: "SPP", month: CURRENT_ACTIVE_MONTH, amount: 250000, date: `${currentYearNum}-08-05`, status: "Lunas" },
-                { id: "P002", santriId: "S002", santriName: "Siti Aminah", type: "SPP", month: CURRENT_ACTIVE_MONTH, amount: 0, date: `${currentYearNum}-08-06`, status: "Beasiswa (Gratis)" },
+                { id: "P001", santriId: "S001", santriName: "Ahmad Fauzi", type: "SPP", month: CURRENT_ACTIVE_MONTH, amount: 250000, date: `${currentYearNum}-09-02`, status: "Lunas" },
+                { id: "P002", santriId: "S002", santriName: "Siti Aminah", type: "SPP", month: CURRENT_ACTIVE_MONTH, amount: 0, date: `${currentYearNum}-09-03`, status: "Beasiswa (Gratis)" },
                 { id: "P003", santriId: "S003", santriName: "Muhammad Alif", type: "Daftar Ulang", month: `Juli ${currentYearNum}`, amount: 750000, date: `${currentYearNum}-07-10`, status: "Lunas" }
             ],
             transactions: [
                 { id: "T001", date: `${currentYearNum}-07-10`, type: "Pemasukan", category: "Daftar Ulang", amount: 900000, desc: "Pembayaran Daftar Ulang Santri" },
                 { id: "T002", date: `${currentYearNum}-07-15`, type: "Pengeluaran", category: "Operasional", amount: 500000, desc: "Servis Mobil Operasional Pesantren" },
-                { id: "T003", date: `${currentYearNum}-08-01`, type: "Pemasukan", category: "Donasi / Hibah", amount: 1000000, desc: "Dana Hibah Yayasan" }
+                { id: "T003", date: `${currentYearNum}-09-01`, type: "Pemasukan", category: "Donasi / Hibah", amount: 1000000, desc: "Dana Hibah Yayasan" }
             ]
         };
 
@@ -130,120 +131,6 @@
         let currentTab = 'dashboard';
         let currentActiveFolderMonth = null;
 
-        function renderDashboard() {
-            const app = document.getElementById('app');
-            if (!app || !currentUser) return;
-            const roleName = currentUser.name;
-
-            let tabs = [];
-            if (currentUser.role === 'admin') {
-                tabs = [
-                    { id: 'cycles', label: 'Siklus Keuangan', icon: 'fa-chart-pie' },
-                    { id: 'spp_monitor_admin', label: 'Monitoring SPP & Folder', icon: 'fa-folder-tree' },
-                    { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
-                    { id: 'unpaid_admin', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
-                    { id: 'whatsapp_report', label: 'Kirim WA & Invoice Kas', icon: 'fa-brands fa-whatsapp text-emerald-400' },
-                    { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
-                    { id: 'profile', label: 'Profil Pesantren', icon: 'fa-school' },
-                    { id: 'credentials', label: 'Sandi Ruangan', icon: 'fa-key' },
-                    { id: 'reset_data', label: 'Kosongkan Data', icon: 'fa-trash-arrow-up' },
-                    { id: 'sql_setup', label: 'Setup SQL Supabase', icon: 'fa-database' }
-                ];
-            } else if (currentUser.role === 'pesantren') {
-                tabs = [
-                    { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
-                    { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
-                    { id: 'spp_setting', label: 'Pengaturan SPP & Beasiswa', icon: 'fa-sliders' },
-                    { id: 'payments', label: 'Catat Pembayaran', icon: 'fa-receipt' },
-                    { id: 'arrears', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
-                    { id: 'contacts', label: 'Data Kontak', icon: 'fa-address-book text-emerald-400' },
-                ];
-            } else if (currentUser.role === 'treasurer') {
-                tabs = [
-                    { id: 'transactions', label: 'Buku Kas & Histori Transaksi', icon: 'fa-book' },
-                    { id: 'spp_monitor', label: 'Monitoring SPP', icon: 'fa-money-bill-wave' },
-                    { id: 'unpaid_treasurer', label: 'Santri Belum Bayar', icon: 'fa-triangle-exclamation' },
-                    { id: 'reports', label: 'Santri & Beasiswa', icon: 'fa-user-graduate' }
-                ];
-            }
-
-            const currentTabObj = tabs.find(t => t.id === currentTab) || tabs[0];
-
-            app.innerHTML = `
-                <div class="min-h-screen flex flex-col md:flex-row bg-slate-200">
-                    <!-- Mobile Drawer Overlay -->
-                    <div id="mobile-sidebar-overlay" onclick="toggleMobileSidebar(false)" class="fixed inset-0 bg-black/70 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
-
-                    <!-- Sidebar -->
-                    <aside id="mobile-sidebar" class="w-72 bg-slate-900 text-white flex flex-col justify-between p-6 shadow-2xl fixed inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 flex-shrink-0 border-r-2 border-slate-700">
-                        <div>
-                            <div class="mb-6 pb-6 border-b-2 border-slate-800">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3.5 min-w-0">
-                                        <div class="w-12 h-12 bg-emerald-700 rounded-2xl flex items-center justify-center text-white text-xl shadow-md flex-shrink-0 border border-emerald-400">
-                                            <i class="fa-solid fa-mosque"></i>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <h2 class="text-sm font-black tracking-tight truncate text-white">Keuangan Pesantren</h2>
-                                            <p class="text-[11px] text-emerald-400 font-black truncate">${roleName}</p>
-                                        </div>
-                                    </div>
-                                    <button onclick="toggleMobileSidebar(false)" class="md:hidden text-slate-300 hover:text-white p-2">
-                                        <i class="fa-solid fa-xmark text-xl"></i>
-                                    </button>
-                                </div>
-                                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-700 hover:bg-red-800 text-white rounded-2xl font-black text-xs transition shadow-md active:scale-95 border-2 border-red-900">
-                                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar Ruangan
-                                </button>
-                            </div>
-
-                            <nav class="space-y-1.5">
-                                ${tabs.map(t => `
-                                    <button onclick="switchTab('${t.id}')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl font-black text-xs sm:text-sm transition text-left ${currentTab === t.id ? 'bg-emerald-700 text-white shadow-lg border-2 border-emerald-500' : 'text-slate-300 hover:text-white hover:bg-slate-800 border-2 border-transparent'}">
-                                        <i class="fa-solid ${t.icon} text-sm w-5 text-center"></i>
-                                        <span class="truncate">${t.label}</span>
-                                    </button>
-                                `).join('')}
-                            </nav>
-                        </div>
-
-                        <div class="pt-6 mt-6 border-t-2 border-slate-800 space-y-3">
-                            <button onclick="downloadPdfReport()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-900/60 hover:bg-emerald-900 text-emerald-300 rounded-2xl font-black text-xs transition border-2 border-emerald-600">
-                                <i class="fa-solid fa-file-pdf"></i> Unduh Laporan PDF
-                            </button>
-                        </div>
-                    </aside>
-
-                    <!-- Main Content Area -->
-                    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-                        <header class="bg-white border-b-2 border-slate-300 px-6 py-4 sticky top-0 z-20 flex items-center justify-between gap-4 shadow-sm">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <button onclick="toggleMobileSidebar(true)" class="md:hidden w-10 h-10 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-900 flex items-center justify-center flex-shrink-0 transition border border-slate-400">
-                                    <i class="fa-solid fa-bars text-lg"></i>
-                                </button>
-                                <div class="min-w-0">
-                                    <h1 class="text-base sm:text-xl font-black text-slate-900 tracking-tight truncate flex items-center gap-2">
-                                        <span class="truncate">${currentTabObj.label}</span>
-                                    </h1>
-                                    <p class="text-[11px] sm:text-xs font-bold text-slate-700 truncate mt-0.5">${dbState.profile?.name || 'Rangkuman aktivitas keuangan.'}</p>
-                                </div>
-                            </div>
-                            <div class="hidden sm:flex items-center gap-3 flex-shrink-0">
-                                <div class="px-3.5 py-2 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs font-black text-slate-900 flex items-center gap-2 shadow-xs">
-                                    <span class="text-slate-600 font-black">Bulan Aktif:</span>
-                                    <span class="text-emerald-700 font-black">${CURRENT_ACTIVE_MONTH}</span>
-                                </div>
-                            </div>
-                        </header>
-
-                        <main class="p-4 sm:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
-                            ${renderTabContent()}
-                        </main>
-                    </div>
-                </div>
-            `;
-        }
-
         async function saveDb() {
             try {
                 localStorage.setItem('pesantren_db', JSON.stringify(dbState));
@@ -254,7 +141,7 @@
 
             if (supabaseClient) {
                 try {
-                    await supabaseClient.from('pesantren_sync').upsert({ id: 1, payload: dbState });
+                    await supabaseClient.from('pesantren_sync').upsert({ id: 1, payload: dbState }, { onConflict: 'id' });
                 } catch (err) {
                     console.warn("Sinkronisasi cloud Supabase tertunda:", err);
                 }
@@ -271,9 +158,7 @@
                     if (stringifiedNew !== stringifiedCurrent) {
                         dbState = data.payload;
                         if (!dbState.contacts) dbState.contacts = DEFAULT_STATE.contacts;
-                        try {
-                            localStorage.setItem('pesantren_db', stringifiedNew);
-                        } catch (e) {}
+                        localStorage.setItem('pesantren_db', stringifiedNew);
                         if (currentUser) {
                             renderDashboard();
                         }
@@ -306,9 +191,25 @@
                 }
             });
 
-            // 1-second polling interval to guarantee real-time sync across mobile phone and laptop without security errors
+            // Polling every 1 second for instant multi-device synchronization between phone and laptop
             setInterval(async () => {
-                await fetchCloudData();
+                if (supabaseClient) {
+                    try {
+                        const { data, error } = await supabaseClient.from('pesantren_sync').select('payload').eq('id', 1).maybeSingle();
+                        if (!error && data && data.payload && data.payload.credentials) {
+                            const stringifiedNew = JSON.stringify(data.payload);
+                            const stringifiedCurrent = JSON.stringify(dbState);
+                            if (stringifiedNew !== stringifiedCurrent) {
+                                dbState = data.payload;
+                                if (!dbState.contacts) dbState.contacts = DEFAULT_STATE.contacts;
+                                localStorage.setItem('pesantren_db', stringifiedNew);
+                                if (currentUser) {
+                                    renderDashboard();
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                }
             }, 1000);
         }
 
@@ -432,6 +333,117 @@
         function logout() {
             currentUser = null;
             renderAuthPortal();
+        }
+
+        function renderDashboard() {
+            const app = document.getElementById('app');
+            if (!app || !currentUser) return;
+            const roleName = currentUser.name;
+
+            let tabs = [];
+            if (currentUser.role === 'admin') {
+                tabs = [
+                    { id: 'cycles', label: 'Siklus Keuangan', icon: 'fa-chart-pie' },
+                    { id: 'spp_monitor_admin', label: `Monitoring SPP (${CURRENT_ACTIVE_MONTH})`, icon: 'fa-folder-tree' },
+                    { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
+                    { id: 'unpaid_admin', label: `Santri Belum Bayar (${CURRENT_ACTIVE_MONTH})`, icon: 'fa-triangle-exclamation' },
+                    { id: 'whatsapp_report', label: 'Kirim WA & Invoice Kas', icon: 'fa-brands fa-whatsapp text-emerald-400' },
+                    { id: 'dashboard', label: 'Beranda & Ringkasan', icon: 'fa-house' },
+                    { id: 'profile', label: 'Profil Pesantren', icon: 'fa-school' },
+                    { id: 'credentials', label: 'Sandi Ruangan', icon: 'fa-key' },
+                    { id: 'reset_data', label: 'Kosongkan Data', icon: 'fa-trash-arrow-up' },
+                    { id: 'sql_setup', label: 'Setup SQL Supabase', icon: 'fa-database' }
+                ];
+            } else if (currentUser.role === 'pesantren') {
+                tabs = [
+                    { id: 'dashboard', label: `Beranda (${CURRENT_ACTIVE_MONTH})`, icon: 'fa-house' },
+                    { id: 'santri', label: 'Data Santri', icon: 'fa-users' },
+                    { id: 'spp_setting', label: 'Pengaturan SPP & Beasiswa', icon: 'fa-sliders' },
+                    { id: 'payments', label: 'Catat Pembayaran', icon: 'fa-receipt' },
+                    { id: 'arrears', label: `Belum Bayar (${CURRENT_ACTIVE_MONTH})`, icon: 'fa-triangle-exclamation' },
+                    { id: 'contacts', label: 'Data Kontak', icon: 'fa-address-book text-emerald-400' },
+                ];
+            } else if (currentUser.role === 'treasurer') {
+                tabs = [
+                    { id: 'transactions', label: 'Buku Kas & Histori Transaksi', icon: 'fa-book' },
+                    { id: 'spp_monitor', label: `Monitoring SPP (${CURRENT_ACTIVE_MONTH})`, icon: 'fa-money-bill-wave' },
+                    { id: 'unpaid_treasurer', label: `Belum Bayar (${CURRENT_ACTIVE_MONTH})`, icon: 'fa-triangle-exclamation' },
+                    { id: 'reports', label: 'Santri & Beasiswa', icon: 'fa-user-graduate' }
+                ];
+            }
+
+            const currentTabObj = tabs.find(t => t.id === currentTab) || tabs[0];
+
+            app.innerHTML = `
+                <div class="min-h-screen flex flex-col md:flex-row bg-slate-200">
+                    <div id="mobile-sidebar-overlay" onclick="toggleMobileSidebar(false)" class="fixed inset-0 bg-black/70 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+                    <aside id="mobile-sidebar" class="w-72 bg-slate-900 text-white flex flex-col justify-between p-6 shadow-2xl fixed inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 flex-shrink-0 border-r-2 border-slate-700">
+                        <div>
+                            <div class="mb-6 pb-6 border-b-2 border-slate-800">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3.5 min-w-0">
+                                        <div class="w-12 h-12 bg-emerald-700 rounded-2xl flex items-center justify-center text-white text-xl shadow-md flex-shrink-0 border border-emerald-400">
+                                            <i class="fa-solid fa-mosque"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h2 class="text-sm font-black tracking-tight truncate text-white">Keuangan Pesantren</h2>
+                                            <p class="text-[11px] text-emerald-400 font-black truncate">${roleName}</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="toggleMobileSidebar(false)" class="md:hidden text-slate-300 hover:text-white p-2">
+                                        <i class="fa-solid fa-xmark text-xl"></i>
+                                    </button>
+                                </div>
+                                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-700 hover:bg-red-800 text-white rounded-2xl font-black text-xs transition shadow-md active:scale-95 border-2 border-red-900">
+                                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar Ruangan
+                                </button>
+                            </div>
+
+                            <nav class="space-y-1.5">
+                                ${tabs.map(t => `
+                                    <button onclick="switchTab('${t.id}')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl font-black text-xs sm:text-sm transition text-left ${currentTab === t.id ? 'bg-emerald-700 text-white shadow-lg border-2 border-emerald-500' : 'text-slate-300 hover:text-white hover:bg-slate-800 border-2 border-transparent'}">
+                                        <i class="fa-solid ${t.icon} text-sm w-5 text-center"></i>
+                                        <span class="truncate">${t.label}</span>
+                                    </button>
+                                `).join('')}
+                            </nav>
+                        </div>
+
+                        <div class="pt-6 mt-6 border-t-2 border-slate-800 space-y-3">
+                            <button onclick="downloadPdfReport()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-900/60 hover:bg-emerald-900 text-emerald-300 rounded-2xl font-black text-xs transition border-2 border-emerald-600">
+                                <i class="fa-solid fa-file-pdf"></i> Unduh Laporan PDF
+                            </button>
+                        </div>
+                    </aside>
+
+                    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+                        <header class="bg-white border-b-2 border-slate-300 px-6 py-4 sticky top-0 z-20 flex items-center justify-between gap-4 shadow-sm">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <button onclick="toggleMobileSidebar(true)" class="md:hidden w-10 h-10 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-900 flex items-center justify-center flex-shrink-0 transition border border-slate-400">
+                                    <i class="fa-solid fa-bars text-lg"></i>
+                                </button>
+                                <div class="min-w-0">
+                                    <h1 class="text-base sm:text-xl font-black text-slate-900 tracking-tight truncate flex items-center gap-2">
+                                        <span class="truncate">${currentTabObj.label}</span>
+                                    </h1>
+                                    <p class="text-[11px] sm:text-xs font-bold text-slate-700 truncate mt-0.5">${dbState.profile?.name || 'Rangkuman aktivitas keuangan.'}</p>
+                                </div>
+                            </div>
+                            <div class="hidden sm:flex items-center gap-3 flex-shrink-0">
+                                <div class="px-3.5 py-2 bg-emerald-50 border-2 border-emerald-300 rounded-xl text-xs font-black text-emerald-900 flex items-center gap-2 shadow-xs">
+                                    <span class="text-emerald-700 font-black"><i class="fa-solid fa-calendar-days mr-1"></i> Bulan Berjalan:</span>
+                                    <span class="text-emerald-950 font-extrabold">${CURRENT_ACTIVE_MONTH}</span>
+                                </div>
+                            </div>
+                        </header>
+
+                        <main class="p-4 sm:p-8 space-y-6 flex-1 max-w-7xl w-full mx-auto">
+                            ${renderTabContent()}
+                        </main>
+                    </div>
+                </div>
+            `;
         }
 
         function renderTabContent() {
@@ -697,7 +709,7 @@
                                     <i class="fa-solid fa-triangle-exclamation text-red-700 text-lg"></i>
                                     Daftar Santri Belum Bayar SPP (${currentMonth})
                                 </h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Berikut adalah daftar santri reguler yang belum melakukan setoran SPP periode ini. Nama santri yang sudah dibayar akan otomatis hilang dari daftar ini.</p>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Berikut adalah daftar santri reguler yang belum melakukan setoran SPP periode bulan berjalan (${currentMonth}). Nama santri yang sudah dibayar akan otomatis hilang dari daftar ini.</p>
                             </div>
                             <div class="px-3 py-2 bg-red-700 text-white font-black text-[11px] sm:text-xs rounded-xl border-2 border-red-950 shadow-md text-center">
                                 Total Belum Bayar: ${unpaidSantri.length} Santri
@@ -760,6 +772,7 @@
                     paymentsByMonth[mKey].push(p);
                 });
                 const monthKeys = Object.keys(paymentsByMonth);
+                const currentMonthPayments = (paymentsByMonth[currentMonth] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
 
                 let contentHtml = '';
                 if (currentActiveFolderMonth === null) {
@@ -767,14 +780,49 @@
                         <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
                             <div class="mb-6">
                                 <h3 class="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2">
-                                    <i class="fa-solid fa-money-bill-wave text-emerald-700"></i> Monitoring SPP & Folder Bulanan (Admin Utama)
+                                    <i class="fa-solid fa-money-bill-wave text-emerald-700"></i> Monitoring SPP Bulan Berjalan (${currentMonth})
                                 </h3>
-                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Pantau seluruh catatan pembayaran SPP dan klik folder bulanan untuk melihat rincian pembayaran pada periode tersebut.</p>
+                                <p class="text-[11px] sm:text-xs font-bold text-slate-800">Menampilkan rincian setoran SPP yang masuk pada bulan ${currentMonth}. Anda juga dapat membuka arsip folder bulanan lainnya di bawah.</p>
                             </div>
 
-                            <div class="mb-8">
+                            <div class="mb-8 bg-emerald-50 p-4 sm:p-5 rounded-3xl border-2 border-emerald-300 shadow-sm">
+                                <h4 class="font-black text-emerald-950 mb-3 text-xs sm:text-sm flex items-center justify-between">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-receipt text-emerald-700"></i> Pembayaran SPP Bulan Aktif: ${currentMonth}</span>
+                                    <span class="text-[11px] bg-emerald-700 text-white px-2.5 py-1 rounded-xl font-black">Total: ${currentMonthPayments.length} Transaksi</span>
+                                </h4>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-xs sm:text-sm">
+                                        <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                            <tr>
+                                                <th class="p-3 rounded-l-2xl">Tanggal</th>
+                                                <th class="p-3">Nama Santri</th>
+                                                <th class="p-3">Jenis</th>
+                                                <th class="p-3">Status</th>
+                                                <th class="p-3 rounded-r-2xl text-right">Nominal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y-2 divide-slate-200">
+                                            ${currentMonthPayments.length === 0 ? `
+                                                <tr>
+                                                    <td colspan="5" class="p-6 text-center text-slate-600 font-bold bg-white rounded-2xl">Belum ada catatan pembayaran SPP untuk bulan ${currentMonth}.</td>
+                                                </tr>
+                                            ` : currentMonthPayments.map(p => `
+                                                <tr class="hover:bg-white transition">
+                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
+                                                    <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2 py-0.5 bg-teal-800 text-white rounded-full text-[10px] font-black">${p.type}</span></td>
+                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] font-black">${p.status}</span></td>
+                                                    <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="mb-6">
                                 <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran Bulanan
+                                    <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran Bulanan Lainnya
                                 </h4>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                     ${monthKeys.map(m => `
@@ -793,42 +841,6 @@
                                             </div>
                                         </div>
                                     `).join('')}
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-receipt text-emerald-700"></i> Keseluruhan Riwayat Pembayaran (Urutan Kronologis)
-                                </h4>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left text-xs sm:text-sm">
-                                        <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
-                                            <tr>
-                                                <th class="p-3 rounded-l-2xl">Tanggal</th>
-                                                <th class="p-3">Nama Santri</th>
-                                                <th class="p-3">Jenis</th>
-                                                <th class="p-3">Periode Bulan</th>
-                                                <th class="p-3">Status</th>
-                                                <th class="p-3 rounded-r-2xl text-right">Nominal</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y-2 divide-slate-200">
-                                            ${sortedPayments.length === 0 ? `
-                                                <tr>
-                                                    <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran.</td>
-                                                </tr>
-                                            ` : sortedPayments.map(p => `
-                                                <tr class="hover:bg-slate-100 transition">
-                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
-                                                    <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
-                                                    <td class="p-3 whitespace-nowrap"><span class="px-2 py-0.5 bg-teal-800 text-white rounded-full text-[10px] font-black">${p.type}</span></td>
-                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
-                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] font-black">${p.status}</span></td>
-                                                    <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -899,9 +911,9 @@
                 txWithRunningBalance.forEach(t => {
                     let mLabel = "Lainnya";
                     MONTH_OPTIONS.forEach(m => {
-                        if (t.date && t.date.includes("2026-08") && m.includes("Agustus")) mLabel = m;
+                        if (t.date && t.date.includes("2026-09") && m.includes("September")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-08") && m.includes("Agustus")) mLabel = m;
                         else if (t.date && t.date.includes("2026-07") && m.includes("Juli")) mLabel = m;
-                        else if (t.date && t.date.includes("2026-09") && m.includes("September")) mLabel = m;
                         else if (t.date && t.date.includes("2026-10") && m.includes("Oktober")) mLabel = m;
                         else if (t.date && t.date.includes("2026-11") && m.includes("November")) mLabel = m;
                         else if (t.date && t.date.includes("2026-12") && m.includes("Desember")) mLabel = m;
@@ -1015,9 +1027,9 @@
                 txWithRunningBalance.forEach(t => {
                     let mLabel = "Lainnya";
                     MONTH_OPTIONS.forEach(m => {
-                        if (t.date && t.date.includes("2026-08") && m.includes("Agustus")) mLabel = m;
+                        if (t.date && t.date.includes("2026-09") && m.includes("September")) mLabel = m;
+                        else if (t.date && t.date.includes("2026-08") && m.includes("Agustus")) mLabel = m;
                         else if (t.date && t.date.includes("2026-07") && m.includes("Juli")) mLabel = m;
-                        else if (t.date && t.date.includes("2026-09") && m.includes("September")) mLabel = m;
                         else if (t.date && t.date.includes("2026-10") && m.includes("Oktober")) mLabel = m;
                         else if (t.date && t.date.includes("2026-11") && m.includes("November")) mLabel = m;
                         else if (t.date && t.date.includes("2026-12") && m.includes("Desember")) mLabel = m;
@@ -1193,129 +1205,75 @@
 
                     const currentMonthPayments = sortedPayments.filter(p => p.month === currentMonth || (p.month && p.month.includes(currentMonth)));
 
-                    let paymentsHtml = '';
-                    if (currentActiveFolderMonth === null) {
-                        paymentsHtml = `
-                            <div class="mb-6">
-                                <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center justify-between">
-                                    <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran & Rekam Jejak Bulan Aktif (${currentMonth})</span>
-                                    <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${currentMonthPayments.length}</span>
-                                </h4>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left text-xs sm:text-sm">
-                                        <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                    let paymentsHtml = `
+                        <div class="mb-6">
+                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center justify-between">
+                                <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran Bulan Berjalan (${currentMonth})</span>
+                                <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${currentMonthPayments.length}</span>
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs sm:text-sm">
+                                    <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
+                                        <tr>
+                                            <th class="p-3 rounded-l-2xl">Tanggal</th>
+                                            <th class="p-3">Nama Santri</th>
+                                            <th class="p-3">Periode Bulan</th>
+                                            <th class="p-3">Uang / Nominal</th>
+                                            <th class="p-3">Status</th>
+                                            <th class="p-3 rounded-r-2xl text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y-2 divide-slate-200">
+                                        ${currentMonthPayments.length === 0 ? `
                                             <tr>
-                                                <th class="p-3 rounded-l-2xl">Tanggal</th>
-                                                <th class="p-3">Nama Santri</th>
-                                                <th class="p-3">Periode Bulan</th>
-                                                <th class="p-3">Uang / Nominal</th>
-                                                <th class="p-3">Status</th>
-                                                <th class="p-3 rounded-r-2xl text-center">Aksi</th>
+                                                <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran untuk bulan ${currentMonth}.</td>
                                             </tr>
-                                        </thead>
-                                        <tbody class="divide-y-2 divide-slate-200">
-                                            ${currentMonthPayments.length === 0 ? `
-                                                <tr>
-                                                    <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran untuk bulan ${currentMonth}.</td>
-                                                </tr>
-                                            ` : currentMonthPayments.map(p => `
-                                                <tr class="hover:bg-slate-100 transition">
-                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
-                                                    <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
-                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
-                                                    <td class="p-3 font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
-                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-emerald-950">${p.status}</span></td>
-                                                    <td class="p-3 text-center whitespace-nowrap space-x-1">
-                                                        <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
-                                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                                                        </button>
-                                                        <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
-                                                            <i class="fa-solid fa-trash-can mr-1"></i> Hapus
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        ` : currentMonthPayments.map(p => `
+                                            <tr class="hover:bg-slate-100 transition">
+                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
+                                                <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
+                                                <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs">${p.month}</td>
+                                                <td class="p-3 font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
+                                                <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-emerald-950">${p.status}</span></td>
+                                                <td class="p-3 text-center whitespace-nowrap space-x-1">
+                                                    <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
+                                                        <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                    </button>
+                                                    <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
+                                                        <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
                             </div>
+                        </div>
 
-                            <div class="mt-8">
-                                <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran (Lewat / Periode Lain)
-                                </h4>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    ${monthKeys.map(m => `
-                                        <div onclick="openMonthFolder('${m}')" class="bg-amber-100 p-4 rounded-3xl border-2 border-amber-400 shadow-md hover:shadow-lg transition cursor-pointer flex items-center justify-between group">
-                                            <div class="flex items-center gap-3 min-w-0">
-                                                <div class="w-10 h-10 rounded-2xl bg-amber-700 text-white flex items-center justify-center text-lg shadow-md border border-amber-950 group-hover:scale-105 transition flex-shrink-0">
-                                                    <i class="fa-solid fa-folder-open"></i>
-                                                </div>
-                                                <div class="min-w-0">
-                                                    <h5 class="font-black text-slate-900 text-xs sm:text-sm truncate">${m}</h5>
-                                                    <p class="text-[10px] sm:text-xs font-black text-slate-800 mt-0.5 truncate">${paymentsByMonth[m].length} Riwayat</p>
-                                                </div>
+                        <div class="mt-8">
+                            <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran (Bulan Lainnya)
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                ${monthKeys.map(m => `
+                                    <div onclick="openMonthFolder('${m}')" class="bg-amber-100 p-4 rounded-3xl border-2 border-amber-400 shadow-md hover:shadow-lg transition cursor-pointer flex items-center justify-between group">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div class="w-10 h-10 rounded-2xl bg-amber-700 text-white flex items-center justify-center text-lg shadow-md border border-amber-950 group-hover:scale-105 transition flex-shrink-0">
+                                                <i class="fa-solid fa-folder-open"></i>
                                             </div>
-                                            <div class="w-7 h-7 rounded-full bg-amber-700 text-white flex items-center justify-center text-xs font-black group-hover:scale-110 transition flex-shrink-0 ml-2">
-                                                <i class="fa-solid fa-chevron-right"></i>
+                                            <div class="min-w-0">
+                                                <h5 class="font-black text-slate-900 text-xs sm:text-sm truncate">${m}</h5>
+                                                <p class="text-[10px] sm:text-xs font-black text-slate-800 mt-0.5 truncate">${paymentsByMonth[m].length} Riwayat</p>
                                             </div>
                                         </div>
-                                    `).join('')}
-                                </div>
+                                        <div class="w-7 h-7 rounded-full bg-amber-700 text-white flex items-center justify-center text-xs font-black group-hover:scale-110 transition flex-shrink-0 ml-2">
+                                            <i class="fa-solid fa-chevron-right"></i>
+                                        </div>
+                                    </div>
+                                `).join('')}
                             </div>
-                        `;
-                    } else {
-                        const folderPayments = (paymentsByMonth[currentActiveFolderMonth] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
-                        paymentsHtml = `
-                            <div class="mb-4 flex items-center justify-between">
-                                <button onclick="backToMainFolders()" class="px-3.5 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-black text-xs rounded-xl transition flex items-center gap-2 active:scale-95 border-2 border-slate-500">
-                                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Folder Utama
-                                </button>
-                                <span class="px-3 py-1 bg-amber-700 text-white font-black text-xs rounded-xl border border-amber-950 truncate max-w-[250px]">
-                                    <i class="fa-solid fa-folder-open mr-1"></i> ${currentActiveFolderMonth}
-                                </span>
-                            </div>
-
-                            <div class="bg-amber-50 p-4 sm:p-5 rounded-3xl border-2 border-amber-300">
-                                <h4 class="font-black text-slate-900 mb-4 text-xs sm:text-sm flex items-center gap-2 truncate">
-                                    <i class="fa-solid fa-folder-open text-amber-700"></i> Arsip Folder Periode: ${currentActiveFolderMonth}
-                                </h4>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left text-xs sm:text-sm">
-                                        <thead class="bg-slate-900 text-white uppercase text-[10px] sm:text-xs font-black tracking-wider">
-                                            <tr>
-                                                <th class="p-3 rounded-l-xl">Tanggal</th>
-                                                <th class="p-3">Nama Santri</th>
-                                                <th class="p-3">Periode Bulan</th>
-                                                <th class="p-3">Uang / Nominal</th>
-                                                <th class="p-3">Status</th>
-                                                <th class="p-3 rounded-r-xl text-center">Aksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y-2 divide-slate-200">
-                                            ${folderPayments.length === 0 ? '<tr><td colspan="6" class="p-4 text-xs font-black text-slate-700 italic text-center">Tidak ada pembayaran di folder ini.</td></tr>' : folderPayments.map(p => `
-                                                <tr class="hover:bg-white transition">
-                                                    <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-amber-700 mr-1.5"></i> ${p.date}</td>
-                                                    <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
-                                                    <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
-                                                    <td class="p-3 font-black text-amber-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
-                                                    <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-amber-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-amber-950">${p.status}</span></td>
-                                                    <td class="p-3 text-center whitespace-nowrap space-x-1">
-                                                        <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
-                                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                                                        </button>
-                                                        <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
-                                                            <i class="fa-solid fa-trash-can mr-1"></i> Hapus
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        `;
-                    }
+                        </div>
+                    `;
 
                     return `
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1332,7 +1290,7 @@
 
                             <div class="bg-blue-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white flex flex-col justify-between border-2 border-blue-900">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-blue-100 truncate">Sudah Bayar</span>
+                                    <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-blue-100 truncate">Sudah Bayar (${currentMonth})</span>
                                     <div class="w-10 h-10 rounded-2xl bg-blue-900 text-white flex items-center justify-center text-base border border-blue-400 flex-shrink-0"><i class="fa-solid fa-circle-check"></i></div>
                                 </div>
                                 <div class="mt-3">
@@ -1354,7 +1312,7 @@
 
                             <div class="bg-red-700 p-4 sm:p-5 rounded-3xl shadow-lg text-white flex flex-col justify-between border-2 border-red-950">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-100 truncate">Belum Bayar</span>
+                                    <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-100 truncate">Belum Bayar (${currentMonth})</span>
                                     <div class="w-10 h-10 rounded-2xl bg-red-950 text-white flex items-center justify-center text-base border border-red-400 flex-shrink-0"><i class="fa-solid fa-triangle-exclamation"></i></div>
                                 </div>
                                 <div class="mt-3">
@@ -1376,7 +1334,7 @@
                                 <div>
                                     <h3 class="text-lg sm:text-xl font-black mb-2">Selamat Bertugas, Pengurus Pesantren! 👋</h3>
                                     <p class="text-xs text-slate-300 font-bold leading-relaxed mb-6">
-                                        Gunakan menu di sebelah kiri untuk mengelola data santri, mencatat setoran SPP, dan memantau rekam jejak keuangan.
+                                        Gunakan menu di sebelah kiri untuk mengelola data santri, mencatat setoran SPP, dan memantau rekam jejak keuangan bulan berjalan (${currentMonth}).
                                     </p>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3 pt-4 border-t-2 border-slate-800">
@@ -1490,21 +1448,18 @@
             if (currentUser && currentUser.role === 'admin' && currentTab === 'sql_setup') {
                 const sqlScript = `
 -- ==========================================
--- SKRIP SQL LENGKAP SUPABASE (TERINTEGRASI)
--- APLIKASI KEUANGAN PESANTREN
+-- SKRIP SQL LENGKAP SUPABASE
+-- APLIKASI KEUANGAN PESANTREN TERINTEGRASI
 -- ==========================================
 
--- 1. Buat Tabel Sinkronisasi Multi-Perangkat
 CREATE TABLE IF NOT EXISTS pesantren_sync (
     id INT PRIMARY KEY,
     payload JSONB NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. Aktifkan Row Level Security (RLS)
 ALTER TABLE pesantren_sync ENABLE ROW LEVEL SECURITY;
 
--- 3. Berikan Akses Publik (Anon Key) untuk Sinkronisasi Lintas Perangkat
 DROP POLICY IF EXISTS "Akses publik pesantren_sync" ON pesantren_sync;
 CREATE POLICY "Akses publik pesantren_sync" 
 ON pesantren_sync 
@@ -1517,7 +1472,7 @@ WITH CHECK (true);
                     <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md max-w-4xl mx-auto">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                             <div>
-                                <h3 class="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2"><i class="fa-solid fa-database text-emerald-700"></i> Setup Skrip SQL Lengkap Supabase (Realtime & Anon Aktif)</h3>
+                                <h3 class="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2"><i class="fa-solid fa-database text-emerald-700"></i> Setup Skrip SQL Lengkap Supabase</h3>
                                 <p class="text-[11px] sm:text-xs font-bold text-slate-800">Salin skrip SQL di bawah ini dan jalankan pada <strong class="text-slate-900">Supabase SQL Editor</strong> Anda.</p>
                             </div>
                             <button onclick="copySqlScript()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-md transition flex items-center gap-2 active:scale-95 flex-shrink-0 border border-emerald-900">
@@ -1525,14 +1480,11 @@ WITH CHECK (true);
                             </button>
                         </div>
                         <div class="relative">
-                            <textarea id="sql-textarea" rows="11" readonly class="w-full p-4 bg-slate-900 text-emerald-400 font-mono text-xs rounded-2xl border-2 border-slate-700 focus:outline-none">${sqlScript}</textarea>
+                            <textarea id="sql-textarea" rows="10" readonly class="w-full p-4 bg-slate-900 text-emerald-400 font-mono text-xs rounded-2xl border-2 border-slate-700 focus:outline-none">${sqlScript}</textarea>
                         </div>
-                        <div class="mt-4 p-3.5 rounded-2xl bg-emerald-100 border-2 border-emerald-400 text-xs font-black text-emerald-950 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                            <div class="flex items-center gap-2 truncate">
-                                <i class="fa-solid fa-circle-check text-emerald-700 text-base"></i>
-                                <span class="truncate">Supabase URL: <strong>${SUPABASE_URL}</strong></span>
-                            </div>
-                            <span class="text-[10px] bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-black uppercase">Anon Key Tertanam</span>
+                        <div class="mt-4 p-3.5 rounded-2xl bg-emerald-100 border-2 border-emerald-400 text-xs font-black text-emerald-950 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-700 text-base"></i>
+                            <span class="truncate">Supabase URL: <strong>${SUPABASE_URL}</strong></span>
                         </div>
                     </div>
                 `;
@@ -1630,7 +1582,7 @@ WITH CHECK (true);
                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-100 rounded-2xl border-2 border-slate-300 shadow-xs">
                                     <div class="min-w-0">
                                         <div class="font-black text-slate-900 text-xs sm:text-sm truncate">${s.name}</div>
-                                        <div class="text-[10px] sm:text-xs font-bold text-slate-700 truncate">ID: ${s.id} | ${s.class} | Telp: ${s.phone}</div>
+                                        <div class="text-[10px] sm:text-xs font-bold text-slate-700 truncate">${s.class} | Telp: ${s.phone}</div>
                                     </div>
                                     <div class="flex flex-wrap items-center gap-2 flex-shrink-0">
                                         <div class="flex items-center gap-1">
@@ -1726,6 +1678,7 @@ WITH CHECK (true);
                     paymentsByMonth[mKey].push(p);
                 });
                 const monthKeys = Object.keys(paymentsByMonth);
+                const currentMonthSppPayments = (paymentsByMonth[currentMonth] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
 
                 let contentHtml = '';
                 if (currentActiveFolderMonth === null) {
@@ -1749,8 +1702,8 @@ WITH CHECK (true);
                             <div class="bg-white p-4 sm:p-6 rounded-3xl border-2 border-slate-300 shadow-md">
                                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                                     <div>
-                                        <h3 class="font-black text-slate-900 text-sm sm:text-base">Monitoring SPP Masuk & Rekam Jejak Tanggal</h3>
-                                        <p class="text-[11px] sm:text-xs font-bold text-slate-800">Pemantauan setoran SPP bulanan lengkap dengan tanggal transaksi pencatatan.</p>
+                                        <h3 class="font-black text-slate-900 text-sm sm:text-base">Monitoring SPP Masuk Bulan Berjalan (${currentMonth})</h3>
+                                        <p class="text-[11px] sm:text-xs font-bold text-slate-800">Pemantauan setoran SPP khusus bulan ${currentMonth} lengkap dengan tanggal transaksi pencatatan.</p>
                                     </div>
                                     <div class="p-3 bg-emerald-700 text-white rounded-2xl shadow-md text-left sm:text-right w-full sm:w-auto border-2 border-emerald-950">
                                         <div class="text-[10px] font-black uppercase text-emerald-100">Total SPP Masuk</div>
@@ -1769,10 +1722,10 @@ WITH CHECK (true);
                                     </div>
                                 </div>
 
-                                <div class="mb-6">
-                                    <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center justify-between">
-                                        <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Aktivitas Pembayaran SPP (Kronologis)</span>
-                                        <span class="text-[11px] sm:text-xs font-black text-slate-800">Total: ${sppPayments.length}</span>
+                                <div class="mb-6 bg-emerald-50 p-4 sm:p-5 rounded-3xl border-2 border-emerald-300 shadow-sm">
+                                    <h4 class="font-black text-emerald-950 mb-3 text-xs sm:text-sm flex items-center justify-between">
+                                        <span class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-700"></i> Setoran SPP Bulan Aktif: ${currentMonth}</span>
+                                        <span class="text-[11px] bg-emerald-700 text-white px-2.5 py-1 rounded-xl font-black">Total: ${currentMonthSppPayments.length}</span>
                                     </h4>
                                     <div class="overflow-x-auto">
                                         <table class="w-full text-left text-xs sm:text-sm">
@@ -1782,30 +1735,21 @@ WITH CHECK (true);
                                                     <th class="p-3">Nama Santri</th>
                                                     <th class="p-3">Periode Bulan</th>
                                                     <th class="p-3">Status</th>
-                                                    <th class="p-3 text-right">Nominal</th>
-                                                    <th class="p-3 rounded-r-2xl text-center">Aksi</th>
+                                                    <th class="p-3 rounded-r-2xl text-right">Nominal</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y-2 divide-slate-200">
-                                                ${sppPayments.length === 0 ? `
+                                                ${currentMonthSppPayments.length === 0 ? `
                                                     <tr>
-                                                        <td colspan="6" class="p-6 text-center text-slate-500 font-bold">Belum ada catatan pembayaran SPP.</td>
+                                                        <td colspan="5" class="p-6 text-center text-slate-600 font-bold bg-white rounded-2xl">Belum ada catatan pembayaran SPP pada bulan ${currentMonth}.</td>
                                                     </tr>
-                                                ` : sppPayments.map(p => `
-                                                    <tr class="hover:bg-slate-100 transition">
+                                                ` : currentMonthSppPayments.map(p => `
+                                                    <tr class="hover:bg-white transition">
                                                         <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-emerald-700 mr-1.5"></i> ${p.date}</td>
                                                         <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
                                                         <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
                                                         <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-emerald-950">${p.status}</span></td>
                                                         <td class="p-3 text-right font-black text-emerald-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
-                                                        <td class="p-3 text-center whitespace-nowrap space-x-1">
-                                                            <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
-                                                                <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                                                            </button>
-                                                            <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
-                                                                <i class="fa-solid fa-trash-can mr-1"></i> Hapus
-                                                            </button>
-                                                        </td>
                                                     </tr>
                                                 `).join('')}
                                             </tbody>
@@ -1815,7 +1759,7 @@ WITH CHECK (true);
 
                                 <div class="mt-8">
                                     <h4 class="font-black text-slate-900 mb-3 text-xs sm:text-sm flex items-center gap-2">
-                                        <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran (Agustus, September, dll)
+                                        <i class="fa-solid fa-folder-tree text-amber-700"></i> Arsip Folder Riwayat Pembayaran (Bulan Lainnya)
                                     </h4>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                         ${monthKeys.map(m => `
@@ -1865,25 +1809,16 @@ WITH CHECK (true);
                                                 <th class="p-3">Periode Bulan</th>
                                                 <th class="p-3">Status</th>
                                                 <th class="p-3 text-right">Nominal</th>
-                                                <th class="p-3 rounded-r-xl text-center">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y-2 divide-slate-200">
-                                            ${folderPayments.length === 0 ? '<tr><td colspan="6" class="p-4 text-xs font-black text-slate-700 italic text-center">Tidak ada pembayaran di folder ini.</td></tr>' : folderPayments.map(p => `
+                                            ${folderPayments.length === 0 ? '<tr><td colspan="5" class="p-4 text-xs font-black text-slate-700 italic text-center">Tidak ada pembayaran di folder ini.</td></tr>' : folderPayments.map(p => `
                                                 <tr class="hover:bg-white transition">
                                                     <td class="p-3 text-slate-900 font-black whitespace-nowrap text-xs"><i class="fa-regular fa-calendar text-amber-700 mr-1.5"></i> ${p.date}</td>
                                                     <td class="p-3 font-black text-slate-900 whitespace-nowrap text-xs">${p.santriName}</td>
                                                     <td class="p-3 text-slate-900 font-black text-xs">${p.month}</td>
                                                     <td class="p-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-amber-700 text-white rounded-full text-[10px] sm:text-xs font-black border border-amber-950">${p.status}</span></td>
                                                     <td class="p-3 text-right font-black text-amber-800 whitespace-nowrap text-xs">Rp ${p.amount.toLocaleString('id-ID')}</td>
-                                                    <td class="p-3 text-center whitespace-nowrap space-x-1">
-                                                        <button onclick="openEditPaymentModal('${p.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl transition active:scale-95 border border-amber-800 shadow-xs">
-                                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                                                        </button>
-                                                        <button onclick="deletePayment('${p.id}')" class="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-black rounded-xl transition active:scale-95 border border-red-950 shadow-xs">
-                                                            <i class="fa-solid fa-trash-can mr-1"></i> Hapus
-                                                        </button>
-                                                    </td>
                                                 </tr>
                                             `).join('')}
                                         </tbody>
@@ -1988,102 +1923,6 @@ WITH CHECK (true);
             `;
         }
 
-        function openEditContactModal(contactId) {
-            const contact = (dbState.contacts || []).find(c => c.id === contactId);
-            if (!contact) return;
-
-            showModal('Edit Data Kontak Wali', 'Perbarui nama kontak atau nomor WhatsApp:', 'info', [
-                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
-                { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
-                    const name = document.getElementById('edit-contact-name').value.trim();
-                    const phone = document.getElementById('edit-contact-phone').value.trim();
-                    const desc = document.getElementById('edit-contact-desc').value.trim();
-
-                    if (!name || !phone) {
-                        showModal('Peringatan', 'Nama dan nomor HP wajib diisi.', 'error');
-                        return;
-                    }
-
-                    contact.name = name;
-                    contact.phone = phone;
-                    contact.desc = desc;
-
-                    saveDb();
-                    closeModal();
-                    renderDashboard();
-                    showModal('Berhasil', 'Data kontak berhasil diperbarui.', 'success');
-                }}
-            ]);
-
-            document.getElementById('modal-message').innerHTML = `
-                <div class="space-y-3 text-left mt-2">
-                    <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Kontak</label>
-                        <input type="text" id="edit-contact-name" value="${contact.name}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor Handphone (WhatsApp)</label>
-                        <input type="text" id="edit-contact-phone" value="${contact.phone}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Keterangan / Peran</label>
-                        <input type="text" id="edit-contact-desc" value="${contact.desc || ''}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
-                    </div>
-                </div>
-            `;
-        }
-
-        function openEditAppUserModal(userId) {
-            if (!dbState.appUsers) {
-                dbState.appUsers = [
-                    { id: 'app_admin_pesantren', name: 'Bpk. Admin Pesantren', phone: dbState.profile?.adminPesantrenPhone || '6281234567891', role: 'Admin Pesantren', color: 'emerald' },
-                    { id: 'app_admin_utama', name: 'Administrator Utama', phone: '628111222333', role: 'Admin Utama', color: 'blue' },
-                    { id: 'app_bendahara', name: 'Bendahara Pusat Yayasan', phone: '628999888777', role: 'Bendahara Pusat', color: 'indigo' }
-                ];
-            }
-
-            const user = dbState.appUsers.find(u => u.id === userId);
-            if (!user) return;
-
-            showModal(`Edit Kontak User: ${user.role}`, 'Perbarui nama pengurus atau nomor WhatsApp:', 'info', [
-                { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
-                { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
-                    const name = document.getElementById('edit-appuser-name').value.trim();
-                    const phone = document.getElementById('edit-appuser-phone').value.trim();
-
-                    if (!name || !phone) {
-                        showModal('Peringatan', 'Nama dan nomor HP wajib diisi.', 'error');
-                        return;
-                    }
-
-                    user.name = name;
-                    user.phone = phone;
-
-                    if (userId === 'app_admin_pesantren' && dbState.profile) {
-                        dbState.profile.adminPesantrenPhone = phone;
-                    }
-
-                    saveDb();
-                    closeModal();
-                    renderDashboard();
-                    showModal('Berhasil', 'Nomor HP dan nama user aplikasi berhasil diperbarui.', 'success');
-                }}
-            ]);
-
-            document.getElementById('modal-message').innerHTML = `
-                <div class="space-y-3 text-left mt-2">
-                    <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Pengurus / User</label>
-                        <input type="text" id="edit-appuser-name" value="${user.name}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor Handphone (WhatsApp)</label>
-                        <input type="text" id="edit-appuser-phone" value="${user.phone}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
-                    </div>
-                </div>
-            `;
-        }
-
         function deleteContact(contactId) {
             showModal('Konfirmasi Hapus Kontak', 'Apakah Anda yakin ingin menghapus kontak ini dari daftar?', 'error', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
@@ -2130,11 +1969,11 @@ WITH CHECK (true);
 💰 Nominal Kas Masuk: *${formattedAmount}*
 📝 Keterangan: ${desc}
 ---------------------------------------
-✅ _Pembayaran telah diterima dan dicatat ke dalam buku kas resmi pesantren. Terima kasih atas partisipasi dan amanah yang diberikan._
+✅ _Dana telah diterima dan dicatat ke dalam buku kas resmi pesantren. Terima kasih atas partisipasi dan amanah yang diberikan._
 
 _Syukron wa Jazakumullahu Khairan._
 ---------------------------------------
-_Pesan Otomatis Sistem Keuangan bendahara pesantren_`;
+_Pesan Otomatis Sistem Keuangan Terintegrasi_`;
 
                     const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
                     window.open(url, '_blank');
@@ -2155,7 +1994,7 @@ _Pesan Otomatis Sistem Keuangan bendahara pesantren_`;
                     </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Keterangan / Jenis Tagihan</label>
-                        <input type="text" id="send-contact-desc" value="" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
+                        <input type="text" id="send-contact-desc" value="Donasi / SPP / Sumbangan Pembangunan" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
                     </div>
                 </div>
             `;
@@ -2164,7 +2003,14 @@ _Pesan Otomatis Sistem Keuangan bendahara pesantren_`;
         function copyToWaForm(phone) {
             const cleanPhone = phone.trim().replace(/[^0-9]/g, '');
             navigator.clipboard.writeText(cleanPhone).then(() => {
-                showModal('Berhasil Disalin', `Nomor ${cleanPhone} telah disalin ke clipboard.`, 'success');
+                const waInput = document.getElementById('wa-custom-phone');
+                if (waInput) {
+                    waInput.value = cleanPhone;
+                    if(typeof updateCustomWaPreview === 'function') {
+                        updateCustomWaPreview();
+                    }
+                }
+                showModal('Berhasil Disalin', `Nomor ${cleanPhone} telah disalin dan otomatis terisi ke form No WA di atas.`, 'success');
             }).catch(err => {
                 console.error('Gagal menyalin:', err);
                 showModal('Gagal', 'Tidak dapat menyalin nomor handphone.', 'error');
@@ -2243,7 +2089,7 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
             const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
             
             window.open(url, '_blank');
-            showModal('Berhasil Membuka WhatsApp', 'Invoice custom uang masuk berhasil disiapkan dan diarahkan ke WhatsApp tujuan.', 'success');
+            showModal('Berhasil Membuka WhatsApp', 'Invoice custom uang masuk berhasil disiapkan dan diarahkan ke WhatsApp Admin Pesantren.', 'success');
         }
 
         setTimeout(() => {
@@ -2478,8 +2324,7 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
             showModal('Tambah Santri Baru', 'Formulir input data santri:', 'info', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
                 { text: 'Simpan', class: 'bg-emerald-700 text-white hover:bg-emerald-800 flex-1 py-3 shadow-md shadow-emerald-700/40 font-black border-2 border-emerald-950 text-xs sm:text-sm', onClick: () => {
-                    const customId = document.getElementById('modal-santri-id').value.trim();
-                    const name = document.getElementById('modal-santri-name').value.trim();
+                    const name = document.getElementById('modal-santri-name').value;
                     const santriClass = document.getElementById('modal-santri-class').value;
                     const customSpp = parseInt(document.getElementById('modal-santri-spp').value) || defaultSpp;
                     const scholarship = document.getElementById('modal-santri-scholarship').value;
@@ -2488,18 +2333,7 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
                     if (!name) return;
 
                     if (!dbState.santri) dbState.santri = [];
-                    
-                    let newId = customId;
-                    if (!newId) {
-                        newId = 'S00' + (dbState.santri.length + 1);
-                    } else {
-                        const existing = dbState.santri.find(s => s.id === newId);
-                        if (existing) {
-                            showModal('Peringatan ID Ganda', 'Nomor ID santri tersebut sudah digunakan. Harap gunakan ID yang berbeda.', 'error');
-                            return;
-                        }
-                    }
-
+                    const newId = 'S00' + (dbState.santri.length + 1);
                     dbState.santri.push({ id: newId, name, class: santriClass, customSpp, status: 'Aktif', scholarship, phone });
                     saveDb();
                     closeModal();
@@ -2508,14 +2342,8 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
                 }}
             ]);
 
-            const autoId = 'S00' + ((dbState.santri || []).length + 1);
-
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3 text-left mt-2">
-                    <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor ID Santri (Unik)</label>
-                        <input type="text" id="modal-santri-id" value="${autoId}" placeholder="cth: S001" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
-                    </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Lengkap Santri</label>
                         <input type="text" id="modal-santri-name" placeholder="cth: Ahmad Dani" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">
@@ -2565,31 +2393,17 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
             const defaultSpp = dbState.profile?.defaultSpp || 250000;
             const currentCustomSpp = santri.customSpp !== undefined ? santri.customSpp : defaultSpp;
 
-            showModal('Edit Data Santri', 'Formulir koreksi biodata dan No ID santri:', 'info', [
+            showModal('Edit Data Santri', 'Formulir koreksi biodata santri:', 'info', [
                 { text: 'Batal', class: 'bg-slate-300 text-slate-900 hover:bg-slate-400 flex-1 py-3 font-black border-2 border-slate-500 text-xs sm:text-sm', onClick: closeModal },
                 { text: 'Simpan Perubahan', class: 'bg-amber-600 text-white hover:bg-amber-700 flex-1 py-3 shadow-md shadow-amber-600/40 font-black border-2 border-amber-950 text-xs sm:text-sm', onClick: () => {
-                    const newId = document.getElementById('edit-santri-id').value.trim();
-                    const name = document.getElementById('edit-santri-name').value.trim();
+                    const name = document.getElementById('edit-santri-name').value;
                     const santriClass = document.getElementById('edit-santri-class').value;
                     const customSpp = parseInt(document.getElementById('edit-santri-spp').value) || defaultSpp;
                     const scholarship = document.getElementById('edit-santri-scholarship').value;
                     const phone = document.getElementById('edit-santri-phone').value;
 
-                    if (!name || !newId) {
-                        showModal('Peringatan', 'No ID dan Nama Santri wajib diisi.', 'error');
-                        return;
-                    }
+                    if (!name) return;
 
-                    if (newId !== santri.id) {
-                        const duplicate = santriList.find(s => s.id === newId);
-                        if (duplicate) {
-                            showModal('Peringatan ID Ganda', 'Nomor ID santri tersebut sudah digunakan oleh santri lain. Harap masukkan ID yang berbeda.', 'error');
-                            return;
-                        }
-                    }
-
-                    const oldId = santri.id;
-                    santri.id = newId;
                     santri.name = name;
                     santri.class = santriClass;
                     santri.customSpp = customSpp;
@@ -2598,8 +2412,7 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
 
                     if (dbState.payments) {
                         dbState.payments.forEach(p => {
-                            if (p.santriId === oldId) {
-                                p.santriId = newId;
+                            if (p.santriId === santriId) {
                                 p.santriName = name;
                             }
                         });
@@ -2608,16 +2421,12 @@ _Pesan Otomatis Sistem Keuangan Terintegrasi_`;
                     saveDb();
                     closeModal();
                     renderDashboard();
-                    showModal('Berhasil', 'Biodata dan No ID santri berhasil diperbarui.', 'success');
+                    showModal('Berhasil', 'Biodata santri berhasil diperbarui.', 'success');
                 }}
             ]);
 
             document.getElementById('modal-message').innerHTML = `
                 <div class="space-y-3 text-left mt-2">
-                    <div>
-                        <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nomor ID Santri (Unik)</label>
-                        <input type="text" id="edit-santri-id" value="${santri.id}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
-                    </div>
                     <div>
                         <label class="block text-[11px] font-black uppercase text-slate-900 mb-1">Nama Lengkap Santri</label>
                         <input type="text" id="edit-santri-name" value="${santri.name}" class="w-full px-3 py-2.5 bg-slate-100 border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-600">
